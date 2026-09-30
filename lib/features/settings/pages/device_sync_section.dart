@@ -183,7 +183,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
             ],
           ),
         ),
-        SizedBox(height: 24.h),
+        SizedBox(height: 24.ts(context)),
 
         // -- multi-NIC correction: pick which address to advertise ---------------
         if (snapshot.localIps.length > 1) ...[
@@ -198,7 +198,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
             valueMap: {for (final ip in snapshot.localIps) ip: ip},
             onChanged: (ip) => unawaited(ref.read(remoteSyncControllerProvider.notifier).selectLocalIp(ip)),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 16.ts(context)),
         ],
 
         // -- LAN devices ----------------------------------------------------------
@@ -207,7 +207,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
           children: [
             if (devices.isEmpty)
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 20.h),
+                padding: EdgeInsets.symmetric(horizontal: 20.ts(context), vertical: 20.ts(context)),
                 child: Row(
                   children: [
                     Icon(
@@ -229,7 +229,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
               for (final device in devices)
                 Padding(
                   key: ValueKey(device.id),
-                  padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 10.h),
+                  padding: EdgeInsets.symmetric(horizontal: 20.ts(context), vertical: 10.ts(context)),
                   child: Row(
                     children: [
                       Container(
@@ -241,7 +241,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                         ),
                         child: Icon(_platformIcon(device.platform), size: 22.ts(context), color: theme.focusColor),
                       ),
-                      SizedBox(width: 14.w),
+                      SizedBox(width: 14.ts(context)),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +252,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            SizedBox(height: 2.h),
+                            SizedBox(height: 2.ts(context)),
                             Text(
                               '${device.address} · ${device.platform.isEmpty ? '—' : device.platform}',
                               style: AppTextStyles.t18.copyWith(
@@ -265,7 +265,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                           ],
                         ),
                       ),
-                      SizedBox(width: 12.w),
+                      SizedBox(width: 12.ts(context)),
                       TvButton(
                         title: _syncing ? i18n('ui_loading') : i18nOr('remote_sync_pull_from', 'Pull settings'),
                         size: TvButtonSize.small,
@@ -277,7 +277,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                 ),
           ],
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 16.ts(context)),
 
         // -- what this device hands out ------------------------------------------
         TvSettingsGroupTitle(title: i18nOr('remote_sync_share', 'Sharing')),
@@ -292,7 +292,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
             ),
           ],
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 16.ts(context)),
 
         // -- import --------------------------------------------------------------
         TvSettingsGroupTitle(title: i18nOr('remote_sync_import', 'Import')),

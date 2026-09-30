@@ -14,15 +14,12 @@ class VideoActionChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
-    // The chip's box is padding-driven and grows with its label; the glyph
-    // rides the same factor instead of staying at its drafted pixels.
-    final double scale = TvTextScale.factorOf(context);
 
     return TvFocusable(
       onTap: onTap,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        padding: EdgeInsets.symmetric(horizontal: 16.ts(context) * scale, vertical: 10.ts(context) * scale),
+        padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 10.ts(context)),
         decoration: BoxDecoration(
           color: active
               ? accent.withValues(alpha: 0.2)
@@ -35,8 +32,8 @@ class VideoActionChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 22.ts(context) * scale, color: active ? accent : tvTheme.secondaryTextColor),
-            SizedBox(width: 8.ts(context) * scale),
+            Icon(icon, size: 22.ts(context), color: active ? accent : tvTheme.secondaryTextColor),
+            SizedBox(width: 8.ts(context)),
             Text(
               label,
               style: AppTextStyles.t14.copyWith(

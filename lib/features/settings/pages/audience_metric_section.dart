@@ -29,7 +29,7 @@ class AudienceMetricSectionPage extends ConsumerWidget {
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 12.ts(context)),
           TvSettingsGroupTitle(title: i18n('audience_online_platforms')),
           TvSettingsCard(
             children: [

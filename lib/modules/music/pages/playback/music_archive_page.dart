@@ -110,7 +110,6 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
     // Vertical rhythm follows the app font setting, and the whole page scrolls
     // like the video detail page: a fixed-height left column overflowed by
     // hundreds of pixels once the enlarged font met the 720p legibility lift.
-    final double textScale = TvTextScale.factorOf(context);
 
     return TvPageScaffold(
       title: i18n('music_archive_title'),
@@ -375,7 +374,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                       children: [
                         for (final (index, track) in tracks.indexed)
                           Padding(
-                            padding: EdgeInsets.only(bottom: 8.sp * textScale),
+                            padding: EdgeInsets.only(bottom: 8.ts(context)),
                             child: _PartTile(track: track, index: index, onTap: () => _playAll(tracks, index)),
                           ),
                       ],
@@ -409,16 +408,14 @@ class _PartTile extends StatelessWidget {
     final accent = tvTheme.focusColor;
     // The video detail page's track row: the row's height and its number slot
     // follow the font, or the enlarged label clipped inside the fixed box.
-    final double textScale = TvTextScale.factorOf(context);
-
     return TvFocusable(
       onTap: onTap,
       builder: (context, focused, child) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
-          height: 76.ts(context) * textScale,
-          padding: EdgeInsets.symmetric(horizontal: 16.ts(context) * textScale),
+          height: 76.ts(context),
+          padding: EdgeInsets.symmetric(horizontal: 16.ts(context)),
           decoration: BoxDecoration(
             color: tvTheme.cardColor,
             borderRadius: BorderRadius.circular(14.ts(context)),
@@ -427,7 +424,7 @@ class _PartTile extends StatelessWidget {
           child: Row(
             children: [
               SizedBox(
-                width: 40.ts(context) * textScale,
+                width: 40.ts(context),
                 child: Text(
                   '${index + 1}',
                   style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),

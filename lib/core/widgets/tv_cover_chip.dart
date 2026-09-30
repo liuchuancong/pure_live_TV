@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/index.dart';
 
 /// A compact translucent chip for cover overlays (platform, followed, replay,
@@ -19,17 +20,17 @@ class TvCoverChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 5.ts(context)),
+      padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 5.sp),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.98),
-        borderRadius: BorderRadius.circular(20.ts(context)),
+        borderRadius: BorderRadius.circular(20.sp),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 13.ts(context), color: iconColor ?? textColor ?? Colors.white),
-            if (label.isNotEmpty) SizedBox(width: 4.ts(context)),
+            Icon(icon, size: 13.sp, color: iconColor ?? textColor ?? Colors.white),
+            if (label.isNotEmpty) SizedBox(width: 4.sp),
           ],
           if (label.isNotEmpty)
             Flexible(
@@ -37,7 +38,7 @@ class TvCoverChip extends StatelessWidget {
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.t14.copyWith(fontSize: 12.ts(context), color: textColor ?? Colors.white),
+                style: AppTextStyles.t14.copyWith(fontSize: 12.sp, color: textColor ?? Colors.white),
               ),
             ),
         ],

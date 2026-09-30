@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/index.dart';
 
 /// Group container for [TvSettingsRow]s.
@@ -23,7 +24,7 @@ class TvSettingsCard extends StatelessWidget {
     // *wraps* content is one: dropping every `SizedBox` silently hid whole sections (the
     // update page's status view disappeared this way), so only empty boxes are skipped.
     final validChildren = children.where((w) => w is! SizedBox || w.child != null).toList();
-    final BorderRadius radius = BorderRadius.circular(20.ts(context));
+    final BorderRadius radius = BorderRadius.circular(20.sp);
 
     // No clipping: the antiAlias clip cut off every row's d-pad focus glow
     // (the glow is painted outside the row's bounds, the card clipped it back
@@ -34,7 +35,7 @@ class TvSettingsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: tvTheme.cardColor.withValues(alpha: 0.05),
         borderRadius: radius,
-        border: Border.all(color: tvTheme.cardColor.withValues(alpha: 0.10), width: 1.ts(context)),
+        border: Border.all(color: tvTheme.cardColor.withValues(alpha: 0.10), width: 1.sp),
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 4.ts(context), horizontal: 4.ts(context)),

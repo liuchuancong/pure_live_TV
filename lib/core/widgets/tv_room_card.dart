@@ -90,7 +90,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final borderRadius = BorderRadius.circular(24.ts(context));
+    final borderRadius = BorderRadius.circular(24.sp);
     // Evaluated once per build, outside the effects closure, so the effect
     // never watches settings while a descendant is building.
     final String audience = _audienceText;
@@ -104,12 +104,12 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       ),
       // Light palette: the 18px glow is a grey smear on white; crisp ring.
       tvTheme.isLight
-          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.ts(context), blurRadius: 0)
+          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
           : DpadGlowEffect(
               color: tvTheme.focusColor,
               opacity: 0.75,
-              blurRadius: 18.ts(context),
-              spreadRadius: 1.5.ts(context),
+              blurRadius: 18.sp,
+              spreadRadius: 1.5.sp,
             ),
       DpadCustomEffect((ctx, state, _) {
         final isFocused = state.focused;
@@ -127,7 +127,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: borderRadius,
-            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.ts(context)),
+            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -135,7 +135,6 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
               // does the decision to run the info row in its compact form: a card
               // whose labels are drawn 60% larger is effectively narrower, so the
               // threshold moves with the text instead of the cell alone.
-              final double textScale = TvTextScale.factorOf(context);
               final bool compact = constraints.maxWidth < 190.ts(context);
               // A playlist ships no per-channel avatar, so an IPTV card numbers
               // its channel instead: a position is what a TV viewer reads as the
@@ -162,7 +161,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                         Container(
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24.ts(context)),
+                            borderRadius: BorderRadius.circular(24.sp),
                             color: tvTheme.cardColor,
                           ),
                           child: CachedNetworkImage(
@@ -241,9 +240,9 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                   Padding(
                     padding: EdgeInsets.only(
                       left: 10.sp,
-                      top: (compact ? 6.ts(context) : 16.ts(context)) * textScale,
+                      top: compact ? 6.ts(context) : 16.ts(context),
                       right: compact ? 10.ts(context) : 16.ts(context),
-                      bottom: (compact ? 6.ts(context) : 8.ts(context)) * textScale,
+                      bottom: compact ? 6.ts(context) : 8.ts(context),
                     ),
                     child: Row(
                       children: [
@@ -256,7 +255,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                                 ? TvCommonAvatar(
                                     avatarUrl: widget.room.avatar,
                                     fallbackName: widget.room.nick,
-                                    radius: compact ? 10.ts(context) : null,
+                                    radius: compact ? 10.sp : null,
                                   )
                                 : NumberLeading(
                                     channelNumber,
@@ -286,7 +285,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                                             : AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700))
                                         .copyWith(color: titleColor),
                               ),
-                              SizedBox(height: (compact ? 2.ts(context) : 4.ts(context)) * textScale),
+                              SizedBox(height: compact ? 2.ts(context) : 4.ts(context)),
                               Text(
                                 widget.room.nick,
                                 maxLines: 1,

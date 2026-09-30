@@ -173,7 +173,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
   /// playlist's room rows are taller than a plain label row, and the height has to
   /// match what the row widget actually renders or the highlight drifts a little
   /// further out of view with every step.
-  double get _rowExtent => widget.rowExtent ?? 66.ts(context) * PlayerPanelLayout.boxScaleOf(context);
+  double get _rowExtent => widget.rowExtent ?? 66.sp * PlayerPanelLayout.boxScaleOf(context);
 
   /// Top padding of the row list, matching the [ListView] below.
   double get _listPadding => 4.ts(context);
@@ -367,8 +367,8 @@ class _PanelRow extends StatelessWidget {
     // here take the full box scale, or the row clips what its text grew into.
     final double boxScale = PlayerPanelLayout.boxScaleOf(context);
     return Container(
-      height: 60.ts(context) * boxScale,
-      margin: EdgeInsets.symmetric(vertical: 3.ts(context) * boxScale),
+      height: 60.sp * boxScale,
+      margin: EdgeInsets.symmetric(vertical: 3.sp * boxScale),
       padding: EdgeInsets.symmetric(horizontal: 16.ts(context)),
       decoration: BoxDecoration(
         color: selected ? accent : (row.active ? accent.withValues(alpha: 0.22) : theme.subtleRowFill),
@@ -379,12 +379,12 @@ class _PanelRow extends StatelessWidget {
           if (row.asset != null)
             Padding(
               padding: EdgeInsets.only(right: 10.sp),
-              child: SvgOrIcon(asset: row.asset, icon: row.icon, color: foreground, size: 24.ts(context) * boxScale),
+              child: SvgOrIcon(asset: row.asset, icon: row.icon, color: foreground, size: 24.sp * boxScale),
             )
           else if (row.icon != null)
             Padding(
               padding: EdgeInsets.only(right: 10.sp),
-              child: Icon(row.icon, size: 24.ts(context) * boxScale, color: foreground),
+              child: Icon(row.icon, size: 24.sp * boxScale, color: foreground),
             ),
           Expanded(
             child: Column(

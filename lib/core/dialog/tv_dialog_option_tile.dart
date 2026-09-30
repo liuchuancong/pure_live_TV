@@ -1,5 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/index.dart';
 
 /// One option inside a dialog.
@@ -62,31 +63,28 @@ class TvDialogOptionTile extends StatelessWidget {
         final bool highlighted = focused || selected;
         final Color foreground = highlighted ? Colors.white : tvTheme.primaryTextColor;
         final Color muted = highlighted ? Colors.white70 : tvTheme.secondaryTextColor;
-        // The row's labels are resolver-scaled; the leading and check glyphs
-        // ride the same factor instead of staying at their drafted pixels.
-        final double scale = TvTextScale.factorOf(context);
 
         return AnimatedContainer(
           duration: const Duration(milliseconds: 100),
           curve: Curves.easeInOut,
-          constraints: BoxConstraints(minHeight: 60.ts(context) * scale),
-          padding: EdgeInsets.symmetric(horizontal: 20.ts(context) * scale, vertical: 10.ts(context) * scale),
+          constraints: BoxConstraints(minHeight: 60.ts(context)),
+          padding: EdgeInsets.symmetric(horizontal: 20.ts(context), vertical: 10.ts(context)),
           decoration: BoxDecoration(
             color: highlighted ? tvTheme.focusColor : tvTheme.subtleRowFill,
-            borderRadius: BorderRadius.circular(radius.ts(context)),
+            borderRadius: BorderRadius.circular(radius.sp),
             border: Border.all(
               color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.25),
-              width: 1.ts(context),
+              width: 1.sp,
             ),
           ),
           child: Row(
             children: [
               if (icon != null) ...[
                 IconTheme(
-                  data: IconThemeData(size: 24.ts(context) * scale, color: foreground),
+                  data: IconThemeData(size: 24.ts(context), color: foreground),
                   child: icon!,
                 ),
-                SizedBox(width: 14.ts(context) * scale),
+                SizedBox(width: 14.ts(context)),
               ],
               Expanded(
                 child: Column(
@@ -111,8 +109,8 @@ class TvDialogOptionTile extends StatelessWidget {
               ),
               if (trailing != null) ...[SizedBox(width: 12.ts(context)), trailing!],
               if (selected && showCheck) ...[
-                SizedBox(width: 12.ts(context) * scale),
-                Icon(Icons.check_circle_rounded, size: 26.ts(context) * scale, color: foreground),
+                SizedBox(width: 12.ts(context)),
+                Icon(Icons.check_circle_rounded, size: 26.ts(context), color: foreground),
               ],
             ],
           ),

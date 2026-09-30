@@ -89,7 +89,7 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
                                   ),
                                 ),
                                 if (account.name.isNotEmpty && cookies.bilibiliUid > 0) ...[
-                                  SizedBox(height: 4.h),
+                                  SizedBox(height: 4.ts(context)),
                                   Text(
                                     'UID ${cookies.bilibiliUid}',
                                     maxLines: 1,
@@ -122,7 +122,7 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
               ],
 
               if (_message.isNotEmpty) ...[
-                SizedBox(height: 16.h),
+                SizedBox(height: 16.ts(context)),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

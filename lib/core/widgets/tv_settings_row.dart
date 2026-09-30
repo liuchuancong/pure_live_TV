@@ -1,5 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/index.dart';
 
 typedef TvSettingsTrailingBuilder = Widget Function(BuildContext context, bool focused);
@@ -44,7 +45,7 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final borderRadius = BorderRadius.circular(14.ts(context));
+    final borderRadius = BorderRadius.circular(14.sp);
 
     // The whole focus recipe lives in one custom effect and renders strictly
     // synchronously — no Animated* widgets. A fading-out decoration is driven
@@ -62,9 +63,6 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
         final Color titleColor = focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
         final Color subtitleColor = focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor;
         final Color iconColor = focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
-        // The row's labels follow the app font, and so does the chrome that
-        // frames them: icon, gaps and the switch beside them.
-        final double textScale = TvTextScale.factorOf(context);
 
         return Transform.scale(
           scale: pressed ? 0.98 : 1.0,
@@ -75,13 +73,13 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
             decoration: BoxDecoration(
               color: focused ? tvTheme.focusedCardColor : Colors.transparent,
               borderRadius: borderRadius,
-              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
+              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
               boxShadow: focused
                   ? [
                       BoxShadow(
                         color: accent.withValues(alpha: tvTheme.isLight ? 1 : 0.75),
-                        blurRadius: tvTheme.isLight ? 0 : 18.ts(context),
-                        spreadRadius: tvTheme.isLight ? 2.ts(context) : 1.5.ts(context),
+                        blurRadius: tvTheme.isLight ? 0 : 18.sp,
+                        spreadRadius: tvTheme.isLight ? 2.sp : 1.5.sp,
                       ),
                     ]
                   : const <BoxShadow>[],
@@ -95,7 +93,7 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
                     final double trailingMaxWidth = constraints.maxWidth * 0.55;
                     final double minContentHeight = 30.ts(context) + 4.ts(context) + 22.ts(context);
                     return Container(
-                      constraints: BoxConstraints(minHeight: minContentHeight * textScale),
+                      constraints: BoxConstraints(minHeight: minContentHeight),
                       alignment: Alignment.centerLeft,
                       child: Row(
                         children: [
@@ -221,8 +219,8 @@ class TvSettingsSwitchIndicator extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: value ? on.withValues(alpha: focused ? 0.35 : 0.22) : Colors.transparent,
-          border: Border.all(color: value ? on : off.withValues(alpha: 0.6), width: 2.ts(context)),
-          borderRadius: BorderRadius.circular(6.ts(context)),
+          border: Border.all(color: value ? on : off.withValues(alpha: 0.6), width: 2.sp),
+          borderRadius: BorderRadius.circular(6.sp),
         ),
         padding: EdgeInsets.all(3.ts(context)),
         child: Align(
@@ -231,7 +229,7 @@ class TvSettingsSwitchIndicator extends StatelessWidget {
             width: 24.ts(context),
             decoration: BoxDecoration(
               color: value ? on : off.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(3.ts(context)),
+              borderRadius: BorderRadius.circular(3.sp),
             ),
           ),
         ),

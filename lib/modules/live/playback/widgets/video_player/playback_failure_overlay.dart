@@ -150,7 +150,6 @@ class _PlaybackFailureOverlayState extends State<PlaybackFailureOverlay> {
     required VoidCallback onTap,
   }) {
     final bool selected = _index == index;
-    final double scale = TvTextScale.factorOf(context);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
@@ -160,7 +159,7 @@ class _PlaybackFailureOverlayState extends State<PlaybackFailureOverlay> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(horizontal: 22.ts(context) * scale, vertical: 12.ts(context) * scale),
+        padding: EdgeInsets.symmetric(horizontal: 22.ts(context), vertical: 12.ts(context)),
         decoration: BoxDecoration(
           color: background,
           borderRadius: BorderRadius.circular(12.ts(context)),
@@ -178,8 +177,8 @@ class _PlaybackFailureOverlayState extends State<PlaybackFailureOverlay> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 20.ts(context) * scale, color: Colors.white),
-            SizedBox(width: 8.ts(context) * scale),
+            Icon(icon, size: 20.ts(context), color: Colors.white),
+            SizedBox(width: 8.ts(context)),
             Text(
               label,
               style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: Colors.white),

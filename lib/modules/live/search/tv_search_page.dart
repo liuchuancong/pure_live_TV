@@ -130,15 +130,14 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                   ),
                 ),
                 builder: (content, isFocused) {
-                  final double scale = TvTextScale.factorOf(context);
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
                     curve: Curves.easeOutCubic,
-                    height: 76.ts(context) * scale,
-                    padding: EdgeInsets.symmetric(horizontal: 28.ts(context) * scale),
+                    height: 76.ts(context),
+                    padding: EdgeInsets.symmetric(horizontal: 28.ts(context)),
                     decoration: BoxDecoration(
                       color: tvTheme.cardColor,
-                      borderRadius: BorderRadius.circular(38.ts(context) * scale),
+                      borderRadius: BorderRadius.circular(38.ts(context)),
                       border: Border.all(
                         color: isFocused ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.25),
                         width: isFocused ? 2.ts(context) : 1.5.ts(context),

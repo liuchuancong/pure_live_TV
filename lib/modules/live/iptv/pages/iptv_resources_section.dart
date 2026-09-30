@@ -144,15 +144,15 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Center(child: RemoteSyncQrCard(width: 280, route: WebRemoteRouter.sync)),
-        SizedBox(height: 24.h),
+        SizedBox(height: 24.ts(context)),
         TvSettingsGroupTitle(title: i18n('hot_resource_url')),
         TvSettingsCard(children: [_buildHotResourceRow()]),
-        SizedBox(height: 24.h),
+        SizedBox(height: 24.ts(context)),
         TvSettingsGroupTitle(title: i18n('iptv_resource_list')),
         TvSettingsCard(children: _buildResourceRows()),
         if (_status.isNotEmpty)
           Padding(
-            padding: EdgeInsets.only(left: 16.w, top: 10.h),
+            padding: EdgeInsets.only(left: 16.ts(context), top: 10.ts(context)),
             child: Text(_status, style: AppTextStyles.t16.copyWith(color: theme.focusColor)),
           ),
       ],
@@ -171,7 +171,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
           : '${i18n('hot_resource_url_hint')}\n${IptvSettingsController.defaultHotResourceUrl}',
       icon: Icons.live_tv_rounded,
       trailingBuilder: (context, focused) => SizedBox(
-        width: 120.w,
+        width: 120.ts(context),
         child: TvButton(title: i18n('edit'), size: TvButtonSize.mini, onTap: _editHotResourceUrl),
       ),
       onSelect: _editHotResourceUrl,
@@ -227,7 +227,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
     }
 
     void addGroupTitle(String title) {
-      if (rows.isNotEmpty) rows.add(SizedBox(height: 12.h));
+      if (rows.isNotEmpty) rows.add(SizedBox(height: 12.ts(context)));
       rows.add(TvSettingsGroupTitle(title: title));
     }
 
@@ -296,7 +296,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
             onTap: onSync,
           ),
         if (autoSync != null) ...[
-          SizedBox(width: 8.w),
+          SizedBox(width: 8.ts(context)),
           TvButton(
             title: i18n('auto_sync'),
             size: TvButtonSize.mini,
@@ -305,7 +305,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
             onTap: () => onAutoSync?.call(!autoSync),
           ),
         ],
-        SizedBox(width: 8.w),
+        SizedBox(width: 8.ts(context)),
         TvButton(
           title: i18n('delete'),
           size: TvButtonSize.mini,

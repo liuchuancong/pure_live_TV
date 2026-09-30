@@ -39,7 +39,7 @@ class TvDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final borderRadius = BorderRadius.circular(24.ts(context));
+    final borderRadius = BorderRadius.circular(24.sp);
 
     // The frame is a plain container, not a DpadFocusable.
     //
@@ -62,11 +62,11 @@ class TvDialog extends StatelessWidget {
             // Crisp ring on light palettes; the blurred halo smears on white.
             BoxShadow(
               color: tvTheme.focusColor.withValues(alpha: .75),
-              blurRadius: tvTheme.isLight ? 0 : 12.ts(context),
-              spreadRadius: 1.ts(context),
+              blurRadius: tvTheme.isLight ? 0 : 12.sp,
+              spreadRadius: 1.sp,
             ),
           ],
-          border: Border.all(color: tvTheme.focusColor, width: 1.ts(context)),
+          border: Border.all(color: tvTheme.focusColor, width: 1.sp),
         ),
         // Keeps the remote inside the modal: the page behind it must not react
         // to the d-pad while a dialog is open.
@@ -83,7 +83,7 @@ class TvDialog extends StatelessWidget {
               children: [
                 if (title != null)
                   Padding(
-                    padding: EdgeInsets.only(bottom: 24.sp),
+                    padding: EdgeInsets.only(bottom: 24.ts(context)),
                     child: Text(
                       title!,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -101,7 +101,7 @@ class TvDialog extends StatelessWidget {
                     children: [
                       if (cancelText != null)
                         Padding(
-                          padding: EdgeInsets.only(right: 16.sp),
+                          padding: EdgeInsets.only(right: 16.ts(context)),
                           child: TvButton(
                             title: cancelText!,
                             size: TvButtonSize.mini,

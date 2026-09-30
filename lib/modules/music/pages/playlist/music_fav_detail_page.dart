@@ -263,15 +263,13 @@ class _TrackRow extends StatelessWidget {
     // padding — the old fixed 72.ts(context) painted the yellow overflow stripe once
     // the enlarged font met the panel lift, exactly what the playlist track
     // rows fixed by sizing to their content.
-    final double textScale = TvTextScale.factorOf(context);
-
     return TvFocusable(
       focusNode: focusNode,
       onTap: onPlay,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         margin: EdgeInsets.only(bottom: 8.sp),
-        padding: EdgeInsets.symmetric(horizontal: 16.ts(context) * textScale, vertical: 12.ts(context) * textScale),
+        padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 12.ts(context)),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
           borderRadius: BorderRadius.circular(14.ts(context)),
@@ -280,7 +278,7 @@ class _TrackRow extends StatelessWidget {
         child: Row(
           children: [
             SizedBox(
-              width: 44.ts(context) * textScale,
+              width: 44.ts(context),
               child: selectMode
                   ? Icon(
                       selected ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,

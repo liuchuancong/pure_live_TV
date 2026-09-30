@@ -552,11 +552,10 @@ class _OptionPill extends StatelessWidget {
   Widget build(BuildContext context) {
     // The pill is padding-driven around a resolver-scaled t16 label; the check
     // glyph rides the same factor.
-    final double scale = TvTextScale.factorOf(context);
     return AnimatedContainer(
       duration: TvFocusStyle.focusDuration(selected),
       curve: TvFocusStyle.curve,
-      padding: EdgeInsets.symmetric(horizontal: 20.ts(context) * scale, vertical: 10.ts(context) * scale),
+      padding: EdgeInsets.symmetric(horizontal: 20.ts(context), vertical: 10.ts(context)),
       decoration: BoxDecoration(
         color: selected ? accent.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.ts(context)),
@@ -577,8 +576,8 @@ class _OptionPill extends StatelessWidget {
             ),
           ),
           if (active) ...[
-            SizedBox(width: 8.ts(context) * scale),
-            Icon(Icons.check_rounded, size: 20.ts(context) * scale, color: accent),
+            SizedBox(width: 8.ts(context)),
+            Icon(Icons.check_rounded, size: 20.ts(context), color: accent),
           ],
         ],
       ),

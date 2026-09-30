@@ -21,7 +21,7 @@ class AgreementPage extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: AppTextStyles.t40.copyWith(fontWeight: FontWeight.w700),
               ),
-              AppStyle.vGap40,
+              AppStyle.vGap40(context),
               Flexible(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -29,7 +29,7 @@ class AgreementPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(i18n('agreement_welcome'), style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w700)),
-                      AppStyle.vGap24,
+                      AppStyle.vGap24(context),
 
                       Padding(
                         padding: EdgeInsets.only(left: 28.0.sp, right: 8.0.sp),
@@ -38,23 +38,23 @@ class AgreementPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(i18n('agreement_item_1'), style: AppTextStyles.t32),
-                            AppStyle.vGap16,
+                            AppStyle.vGap16(context),
                             Text(i18n('agreement_item_2'), style: AppTextStyles.t32),
-                            AppStyle.vGap16,
+                            AppStyle.vGap16(context),
                             Text(i18n('agreement_item_3'), style: AppTextStyles.t32),
-                            AppStyle.vGap16,
+                            AppStyle.vGap16(context),
                             Text(i18n('agreement_item_4'), style: AppTextStyles.t32),
                           ],
                         ),
                       ),
-                      AppStyle.vGap32,
+                      AppStyle.vGap32(context),
 
                       Text(i18n('agreement_footer'), style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w700)),
                     ],
                   ),
                 ),
               ),
-              AppStyle.vGap48,
+              AppStyle.vGap48(context),
 
               // The action row stays visible so a remote can always reach both
               // buttons without scrolling the terms.
@@ -70,7 +70,7 @@ class AgreementPage extends StatelessWidget {
                       const HomeRoute().go(context);
                     },
                   ),
-                  AppStyle.hGap32,
+                  AppStyle.hGap32(context),
                   TvButton(title: i18n('exit_app'), size: TvButtonSize.medium, isSecondary: true, onTap: () => exit(0)),
                 ],
               ),

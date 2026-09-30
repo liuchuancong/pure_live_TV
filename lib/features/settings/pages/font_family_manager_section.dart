@@ -236,7 +236,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     final String activeId = _activeId;
 
     return SingleChildScrollView(
-      padding: EdgeInsets.only(bottom: 24.h),
+      padding: EdgeInsets.only(bottom: 24.ts(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -244,7 +244,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
           // whether the rows below set the whole app's font or only the danmaku
           // layer's. The entry route only picks where you land.
           Padding(
-            padding: EdgeInsets.only(bottom: 16.h),
+            padding: EdgeInsets.only(bottom: 16.ts(context)),
             child: Row(
               children: [
                 TvButton(
@@ -254,7 +254,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
                   selected: !_danmakuMode,
                   onTap: () => setState(() => _danmakuMode = false),
                 ),
-                SizedBox(width: 12.w),
+                SizedBox(width: 12.ts(context)),
                 TvButton(
                   title: i18n('font_danmaku_group'),
                   icon: Icon(Icons.subtitles_outlined, size: 22.ts(context)),
@@ -283,11 +283,11 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
               ),
             ],
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 20.ts(context)),
           TvSettingsGroupTitle(title: i18n('cloud_font_group')),
           if (_fonts.isEmpty)
             SizedBox(
-              height: 200.h,
+              height: 200.ts(context),
               child: const AppStatusView(type: AppStatusType.loading),
             ),
           for (final FontModel font in _fonts) ...[
@@ -304,7 +304,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
                 ),
               ],
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 12.ts(context)),
           ],
         ],
       ),
@@ -319,11 +319,11 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: 28.w,
-            height: 28.w,
+            width: 28.ts(context),
+            height: 28.ts(context),
             child: const AppStatusView(type: AppStatusType.loading, isMini: true),
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: 10.ts(context)),
           tvSettingsValueLabel(context, focused, i18n('cancel')),
         ],
       );

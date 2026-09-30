@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,8 +49,8 @@ class RemoteSyncQrCard extends ConsumerWidget {
         padding: EdgeInsets.all(16.ts(context)),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(24.ts(context)),
-          border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.5), width: 1.ts(context)),
+          borderRadius: BorderRadius.circular(24.sp),
+          border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.5), width: 1.sp),
         ),
         child: Row(
           children: <Widget>[

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/tv_settings_row.dart';
 
@@ -74,17 +75,17 @@ class _SliderTrack extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 8.ts(context),
+      height: 8.sp,
       decoration: BoxDecoration(
         color: track.withValues(alpha: 0.22),
-        borderRadius: BorderRadius.circular(4.ts(context)),
+        borderRadius: BorderRadius.circular(4.sp),
       ),
       child: Align(
         alignment: Alignment.centerLeft,
         child: FractionallySizedBox(
           widthFactor: progress,
           child: DecoratedBox(
-            decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(4.ts(context))),
+            decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(4.sp)),
             child: const SizedBox.expand(),
           ),
         ),

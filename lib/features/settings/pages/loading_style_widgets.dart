@@ -25,7 +25,7 @@ class LoadingStyleSectionPage extends ConsumerWidget {
           TvButton(
             title: i18n('restore_default'),
             size: TvButtonSize.mini,
-            icon: Icon(Remix.restart_line, size: 22.w),
+            icon: Icon(Remix.restart_line, size: 22.ts(context)),
             onTap: () => theme.updateSettings(
               themeState.copyWith(loadingStyle: AppConsts.defaultLoadingStyleKey, loadingStyleColor: null),
             ),
@@ -35,7 +35,7 @@ class LoadingStyleSectionPage extends ConsumerWidget {
       child: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(16.w, 12.w, 16.w, 0),
+            padding: EdgeInsets.fromLTRB(16.ts(context), 12.ts(context), 16.ts(context), 0),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,23 +52,23 @@ class LoadingStyleSectionPage extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 20.w),
+                  SizedBox(height: 20.ts(context)),
                   TvSettingsGroupTitle(title: i18n('change_loading_style')),
                 ],
               ),
             ),
           ),
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.w),
+            padding: EdgeInsets.fromLTRB(16.ts(context), 0, 16.ts(context), 24.ts(context)),
             // Sized by extent rather than a fixed column count: the same table
             // stays sane on a 1080p box and on a 4K panel, and the tiles keep
             // the density of the mobile grid instead of becoming huge blocks.
             sliver: SliverGrid(
               gridDelegate: TvAdaptiveGrid.maxExtent(
                 context,
-                maxCrossAxisExtent: 190.w,
-                mainAxisSpacing: 10.w,
-                crossAxisSpacing: 10.w,
+                maxCrossAxisExtent: 190.ts(context),
+                mainAxisSpacing: 10.ts(context),
+                crossAxisSpacing: 10.ts(context),
                 childAspectRatio: 1.15,
               ),
               delegate: SliverChildBuilderDelegate((context, index) {
@@ -121,13 +121,13 @@ class _LoadingColorSwatch extends StatelessWidget {
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     return Container(
-      width: 34.w,
-      height: 34.w,
+      width: 34.ts(context),
+      height: 34.ts(context),
       decoration: BoxDecoration(
         color: color,
         border: Border.all(
           color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.5),
-          width: 2.w,
+          width: 2.ts(context),
         ),
       ),
     );
@@ -165,10 +165,10 @@ class _LoadingStyleTile extends StatelessWidget {
             color: focused ? accent.withValues(alpha: 0.22) : Colors.transparent,
             border: Border.all(
               color: focused || active ? accent : tvTheme.secondaryTextColor.withValues(alpha: 0.25),
-              width: focused || active ? 2.w : 1.w,
+              width: focused || active ? 2.ts(context) : 1.ts(context),
             ),
           ),
-          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 8.w),
+          padding: EdgeInsets.symmetric(horizontal: 6.ts(context), vertical: 8.ts(context)),
           child: Stack(
             children: [
               Column(
@@ -176,10 +176,10 @@ class _LoadingStyleTile extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Center(
-                      child: TvLoadingStylePreview(style: styleKey, color: color, size: 44.w, theme: tvTheme),
+                      child: TvLoadingStylePreview(style: styleKey, color: color, size: 44.ts(context), theme: tvTheme),
                     ),
                   ),
-                  SizedBox(height: 6.w),
+                  SizedBox(height: 6.ts(context)),
                   Text(
                     name,
                     maxLines: 1,
@@ -196,7 +196,7 @@ class _LoadingStyleTile extends StatelessWidget {
                 Positioned(
                   top: 0,
                   right: 0,
-                  child: Icon(Icons.check_circle_rounded, size: 18.w, color: accent),
+                  child: Icon(Icons.check_circle_rounded, size: 18.ts(context), color: accent),
                 ),
             ],
           ),

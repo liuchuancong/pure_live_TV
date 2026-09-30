@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:pure_live/core/theme/index.dart';
 
@@ -18,7 +19,7 @@ class TvQrCodeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final borderRadius = BorderRadius.circular(24.ts(context));
+    final borderRadius = BorderRadius.circular(24.sp);
 
     // ScaleDown, not clip: a compact slot (a settings card, a player panel)
     // gets a smaller whole card instead of a bottom-clipped one.
@@ -37,14 +38,14 @@ class TvQrCodeCard extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: .3),
-                  blurRadius: 12.ts(context),
-                  offset: Offset(0, 4.ts(context)),
+                  blurRadius: 12.sp,
+                  offset: Offset(0, 4.sp),
                 ),
               ],
             ),
             padding: EdgeInsets.all(8.ts(context)),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16.ts(context)),
+              borderRadius: BorderRadius.circular(16.sp),
               child: QrImageView(
                 data: qrData,
                 size: qrSize.ts(context),
@@ -74,7 +75,7 @@ class TvQrCodeCard extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 8.ts(context)),
               child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: qrSize.ts(context) * 1.6 * TvTextScale.factorOf(context)),
+                constraints: BoxConstraints(maxWidth: qrSize.ts(context) * 1.6),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.center,

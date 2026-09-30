@@ -50,7 +50,7 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
                 leading: TvLoadingStylePreview(
                   style: themeState.loadingStyle,
                   color: loadingColor,
-                  size: 30.w,
+                  size: 30.ts(context),
                   theme: tvTheme,
                 ),
                 trailingBuilder: (context, focused) => tvSettingsValueLabel(

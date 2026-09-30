@@ -29,11 +29,8 @@ class _TvAreaCardState extends State<TvAreaCard> {
     final tvTheme = context.tvTheme;
     final displayImageUrl = area.areaPic;
 
-    final borderRadius = BorderRadius.circular(18.ts(context));
-    final imageRadius = BorderRadius.circular(12.ts(context));
-    // The label grows with the app font setting, so the room it needs and the
-    // gap above it have to grow with it too.
-    final double textScale = TvTextScale.factorOf(context);
+    final borderRadius = BorderRadius.circular(18.sp);
+    final imageRadius = BorderRadius.circular(12.sp);
 
     final List<DpadEffect> effects = [
       DpadScaleEffect(
@@ -44,12 +41,12 @@ class _TvAreaCardState extends State<TvAreaCard> {
       ),
       // Light palette: a soft 12px halo smears on white; use a crisp ring.
       tvTheme.isLight
-          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.ts(context), blurRadius: 0)
+          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
           : DpadGlowEffect(
               color: tvTheme.focusColor,
               opacity: 1,
-              spreadRadius: 1.ts(context),
-              blurRadius: 12.0.ts(context),
+              spreadRadius: 1.sp,
+              blurRadius: 12.0.sp,
             ),
       DpadCustomEffect((ctx, state, _) {
         final isFocused = state.focused;
@@ -62,7 +59,7 @@ class _TvAreaCardState extends State<TvAreaCard> {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: borderRadius,
-            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.ts(context)),
+            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
           ),
           child: Padding(
             padding: EdgeInsets.all(9.ts(context)),
@@ -75,7 +72,7 @@ class _TvAreaCardState extends State<TvAreaCard> {
                 // `height: 1.15` and the name is 17 design px (the same base
                 // the style below uses), so a line is `fontSize * 1.15` at the
                 // scale the text is drawn at.
-                final double nameLineHeight = 17.ts(context) * 1.15 * textScale;
+                final double nameLineHeight = 17.ts(context) * 1.15;
                 final double nameGap = 8.ts(context);
                 final int nameLines = constraints.maxHeight - nameGap >= nameLineHeight * 2 ? 2 : 1;
                 return Column(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
 import 'package:pure_live/app/consts/app_consts.dart';
@@ -7,7 +8,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 enum AppStatusType { loading, empty, error, notLogin }
@@ -322,10 +322,7 @@ class _AppStatusViewState extends State<AppStatusView> {
     final tvTheme = context.tvTheme;
     final setting = SettingsService.to;
     final Color parsedColor = setting.themeState.loadingStyleColor ?? widget.iconColor ?? tvTheme.focusColor;
-    // The empty state's sentences follow the app font, and so do its loader
-    // and artwork: a fixed disc would sit beside text twice its size.
-    final double textScale = TvTextScale.factorOf(context).clamp(1.0, 1.1);
-    final double size = (widget.isMini ? 32.ts(context) : 48.ts(context)) * textScale;
+    final double size = widget.isMini ? 32.ts(context) : 48.ts(context);
     return tvInlineLoading(context, size: size, color: parsedColor);
   }
 
@@ -336,7 +333,6 @@ class _AppStatusViewState extends State<AppStatusView> {
     if (widget.type == AppStatusType.loading) {
       return ExcludeFocus(child: Center(child: _buildLoadingWidget(context)));
     }
-    final textScaler = TvTextScale.factorOf(context).clamp(1.0, 1.1);
     final String finalTitle =
         widget.title ?? (widget.type == AppStatusType.error ? i18n('network_error_title') : i18n('status_empty_title'));
     final String finalSubtitle =
@@ -347,13 +343,9 @@ class _AppStatusViewState extends State<AppStatusView> {
         widget.buttonTextIcon ??
         Icon(
           widget.type == AppStatusType.notLogin ? Remix.login_box_fill : Icons.refresh_rounded,
-          size: 24.ts(context) * textScaler,
+          size: 24.ts(context),
         );
 
-    // The column must survive extreme font scales (a 720p panel's lift plus
-    // the user's slider tops out near 2x):
-    // while it fits its box it stays centered exactly as before, and once it
-    // outgrows the box it scrolls instead of painting an overflow stripe.
     return Center(
       child: LayoutBuilder(
         builder: (context, constraints) => SingleChildScrollView(
@@ -363,44 +355,40 @@ class _AppStatusViewState extends State<AppStatusView> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: EdgeInsets.all((widget.isMini ? 8.ts(context) : 22.ts(context)) * textScaler),
-                  // Accent-tinted disc instead of a grey-on-grey circle: the empty
-                  // state is the page's voice, it should carry the palette.
+                  padding: EdgeInsets.all(widget.isMini ? 8.ts(context) : 22.ts(context)),
                   decoration: BoxDecoration(
                     color: tvTheme.focusColor.withValues(alpha: 0.10),
                     shape: BoxShape.circle,
-                    border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35), width: 1.5.ts(context)),
+                    border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35), width: 1.5.sp),
                   ),
                   child: Icon(
                     widget.icon ??
                         (widget.type == AppStatusType.error ? Icons.wifi_off_rounded : Icons.live_tv_rounded),
-                    size: (widget.isMini ? 36.ts(context) : 64.ts(context)) * textScaler,
+                    size: widget.isMini ? 36.ts(context) : 64.ts(context),
                     color: widget.iconColor ?? tvTheme.focusColor,
                   ),
                 ).animate().scaleXY(begin: 0, end: 1, duration: 1000.ms, curve: Curves.elasticOut),
-                if (!widget.isMini) SizedBox(height: 40.h * textScaler),
+                if (!widget.isMini) SizedBox(height: 40.ts(context)),
                 if (!widget.isMini || finalTitle.isNotEmpty) ...[
                   Text(
                     finalTitle,
                     style: AppTextStyles.t24.copyWith(
                       fontWeight: FontWeight.w600,
-                      fontSize: 24.ts(context) * textScaler,
                       color: widget.titleColor ?? tvTheme.primaryTextColor,
                     ),
                   ),
                 ],
                 if (!widget.isMini || finalSubtitle.isNotEmpty) ...[
-                  SizedBox(height: 6.ts(context) * textScaler),
+                  SizedBox(height: 6.ts(context)),
                   Text(
                     finalSubtitle,
                     style: AppTextStyles.t24.copyWith(
                       color: widget.subtitleColor ?? tvTheme.secondaryTextColor,
-                      fontSize: 24.ts(context) * textScaler,
                     ),
                   ),
                 ],
                 if (!widget.isMini && (widget.onTap != null || widget.onSecondaryTap != null)) ...[
-                  SizedBox(height: 24.ts(context) * textScaler),
+                  SizedBox(height: 24.ts(context)),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -419,7 +407,7 @@ class _AppStatusViewState extends State<AppStatusView> {
                           title: widget.secondaryButtonText ?? i18n('search_live'),
                           icon:
                               widget.secondaryButtonIcon ??
-                              Icon(Icons.search_rounded, size: 24.ts(context) * textScaler),
+                              Icon(Icons.search_rounded, size: 24.ts(context)),
                           iconPosition: TvIconPosition.left,
                           size: TvButtonSize.small,
                           isSecondary: true,

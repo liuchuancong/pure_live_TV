@@ -220,7 +220,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                 children: [
                   if (_phoneUrl.isEmpty)
                     SizedBox(
-                      height: 220.h,
+                      height: 220.ts(context),
                       child: AppStatusView(
                         type: _phoneStarting ? AppStatusType.loading : AppStatusType.empty,
                         subtitle: _phoneStarting ? i18n('ui_loading') : i18n('remote_service_unavailable'),
@@ -237,7 +237,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                     ),
                 ],
               ),
-              SizedBox(height: 14.h),
+              SizedBox(height: 14.ts(context)),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12.ts(context)),
                 child: Text(
@@ -254,7 +254,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
               // What is stored — and only when there is something to say: an
               // "empty" state next to the QR that fills it is noise.
               if (configured) ...[
-                SizedBox(height: 18.h),
+                SizedBox(height: 18.ts(context)),
                 _StatusLine(
                   text: _isDouyu ? _douyuSessionSummary(stored) : i18n('cookie_configured'),
                   color: const Color(0xFF4CAF50),
@@ -263,7 +263,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
               ],
 
               if (_isDouyu) ...[
-                SizedBox(height: 18.h),
+                SizedBox(height: 18.ts(context)),
                 TvSettingsCard(
                   children: [
                     TvSettingsSwitchTile(
@@ -277,7 +277,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                 ),
               ],
 
-              SizedBox(height: 22.h),
+              SizedBox(height: 22.ts(context)),
               // Wrap, not Row: a translated label is as wide as the language makes
               // it, and two of them do not fit on one line in every locale.
               Wrap(
@@ -304,7 +304,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
               ),
 
               if (_message.isNotEmpty) ...[
-                SizedBox(height: 18.h),
+                SizedBox(height: 18.ts(context)),
                 _StatusLine(text: _message, color: theme.focusColor, icon: Icons.check_circle_outline_rounded),
               ],
             ],
