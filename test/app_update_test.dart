@@ -13,7 +13,6 @@ import 'package:pure_live/core/models/release_model/release_model.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/utils/hive_pref_util.dart';
 import 'package:pure_live/core/widgets/index.dart';
-import 'package:pure_live/services/app_update/app_update_models.dart' show appUpdateAssetMirrors;
 
 /// 在线更新 → 版本历史, and the device record on top of it.
 class _FakeUpdateController extends AppUpdateController {

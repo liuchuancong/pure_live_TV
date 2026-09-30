@@ -11,6 +11,7 @@ import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/domain/providers/vod_providers.dart';
 
 /// One archive's page in video mode, newBV's detail screen restyled for the
 /// TV grid: a poster with the gradient scrim and cover badges, the avatar-led
@@ -95,11 +96,11 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
   /// fav-deal API only changes what the id lists name, so favouriting has to
   /// unfavouriting has to name the same one for removal.
   Future<void> _toggleFavoured() async {
-    final folders = await BilibiliUgcApi.instance.getMyFavFolders();
+    final folders = await ref.read(ugcRepositoryProvider).getMyFavFolders();
     if (folders.isEmpty) throw Exception('no fav folder');
     final int folderId = folders.first.id;
     final int aid = (_detail ?? widget.archive).aid;
-    await BilibiliUgcApi.instance.favDeal(
+    await ref.read(ugcRepositoryProvider).favDeal(
       aid: aid,
       addFolderIds: _favoured ? const [] : [folderId],
       delFolderIds: _favoured ? [folderId] : const [],
@@ -244,7 +245,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                   label: i18n('video_action_like'),
                                   active: _liked,
                                   onTap: () => _runAction(() async {
-                                    await BilibiliUgcApi.instance.setLike(archive.aid, like: !_liked);
+                                    await ref.read(ugcRepositoryProvider).setLike(archive.aid, like: !_liked);
                                     setState(() => _liked = !_liked);
                                   }, 'video_action_liked'),
                                   // No long-press shortcut here on purpose: a
@@ -257,7 +258,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                   icon: Icons.toll_rounded,
                                   label: i18n('video_action_coin'),
                                   onTap: () => _runAction(
-                                    () => BilibiliUgcApi.instance.addCoin(archive.aid),
+                                    () => ref.read(ugcRepositoryProvider).addCoin(archive.aid),
                                     'video_action_coined',
                                   ),
                                 ),
@@ -275,7 +276,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                   icon: Icons.recommend_rounded,
                                   label: i18n('video_action_triple'),
                                   onTap: () => _runAction(
-                                    () => BilibiliUgcApi.instance.tripleAction(archive.aid),
+                                    () => ref.read(ugcRepositoryProvider).tripleAction(archive.aid),
                                     'video_action_trpled',
                                   ),
                                 ),

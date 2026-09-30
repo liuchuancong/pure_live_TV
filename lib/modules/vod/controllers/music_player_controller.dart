@@ -9,7 +9,8 @@ import 'package:pure_live/player/global_player_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:pure_live/player/core/playback_header_resolver.dart';
-import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/vod/domain/providers/vod_providers.dart';
+import 'package:pure_live/modules/vod/domain/repositories/music_vod_repository.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 part 'music_player_controller.g.dart';
@@ -261,7 +262,7 @@ class MusicPlayerController extends _$MusicPlayerController {
     return MusicPlayerState(mode: savedMode ?? MusicPlayMode.sequence, audioOnly: savedAudioOnly);
   }
 
-  BilibiliMusicApi get _api => BilibiliMusicApi.instance;
+  MusicVodRepository get _api => ref.read(musicRepositoryProvider);
 
   PlayerKernel? get _kernel => GlobalPlayerService.instance.kernel;
 
