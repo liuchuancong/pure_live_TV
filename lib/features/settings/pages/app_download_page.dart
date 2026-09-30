@@ -7,6 +7,7 @@ import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
 import 'package:pure_live/features/settings/pages/widgets/app_download_sections.dart';
+import 'package:pure_live/services/app_update/app_update_models.dart' show appUpdateAssetMirrors;
 
 /// The download page behind the update page's current-version row - the TV twin of the mobile
 /// app's version update page: a platform card with one section per ABI, every
@@ -185,7 +186,7 @@ class AppDownloadPage extends ConsumerWidget {
     final String? origin = controller.resolveAssetUrl(abi);
     if (origin == null || !origin.startsWith('http')) return const <String>[];
     if (useOrigin) return <String>[origin];
-    return <String>[for (final String mirror in AppUpdateController.assetMirrors) '$mirror$origin', origin];
+    return <String>[for (final String mirror in appUpdateAssetMirrors) '$mirror$origin', origin];
   }
 }
 
