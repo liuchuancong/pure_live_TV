@@ -68,7 +68,6 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     EmojiManager().preload('bilibili');
     final player = ref.read(musicPlayerControllerProvider.notifier);
     _modeBeforeVideo = ref.read(musicPlayerControllerProvider).mode;
-    player.setPlayMode(MusicPlayMode.sequence);
     player.wrapAtQueueEnd = false;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -77,12 +76,14 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       _rootNode.requestFocus();
       // rendition rides the next resolve, the default rate applies once on
       // entry — a rate the user set (or a restored session carried) stands.
-      if (!SettingsService.to.isInitialized) return;
-      final video = SettingsService.to.videoState;
       final controller = ref.read(musicPlayerControllerProvider.notifier);
-      controller.setPreferredQuality(video.preferredQuality);
-      if (ref.read(musicPlayerControllerProvider).speed == 1.0 && video.defaultSpeed != 1.0) {
-        unawaited(controller.setSpeed(video.defaultSpeed));
+      controller.setPlayMode(MusicPlayMode.sequence);
+      if (SettingsService.to.isInitialized) {
+        final video = SettingsService.to.videoState;
+        controller.setPreferredQuality(video.preferredQuality);
+        if (ref.read(musicPlayerControllerProvider).speed == 1.0 && video.defaultSpeed != 1.0) {
+          unawaited(controller.setSpeed(video.defaultSpeed));
+        }
       }
     });
     _progressTimer = Timer.periodic(const Duration(seconds: 10), (_) => _recordProgress());

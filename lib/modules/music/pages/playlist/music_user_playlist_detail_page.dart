@@ -189,14 +189,16 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
                           style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.focusColor),
                         ),
                         const Spacer(),
-                        TvButton(
-                          title: i18n('music_like'),
-                          icon: Icon(Icons.favorite_rounded, size: 24.ts(context)),
-                          size: TvButtonSize.mini,
-                          isSecondary: true,
-                          onTap: _selectedIds.isEmpty ? null : () => _batchLike(_selectedTracks(tracks)),
-                        ),
-                        SizedBox(width: 12.ts(context)),
+                        if (!_isLiked) ...[
+                          TvButton(
+                            title: i18n('music_batch_like'),
+                            icon: Icon(Icons.favorite_rounded, size: 24.ts(context)),
+                            size: TvButtonSize.mini,
+                            isSecondary: true,
+                            onTap: _selectedIds.isEmpty ? null : () => _batchLike(_selectedTracks(tracks)),
+                          ),
+                          SizedBox(width: 12.ts(context)),
+                        ],
                         TvButton(
                           title: i18n('music_add_to_playlist'),
                           icon: Icon(Icons.playlist_add_rounded, size: 24.ts(context)),
@@ -208,7 +210,7 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
                         ),
                         SizedBox(width: 12.ts(context)),
                         TvButton(
-                          title: i18n(_isLiked ? 'music_song_unliked' : 'music_remove_from_playlist'),
+                          title: i18n('music_remove_from_playlist'),
                           icon: Icon(Icons.delete_outline_rounded, size: 24.ts(context)),
                           size: TvButtonSize.mini,
                           isSecondary: true,
@@ -277,7 +279,12 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
                           selectMode: _selectMode,
                           selected: _selectedIds.contains(track.id),
                           onPlay: () => _selectMode ? _toggleSelected(track.id) : _play(context, ref, tracks, index),
-                          onLongPress: _selectMode ? () {} : () => _showSongMenu(context, ref, track, index),
+                          // Select mode: null (not a no-op) so DpadFocusable
+                          // takes the simple onTap path — the no-op still
+                          // armed the long-press timer, whose tap-up route
+                          // could be swallowed by the ListView's scroll
+                          // gesture on the emulator.
+                          onLongPress: _selectMode ? null : () => _showSongMenu(context, ref, track, index),
                         );
                       },
                     ),
@@ -376,7 +383,7 @@ class _PlaylistTrackRow extends StatelessWidget {
   final bool isCurrent;
   final FocusNode focusNode;
   final VoidCallback onPlay;
-  final VoidCallback onLongPress;
+  final VoidCallback? onLongPress;
 
   /// Batch mode: the leading slot becomes a checkbox and taps toggle
   /// membership instead of playing.

@@ -725,6 +725,17 @@ class MusicPlayerController extends _$MusicPlayerController {
       await handle.setAudioOnly(state.audioOnly);
     } catch (_) {}
 
+    // Video mode: the Flutter surface may not have been live when mpv built its
+    // video output (first open, or a fresh handle), so the picture lands on a
+    // black texture. Toggling vid off → on rebuilds the output against the
+    // surface that is now mounted.
+    if (!state.audioOnly) {
+      try {
+        await handle.setAudioOnly(true);
+        await handle.setAudioOnly(false);
+      } catch (_) {}
+    }
+
     _events?.cancel();
     _events = handle.adapterEvents.listen(_onAdapterEvent);
     // The rate persists across track switches: a user watching at 1.5x keeps

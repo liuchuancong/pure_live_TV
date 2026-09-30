@@ -42,7 +42,7 @@ final class ThemeSettingsControllerProvider
 }
 
 String _$themeSettingsControllerHash() =>
-    r'e5617e87777e138d89855fabe4f7051ad4ceb9b0';
+    r'b9ebb69997849e09597a559342d73c6782829462';
 
 abstract class _$ThemeSettingsController extends $Notifier<ThemeSettingsModel> {
   ThemeSettingsModel build();

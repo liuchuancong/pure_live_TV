@@ -157,8 +157,7 @@ Future<String?> showPlaylistPicker(BuildContext context, WidgetRef ref) async {
     return showPlaylistNameDialog(context, ref);
   }
 
-  String? picked;
-  await TvDialogUtils.show<void>(
+  return await TvDialogUtils.show<String>(
     context: context,
     builder: (_) => TvDialog(
       title: i18n('music_save_to_playlist'),
@@ -189,5 +188,4 @@ Future<String?> showPlaylistPicker(BuildContext context, WidgetRef ref) async {
       ),
     ),
   );
-  return picked;
 }

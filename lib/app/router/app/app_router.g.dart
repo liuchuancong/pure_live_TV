@@ -610,6 +610,11 @@ RouteBase get $settingsShellRoute => ShellRouteData.$route(
   factory: $SettingsShellRouteExtension._fromState,
   routes: [
     GoRouteData.$route(
+      path: '/settings/mode',
+      hasOverriddenOnExit: false,
+      factory: $ModeSettingsRoute._fromState,
+    ),
+    GoRouteData.$route(
       path: '/settings/theme',
       hasOverriddenOnExit: false,
       factory: $ThemeSettingsRoute._fromState,
@@ -855,6 +860,27 @@ RouteBase get $settingsShellRoute => ShellRouteData.$route(
 extension $SettingsShellRouteExtension on SettingsShellRoute {
   static SettingsShellRoute _fromState(GoRouterState state) =>
       const SettingsShellRoute();
+}
+
+mixin $ModeSettingsRoute on GoRouteData {
+  static ModeSettingsRoute _fromState(GoRouterState state) =>
+      const ModeSettingsRoute();
+
+  @override
+  String get location => GoRouteData.$location('/settings/mode');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
 }
 
 mixin $ThemeSettingsRoute on GoRouteData {

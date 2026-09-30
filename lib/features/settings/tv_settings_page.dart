@@ -20,6 +20,18 @@ typedef SettingsGroup = ({String titleKey, List<SettingsEntry> entries, String s
 /// reached from their parent page, exactly as there.
 final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
   (
+    titleKey: 'mode_settings',
+    scope: 'all',
+    entries: <SettingsEntry>[
+      (
+        path: AppRoutes.kSettingsMode,
+        titleKey: 'mode_switch',
+        subtitleKey: 'mode_switch_desc',
+        icon: Remix.swap_box_line,
+      ),
+    ],
+  ),
+  (
     titleKey: 'theme_settings',
     scope: 'all',
     entries: <SettingsEntry>[
@@ -28,6 +40,12 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
         titleKey: 'theme_customization',
         subtitleKey: 'theme_customization_desc',
         icon: Remix.palette_line,
+      ),
+      (
+        path: AppRoutes.kSettingsNavigation,
+        titleKey: 'navigation_display_settings',
+        subtitleKey: 'navigation_display_settings_desc',
+        icon: Remix.menu_line,
       ),
     ],
   ),
@@ -98,12 +116,6 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
     scope: 'all',
     entries: <SettingsEntry>[
       (path: AppRoutes.kSettingsGeneral, titleKey: 'general', subtitleKey: 'general_desc', icon: Remix.settings_4_line),
-      (
-        path: AppRoutes.kSettingsNavigation,
-        titleKey: 'navigation_display_settings',
-        subtitleKey: 'navigation_display_settings_desc',
-        icon: Remix.menu_line,
-      ),
     ],
   ),
   (
@@ -230,6 +242,7 @@ class SettingsCatalogView extends ConsumerWidget {
 /// Titles for the pages that are reached from inside a parent page (or from
 /// the desktop app's own routes) and therefore are not menu rows.
 const Map<String, String> settingsSectionTitleKeys = <String, String>{
+  AppRoutes.kSettingsMode: 'mode_settings',
   AppRoutes.kIptvResources: 'iptv_resource_list',
   AppRoutes.kIptvImport: 'iptv_import_source',
   AppRoutes.kIptvSync: 'auto_sync_settings',

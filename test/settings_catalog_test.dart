@@ -17,6 +17,7 @@ void main() {
 
   test('the menu has the desktop groups, in order', () {
     expect(settingsCatalog.map((group) => group.titleKey).toList(), <String>[
+      'mode_settings',
       'theme_settings',
       'music_settings',
       'video_settings',
@@ -31,12 +32,14 @@ void main() {
       'about',
     ]);
 
-    expect(settingsCatalog.map((group) => group.entries.length).toList(), <int>[1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1]);
+    expect(settingsCatalog.map((group) => group.entries.length).toList(), <int>[1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
   });
 
   test('menu rows use the desktop paths and labels', () {
     expect(catalogPaths(), <String>[
+      AppRoutes.kSettingsMode,
       AppRoutes.kSettingsTheme,
+      AppRoutes.kSettingsNavigation,
       AppRoutes.kSettingsMusic,
       AppRoutes.kSettingsVideo,
       AppRoutes.kIptv,
@@ -44,7 +47,6 @@ void main() {
       AppRoutes.kSettingsPlayerKernel,
       AppRoutes.kSettingsProxy,
       AppRoutes.kSettingsGeneral,
-      AppRoutes.kSettingsNavigation,
       AppRoutes.kSettingsPlatform,
       AppRoutes.kSettingsCache,
       AppRoutes.kBackup,
@@ -81,6 +83,7 @@ void main() {
     // A sub-page whose title falls back to the generic one shows "系统设置" in
     // its title bar, which tells the user nothing about where they are.
     const List<String> routes = <String>[
+      AppRoutes.kSettingsMode,
       AppRoutes.kSettingsTheme,
       AppRoutes.kSettingsThemePicker,
       AppRoutes.kSettingsLoadingStyle,

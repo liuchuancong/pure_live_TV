@@ -6,6 +6,7 @@ part of '../app/app_router.dart';
 
 @TypedShellRoute<SettingsShellRoute>(
   routes: <TypedRoute<RouteData>>[
+    TypedGoRoute<ModeSettingsRoute>(path: AppRoutes.kSettingsMode),
     TypedGoRoute<ThemeSettingsRoute>(path: AppRoutes.kSettingsTheme),
     TypedGoRoute<ThemePickerRoute>(path: AppRoutes.kSettingsThemePicker),
     TypedGoRoute<GridSpacingRoute>(path: AppRoutes.kSettingsGridSpacing),
@@ -158,6 +159,14 @@ class UpdateHistoryRoute extends GoRouteData with $UpdateHistoryRoute {
 }
 
 // ------------------------------------------------------------------ browsing
+
+/// `kSettingsMode`.
+class ModeSettingsRoute extends GoRouteData with $ModeSettingsRoute {
+  const ModeSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
 
 /// `kSettingsTheme`.
 class ThemeSettingsRoute extends GoRouteData with $ThemeSettingsRoute {
@@ -557,6 +566,7 @@ Widget settingsSection(BuildContext context, GoRouterState state) {
 /// page is declared once. online update/version history build their own
 /// scaffold and are standalone routes instead.
 final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
+  AppRoutes.kSettingsMode: (context) => const ModeSettingsSectionPage(),
   AppRoutes.kSettingsTheme: (context) => const ThemeSettingsSectionPage(),
   AppRoutes.kSettingsThemePicker: (context) => const ThemePickerSectionPage(),
   AppRoutes.kSettingsGridSpacing: (context) => const GridSpacingSectionPage(),
@@ -616,6 +626,7 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
 
 /// The same table as typed route instances, keyed by path.
 final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
+  AppRoutes.kSettingsMode: const ModeSettingsRoute(),
   AppRoutes.kSettingsTheme: const ThemeSettingsRoute(),
   AppRoutes.kSettingsThemePicker: const ThemePickerRoute(),
   AppRoutes.kSettingsGridSpacing: const GridSpacingRoute(),

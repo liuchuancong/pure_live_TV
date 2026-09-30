@@ -34,7 +34,7 @@ final class FontSettingsControllerProvider
 }
 
 String _$fontSettingsControllerHash() =>
-    r'06d793ff6defbdf50240a230607f99fdd306322a';
+    r'bbbe6f7f01fe8a285c3e345281a31aa8c71e0610';
 
 abstract class _$FontSettingsController
     extends $AsyncNotifier<FontSettingsModel> {
