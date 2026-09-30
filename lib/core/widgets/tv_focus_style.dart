@@ -1,6 +1,5 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/core/theme/tv_theme_data.dart';
+import 'package:pure_live/exports/exports.dart';
 
 /// The app's one focus language for every focusable TV widget.
 ///
@@ -50,7 +49,7 @@ class TvFocusStyle {
   }) {
     return <DpadEffect>[
       DpadScaleEffect(scale: scale, pressedScale: 0.97, duration: duration, curve: curve),
-      if (ring) DpadBorderEffect(color: theme.focusColor, width: 2.5, borderRadius: radius, duration: duration),
+      if (ring) DpadBorderEffect(color: theme.focusColor, width: 2.sp, borderRadius: radius, duration: duration),
       if (glow)
         DpadGlowEffect(
           // Same halo the room cards use (opacity .75, 18sp blur): the

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/typography/app_font_scale.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// The semantic type scale.
 ///
@@ -24,30 +24,24 @@ class AppTextStyles {
   ///
   /// [size] is the design size before user scaling.
   /// [weight] controls the font weight.
-  static TextStyle _t(
-    num size, {
-    FontWeight weight = FontWeight.w400,
-  }) {
-    return TextStyle(
-      fontSize: (size * AppFontScale.user).sp,
-      fontWeight: weight,
-      fontFamily: fontFamily,
-    );
+  static TextStyle _t(num size, {FontWeight weight = FontWeight.w400}) {
+    return TextStyle(fontSize: (size * AppFontScale.user).sp, fontWeight: weight, fontFamily: fontFamily);
   }
 
   /// Creates a text style for a custom size.
   ///
   /// Use this when the predefined type scale does not contain the size
   /// required by a specific component.
-  static TextStyle of(
-    num size, {
-    FontWeight weight = FontWeight.w400,
-  }) {
-    return _t(
-      size,
-      weight: weight,
-    );
+  static TextStyle of(num size, {FontWeight weight = FontWeight.w400}) {
+    return _t(size, weight: weight);
   }
+
+  // ==================== 10sp ====================
+
+  static TextStyle get t10 => _t(10);
+  // ==================== 14sp ====================
+
+  static TextStyle get t12 => _t(12);
 
   // ==================== 14sp ====================
 

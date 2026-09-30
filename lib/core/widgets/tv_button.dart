@@ -41,33 +41,24 @@ class TvButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeTheme = context.tvTheme;
-    final (height, padding, baseTextStyle, iconSize, space) = _getSizeConfig(context);
+    final (padding, baseTextStyle, iconSize, space) = _getSizeConfig(context, iconPosition);
 
-    final borderRadius = iconPosition == TvIconPosition.top || iconPosition == TvIconPosition.bottom
-        ? BorderRadius.circular(16.w)
-        : BorderRadius.circular(height / 2);
+    final borderRadius = BorderRadius.circular(999);
 
     List<DpadEffect> buildEffects() {
       final list = <DpadEffect>[];
+
       if (!excludeFocus) {
         // The shared focus language: scale + accent ring + (dark-only) halo.
         // See [TvFocusStyle] for why these numbers, and only these, are used.
         // Scale can be disabled for buttons where the lift is unwanted (e.g. playback bars).
         if (!disableScale) {
-          list.add(DpadScaleEffect(scale: 1.06, pressedScale: 0.97, duration: TvFocusStyle.duration, curve: TvFocusStyle.curve));
+          list.addAll(TvFocusStyle.effects(activeTheme, borderRadius, scale: 1.08));
+        } else {
+          list.addAll(TvFocusStyle.effects(activeTheme, borderRadius, scale: 1.0));
         }
-        list.add(DpadBorderEffect(color: activeTheme.focusColor, width: 2.5, borderRadius: borderRadius, duration: TvFocusStyle.duration));
-        list.add(
-          DpadGlowEffect(
-            color: activeTheme.focusColor,
-            opacity: activeTheme.isLight ? 1.0 : 0.75,
-            blurRadius: activeTheme.isLight ? 0 : 18,
-            spreadRadius: activeTheme.isLight ? 2 : 1.5,
-            borderRadius: borderRadius,
-            duration: TvFocusStyle.duration,
-          ),
-        );
       }
+
       list.add(
         DpadCustomEffect((ctx, state, child) {
           final isFocused = state.focused;
@@ -81,11 +72,10 @@ class TvButton extends StatelessWidget {
           if (selected) {
             bgColor = activeTheme.focusColor;
             foregroundColor = Colors.white;
-          } else if (isFocused && useFadedFocus) {
-            bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
-            foregroundColor = Colors.white;
           } else if (isFocused) {
-            bgColor = activeTheme.focusColor;
+            bgColor = useFadedFocus
+                ? activeTheme.focusColor.withValues(alpha: 0.5)
+                : activeTheme.focusColor.withValues(alpha: 0.65);
             foregroundColor = Colors.white;
           } else {
             // buttonSurface, not cardColor: on light palettes the card is a
@@ -107,10 +97,11 @@ class TvButton extends StatelessWidget {
             // replay marker, viewer count, platform name). They never show a
             // focus state, but they still need readable foreground colours:
             // this used to force `focusedCardColor` — the foreground meant for
-            // content sitting on an accent-filled *focused* background — onto a
-            // plain card background, which made the badge text nearly invisible.
+            // content sitting on an accent-filled *focused* background — onto
+            // a plain card background, which made the badge text nearly invisible.
             // Selection is still honoured so a selected label stays selected.
             bgColor = selected ? activeTheme.focusColor : activeTheme.buttonSurface;
+
             foregroundColor = selected
                 ? activeTheme.onFocusColor
                 : (isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor);
@@ -119,7 +110,6 @@ class TvButton extends StatelessWidget {
           return AnimatedContainer(
             duration: TvFocusStyle.focusDuration(state.focused),
             curve: TvFocusStyle.curve,
-            height: height,
             padding: padding,
             decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
             child: IconTheme(
@@ -132,10 +122,11 @@ class TvButton extends StatelessWidget {
           );
         }),
       );
+
       return list;
     }
 
-    Widget btn = DpadFocusable(
+    final Widget btn = DpadFocusable(
       autofocus: autofocus && !excludeFocus,
       onSelect: excludeFocus ? null : onTap,
       focusNode: focusNode,
@@ -146,50 +137,55 @@ class TvButton extends StatelessWidget {
     if (excludeFocus) {
       return ExcludeFocus(child: btn);
     }
+
     return btn;
   }
 
-  /// Geometry of each size: design pixels.
+  /// Button sizing is content-driven.
   ///
-  /// Button geometry stays fixed — only the label text scales with the user's
-  /// font preference. Scaling the pill itself made buttons balloon next to
-  /// unscaled neighbours on the playback bars.
-  (double, EdgeInsets, TextStyle, double, double) _getSizeConfig(BuildContext context) {
-    const double scale = 1.0;
+  /// There is intentionally no fixed width or height here.
+  /// The final button size is determined by:
+  ///
+  ///   content size + padding
+  ///
+  /// This prevents buttons from becoming unnecessarily large when placed
+  /// next to differently sized content.
+  (EdgeInsets, TextStyle, double, double) _getSizeConfig(BuildContext context, TvIconPosition iconPosition) {
+    final isVertical = iconPosition == TvIconPosition.top || iconPosition == TvIconPosition.bottom;
+
     return switch (size) {
       TvButtonSize.large => (
-        80.0.w * scale,
-        EdgeInsets.symmetric(horizontal: 40.w * scale),
-        AppTextStyles.t32.copyWith(fontWeight: FontWeight.w500),
-        32.0.w * scale,
-        14.0.w * scale,
-      ),
-      TvButtonSize.medium => (
-        64.0.w * scale,
-        EdgeInsets.symmetric(horizontal: 28.w * scale),
-        AppTextStyles.t26.copyWith(fontWeight: FontWeight.w500),
-        24.0.w * scale,
-        10.0.w * scale,
-      ),
-      TvButtonSize.small => (
-        54.0.w * scale,
-        EdgeInsets.symmetric(horizontal: 24.w * scale),
+        EdgeInsets.symmetric(horizontal: 32.w, vertical: isVertical ? 22.w : 14.w),
         AppTextStyles.t20.copyWith(fontWeight: FontWeight.w500),
-        20.0.w * scale,
-        8.0.w * scale,
+        AppTextStyles.t26.fontSize!,
+        14.w,
       ),
-      TvButtonSize.mini => (
-        44.0.w * scale,
-        EdgeInsets.symmetric(horizontal: 20.w * scale),
+
+      TvButtonSize.medium => (
+        EdgeInsets.symmetric(horizontal: 24.w, vertical: isVertical ? 16.w : 10.w),
         AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500),
-        18.0.w * scale,
-        7.0.w * scale,
+        AppTextStyles.t24.fontSize!,
+        10.w,
+      ),
+
+      TvButtonSize.small => (
+        EdgeInsets.symmetric(horizontal: 18.w, vertical: isVertical ? 12.w : 8.w),
+        AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500),
+        AppTextStyles.t22.fontSize!,
+        8.w,
+      ),
+
+      TvButtonSize.mini => (
+        EdgeInsets.symmetric(horizontal: 14.w, vertical: isVertical ? 9.w : 6.w),
+        AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500),
+        AppTextStyles.t20.fontSize!,
+        6.w,
       ),
     };
   }
 
   Widget _buildLayout(TextStyle textStyle, double space, double iconSize) {
-    final textWidget = Center(widthFactor: 1.0, child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis));
+    final textWidget = Text(title, maxLines: 1, overflow: TextOverflow.ellipsis);
 
     // The slot is tight-sized to the button's own scaled icon size and the
     // icon FittedBox-fits it: callers pass `Icon(..., size: 22.ts(context))` with an
@@ -197,50 +193,62 @@ class TvButton extends StatelessWidget {
     // slot every button icon stayed at its drafted pixels while the pill and
     // its label grew with the font. Any icon widget — Icon, SVG, a rotated or
     // badged one — scales to the slot the same way.
-    Widget iconSlot(Widget icon) => SizedBox(
-      width: iconSize,
-      height: iconSize,
-      child: FittedBox(fit: BoxFit.contain, child: icon),
-    );
+    Widget iconSlot(Widget icon) {
+      return SizedBox(
+        width: iconSize,
+        height: iconSize,
+        child: FittedBox(fit: BoxFit.contain, child: icon),
+      );
+    }
 
     if (icon == null) {
-      return Center(child: textWidget);
+      return textWidget;
     }
-    if (title.isEmpty && icon != null) {
-      return Center(child: iconSlot(icon!));
+
+    if (title.isEmpty) {
+      return iconSlot(icon!);
     }
-    // The text is the flexible part: a button squeezed by its parent (a tight
-    // cell, a narrow bar) ellipsizes its label instead of overflowing the
-    // fixed icon + gap.
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: switch (iconPosition) {
-        TvIconPosition.left => [iconSlot(icon!), SizedBox(width: space), Flexible(child: textWidget)],
-        TvIconPosition.right => [Flexible(child: textWidget), SizedBox(width: space), iconSlot(icon!)],
-        TvIconPosition.top => [
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              iconSlot(icon!),
-              SizedBox(height: space),
-              Flexible(child: textWidget),
-            ],
-          ),
+
+    return switch (iconPosition) {
+      TvIconPosition.left => Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          iconSlot(icon!),
+          SizedBox(width: space),
+          Flexible(child: textWidget),
         ],
-        TvIconPosition.bottom => [
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(child: textWidget),
-              SizedBox(height: space),
-              iconSlot(icon!),
-            ],
-          ),
+      ),
+
+      TvIconPosition.right => Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Flexible(child: textWidget),
+          SizedBox(width: space),
+          iconSlot(icon!),
         ],
-      },
-    );
+      ),
+
+      TvIconPosition.top => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          iconSlot(icon!),
+          SizedBox(height: space),
+          textWidget,
+        ],
+      ),
+
+      TvIconPosition.bottom => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          textWidget,
+          SizedBox(height: space),
+          iconSlot(icon!),
+        ],
+      ),
+    };
   }
 }

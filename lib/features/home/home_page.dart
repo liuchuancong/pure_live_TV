@@ -318,7 +318,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     // scale, so its width and its vertical rhythm follow the text: a fixed rail
     // cut the menu names off, and left the icons the only thing that changed
     // size when the user enlarged the font.
-    final sidebarWidth = isExpanded ? 216.ts(context) : 110.ts(context);
+    final sidebarWidth = isExpanded ? 228.ts(context) : 160.ts(context);
 
     // The top-left button switches the whole app between live / music / video.
     // Music and video own their own UI stacks; the live rail's destinations
@@ -413,9 +413,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         // Edge fades mark the clipped entries as scroll
                         // content: at the largest font scale a half-shown
                         // item otherwise reads as a broken rail.
-                        child: SingleChildScrollView(
-                          child: Column(children: _buildModeRailItems(appMode, isExpanded)),
-                        ),
+                        child: SingleChildScrollView(child: Column(children: _buildModeRailItems(appMode, isExpanded))),
                       ),
                       _buildAdaptiveItem(
                         ref: ref,
@@ -531,7 +529,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         padding: EdgeInsets.symmetric(horizontal: 16.ts(context)),
         child: TvButton(
           title: item.title,
-          icon: Icon(item.icon, size: 36.ts(context)),
+          icon: Icon(item.icon),
           iconPosition: TvIconPosition.left,
           size: TvButtonSize.medium,
           isSecondary: !isSelected,
@@ -543,23 +541,16 @@ class _HomePageState extends ConsumerState<HomePage> {
       ).animate().fadeIn(duration: 150.ms).slideX(begin: -0.05, end: 0, duration: 200.ms, curve: Curves.easeOutCubic);
     }
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 10.ts(context)),
-      child: Center(
-        child: TvIconButton(
-          icon: Icon(item.icon),
-          // Collapsed rail: the icon alone left the destinations ambiguous, so each
-          // tile carries its two-character name underneath.
-          label: item.shortTitle.isEmpty ? item.title : item.shortTitle,
-          selected: isSelected,
-          size: TvIconButtonSize.medium,
-          useFadedFocus: true,
-          isSecondary: !isSelected,
-          expand: false,
-          focusNode: focusNode,
-          onTap: onTap,
-        ),
-      ),
+    return TvIconButton(
+      icon: Icon(item.icon),
+      label: item.shortTitle.isEmpty ? item.title : item.shortTitle,
+      selected: isSelected,
+      size: TvIconButtonSize.medium,
+      useFadedFocus: true,
+      isSecondary: !isSelected,
+      expand: false,
+      focusNode: focusNode,
+      onTap: onTap,
     );
   }
 

@@ -41,8 +41,8 @@ class TvTabItemData {
       title: site.name,
       icon: Image.asset(
         site.logo,
-        width: 26.sp,
-        height: 26.sp,
+        width: 28.sp,
+        height: 28.sp,
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) => Icon(Icons.live_tv_rounded, size: 26.ts(context)),
       ),
@@ -203,8 +203,8 @@ class _TvTabBarState extends State<TvTabBar> {
     // app font scale: the label is a `.sp` size the scaler grows again, so a
     // panel-sized pill clipped it once the user enlarged the font.
     final double textScale = TvTextScale.factorOf(context);
-    final double height = 64.0.h * textScale.clamp(1.0, 1.2);
-    final borderRadius = BorderRadius.circular(height / 2);
+    final double height = 36.0.h * textScale.clamp(1.0, 1.2);
+    final borderRadius = BorderRadius.circular(999);
 
     return DpadRegion(
       horizontalEdge: DpadEdgeBehavior.leave,
@@ -214,115 +214,110 @@ class _TvTabBarState extends State<TvTabBar> {
         clipBehavior: Clip.none,
         children: [
           Container(
-            width: double.infinity,
-            height: height,
-            alignment: Alignment.center,
-            color: Colors.transparent,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              shrinkWrap: true,
-              physics: const ClampingScrollPhysics(),
-              // The viewport must clip: Clip.none paints the whole bar outside a
-              // narrow container. The content padding keeps the first/last tab
-              // inside the scroll bounds so the focus scale is not sheared.
-              // Content padding instead of container padding: it scrolls with
-              // the items, so at min/max scroll extent the first/last tab keeps
-              // a margin inside the viewport and the focus scale (1.05) is not
-              // clipped by the viewport edge.
-              padding: EdgeInsets.symmetric(horizontal: 16.ts(context)),
-              itemCount: widget.tabs.length,
-              itemBuilder: (context, index) {
-                final tab = widget.tabs[index];
-                final isSelected = widget.currentIndex == index;
+            height: height + 30.sp + 24.ts(context),
+            margin: EdgeInsets.only(top: 12.sp + 12.ts(context)),
+            child: Container(
+              width: double.infinity,
+              height: height + 24.ts(context),
+              alignment: Alignment.center,
+              color: Colors.transparent,
+              child: ListView.builder(
+                clipBehavior: Clip.none,
+                scrollDirection: Axis.horizontal,
+                shrinkWrap: true,
+                physics: const ClampingScrollPhysics(),
+                // Vertical padding gives the focus glow room to render without
+                // being clipped by the container bounds.
+                padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 12.ts(context)),
+                itemCount: widget.tabs.length,
+                itemBuilder: (context, index) {
+                  final tab = widget.tabs[index];
+                  final isSelected = widget.currentIndex == index;
 
-                final dynamicEffects =
-                    widget.effects ??
-                    [
-                      // The shared focus language (scale + ring + halo); the fill
-                      // itself is the custom effect below, because a tab tints
-                      // instead of filling solid.
-                      // TvButton.medium runs 1.06; the bar matches it.
-                      ...TvFocusStyle.effects(currentTvTheme, borderRadius, scale: 1.06, glow: false),
-                      DpadCustomEffect((context, state, child) {
-                        final isFocused = state.focused;
+                  final dynamicEffects =
+                      widget.effects ??
+                      [
+                        ...TvFocusStyle.effects(currentTvTheme, borderRadius, scale: 1.08),
+                        DpadCustomEffect((context, state, child) {
+                          final isFocused = state.focused;
 
-                        // TvButton's states exactly: selected and focused fill
-                        // solid accent, idle keeps a translucent buttonSurface
-                        // pill, and the label is white t26W500 in every state.
-                        final Color bgColor;
-                        if (isSelected || isFocused) {
-                          bgColor = currentTvTheme.focusColor;
-                        } else {
-                          bgColor = currentTvTheme.buttonSurface.withValues(
-                            alpha: currentTvTheme.isLight ? 0.85 : 0.75,
-                          );
-                        }
-                        const Color foregroundColor = Colors.white;
-                        final TextStyle baseStyle = AppTextStyles.t22.copyWith(fontWeight: FontWeight.w500);
+                          final Color bgColor;
+                          if (isSelected) {
+                            bgColor = currentTvTheme.focusColor;
+                          } else if (isFocused) {
+                            bgColor = currentTvTheme.focusColor.withValues(alpha: 0.5);
+                          } else {
+                            bgColor = currentTvTheme.buttonSurface.withValues(
+                              alpha: currentTvTheme.isLight ? 0.85 : 0.75,
+                            );
+                          }
+                          const Color foregroundColor = Colors.white;
+                          final TextStyle baseStyle = AppTextStyles.t22.copyWith(fontWeight: FontWeight.w500);
 
-                        return AnimatedContainer(
-                          duration: TvFocusStyle.focusDuration(isFocused),
-                          curve: TvFocusStyle.curve,
-                          height: height,
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.symmetric(horizontal: 28.w * textScale),
-                          decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
-                          child: IconTheme(
-                            data: IconThemeData(color: foregroundColor),
-                            child: DefaultTextStyle(
-                              style: baseStyle.copyWith(color: foregroundColor),
-                              child: child,
+                          return AnimatedContainer(
+                            duration: TvFocusStyle.focusDuration(isFocused),
+                            curve: TvFocusStyle.curve,
+                            height: height,
+                            alignment: Alignment.center,
+                            padding: EdgeInsets.symmetric(horizontal: 28.w * textScale),
+                            decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
+                            child: IconTheme(
+                              data: IconThemeData(color: foregroundColor),
+                              child: DefaultTextStyle(
+                                style: baseStyle.copyWith(color: foregroundColor),
+                                child: child,
+                              ),
                             ),
-                          ),
-                        );
-                      }),
-                    ];
+                          );
+                        }),
+                      ];
 
-                return Padding(
-                  key: _keyFor(index, tab),
-                  padding: EdgeInsets.symmetric(horizontal: 6.ts(context)),
-                  child: DpadFocusable(
-                    effects: dynamicEffects,
-                    focusNode: index == 0 ? widget.firstTabFocusNode : null,
-                    onFocusChange: (focused) {
-                      if (!focused || !widget.switchOnFocus || index == widget.currentIndex) return;
-                      (widget.onTabFocused ?? widget.onTabChange)(index);
-                    },
-                    onSelect: () {
-                      if (index == widget.currentIndex) {
-                        _handleRefresh(index);
-                      } else {
-                        widget.onTabChange(index);
-                      }
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // 24x24 icon slot (TvButton.medium's size), scaled with the
-                        // label: platform logos differ in size and must align with
-                        // it. A tab item's icon is built without a context, so the
-                        // slot scales whatever it is given. No `Center` around the
-                        // FittedBox on purpose: Center hands it loose constraints
-                        // and a FittedBox then adopts the child's own size and
-                        // never scales up — the pill grew with the font while the
-                        // logo stayed at its drafted 26px.
-                        if (tab.icon != null) ...[
-                          SizedBox(
-                            width: 24.w * textScale,
-                            height: 24.w * textScale,
-                            child: FittedBox(fit: BoxFit.contain, child: tab.icon),
-                          ),
-                          SizedBox(width: 10.w * textScale),
+                  return Padding(
+                    key: _keyFor(index, tab),
+                    padding: EdgeInsets.symmetric(horizontal: 6.ts(context)),
+                    child: DpadFocusable(
+                      effects: dynamicEffects,
+                      focusNode: index == 0 ? widget.firstTabFocusNode : null,
+                      onFocusChange: (focused) {
+                        if (!focused || !widget.switchOnFocus || index == widget.currentIndex) return;
+                        (widget.onTabFocused ?? widget.onTabChange)(index);
+                      },
+                      onSelect: () {
+                        if (index == widget.currentIndex) {
+                          _handleRefresh(index);
+                        } else {
+                          widget.onTabChange(index);
+                        }
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // 24x24 icon slot (TvButton.medium's size), scaled with the
+                          // label: platform logos differ in size and must align with
+                          // it. A tab item's icon is built without a context, so the
+                          // slot scales whatever it is given. No `Center` around the
+                          // FittedBox on purpose: Center hands it loose constraints
+                          // and a FittedBox then adopts the child's own size and
+                          // never scales up — the pill grew with the font while the
+                          // logo stayed at its drafted 26px.
+                          if (tab.icon != null) ...[
+                            SizedBox(
+                              width: 24.w * textScale,
+                              height: 24.w * textScale,
+                              child: FittedBox(fit: BoxFit.contain, child: tab.icon),
+                            ),
+                            SizedBox(width: 10.w * textScale),
+                          ],
+                          // Never wrap: ellipsize instead, so the pill stays one line.
+                          Center(child: Text(tab.title, maxLines: 1, softWrap: false, overflow: TextOverflow.ellipsis)),
                         ],
-                        // Never wrap: ellipsize instead, so the pill stays one line.
-                        Center(child: Text(tab.title, maxLines: 1, softWrap: false, overflow: TextOverflow.ellipsis)),
-                      ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
           // Sits below the pills, in the gap the page leaves under this bar; the

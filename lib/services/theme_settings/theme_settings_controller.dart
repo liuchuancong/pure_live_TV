@@ -51,6 +51,9 @@ class ThemeSettingsController extends _$ThemeSettingsController {
     double? gridAspectRatio,
   }) {
     final ThemeSettingsModel themeState = ref.watch(themeSettingsControllerProvider);
+    // Rebuild when the font scale changes — TvTextScale.factorOf reads it via
+    // a static getter, so the grid won't update on its own.
+    ref.watch(fontSettingsControllerProvider);
     int columns = gridColums ?? themeState.denseRoomLayout;
     final textScaleFactor = TvTextScale.factorOf(context);
     if (textScaleFactor > 1.0 && textScaleFactor <= 1.3) {

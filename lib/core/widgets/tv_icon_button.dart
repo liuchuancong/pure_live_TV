@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/index.dart';
@@ -33,9 +34,8 @@ class TvIconButton extends StatelessWidget {
   /// ambiguous (the collapsed home sidebar names each destination with two
   /// characters).
   ///
-  /// The caption fits inside the same square tile, which stays the size of the
-  /// icon-only button; without a label the button is the plain circle it always
-  /// was.
+  /// The button remains square. Its size is calculated from the larger of the
+  /// content width/height plus padding instead of using a fixed tile size.
   final String? label;
 
   /// The node the button focuses by; owned by the caller when given (the home
@@ -59,14 +59,28 @@ class TvIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeTheme = context.tvTheme;
-    final double textScale = TvTextScale.factorOf(context);
-    final (boxSize, iconSize) = _getSizeConfig(textScale);
-    final bool captioned = label != null && label!.trim().isNotEmpty;
-    // Square either way: the caption shares the tile with the glyph instead of
-    // growing it, so the collapsed rail stays a grid of equal squares. A caption
-    // needs a flat edge to sit on, hence the rounded square rather than the
-    // full-radius circle of the icon-only button.
-    final borderRadius = BorderRadius.circular(captioned ? boxSize * 0.28 : boxSize / 2);
+    final captioned = label != null && label!.trim().isNotEmpty;
+
+    final (padding, iconSize, spacing, labelStyle) = _getSizeConfig(context, captioned);
+
+    // The button remains square, but its size is now content-driven.
+    //
+    // The final square is calculated from:
+    //
+    //   max(content width, content height) + padding
+    //
+    // This keeps the original square-button visual language without
+    // hard-coding a box width/height for every size.
+    final contentWidth = captioned ? iconSize + spacing + _labelWidth(labelStyle) : iconSize;
+
+    final contentHeight = captioned ? iconSize + spacing + _labelHeight(labelStyle) : iconSize;
+
+    final squareSize = math.max(contentWidth + padding.horizontal, contentHeight + padding.vertical);
+
+    // Square either way: the caption shares the tile with the glyph.
+    // A caption needs a rounded square rather than the full-radius circle
+    // of the icon-only button.
+    final borderRadius = BorderRadius.circular(captioned ? squareSize * 0.22 : squareSize / 2);
 
     final Widget button = DpadFocusable(
       autofocus: autofocus,
@@ -101,61 +115,134 @@ class TvIconButton extends StatelessWidget {
           return AnimatedContainer(
             duration: TvFocusStyle.focusDuration(isFocused),
             curve: TvFocusStyle.curve,
-            width: expand ? double.infinity : boxSize,
-            height: boxSize,
+
+            // expand only controls width.
+            // Height always remains the calculated square size.
+            width: expand ? double.infinity : squareSize,
+            height: squareSize,
+
+            padding: padding,
             decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
             child: IconTheme(
-              // The caption shares the tile with the glyph, so the glyph gives
-              // up a little of its own to keep both balanced.
-              data: IconThemeData(size: captioned ? iconSize * 0.8 : iconSize, color: foregroundColor),
-              child: captioned
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        child,
-                        SizedBox(height: 2.ts(context)),
-                        Text(
-                          label!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.t16.copyWith(
-                            fontWeight: FontWeight.w500,
-                            // The glyph stays the brightest thing in the tile;
-                            // the caption is a step quieter when idle so the
-                            // focused/selected state still reads as "on".
-                            color: selected || isFocused ? foregroundColor : foregroundColor.withValues(alpha: 0.78),
-                            height: 1,
+              data: IconThemeData(size: iconSize, color: foregroundColor),
+              child: DefaultTextStyle(
+                style: labelStyle.copyWith(color: foregroundColor),
+                child: captioned
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          iconSlot(child, iconSize),
+                          SizedBox(height: spacing),
+                          Text(
+                            label!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: labelStyle.copyWith(
+                              color: selected || isFocused ? foregroundColor : foregroundColor.withValues(alpha: 0.78),
+                              height: 1,
+                            ),
                           ),
-                        ),
-                      ],
-                    )
-                  : child,
+                        ],
+                      )
+                    : iconSlot(child, iconSize),
+              ),
             ),
           );
         }),
       ],
-      child: Center(child: icon),
+      child: icon,
     );
 
     // The self-sized square floats free of the parent's constraints; an
     // expanded row is sized by the parent and must not wrap one.
-    if (expand) return button;
+    if (expand) {
+      return button;
+    }
+
     return UnconstrainedBox(child: button);
   }
 
-  /// Tile and glyph, in design pixels multiplied by the app font scale.
+  /// The slot is tight-sized to the button's own icon size and the icon
+  /// FittedBox-fits it: callers can pass `Icon(..., size: xxx)` and it will
+  /// still be visually normalized to this button's size.
+  Widget iconSlot(Widget icon, double iconSize) {
+    return SizedBox(
+      width: iconSize,
+      height: iconSize,
+      child: FittedBox(fit: BoxFit.contain, child: icon),
+    );
+  }
+
+  /// Estimates the single-line caption width used to calculate the square.
   ///
-  /// The caption under the glyph is a `.sp` label, so the square that holds it
-  /// has to grow with it: a fixed tile cut the caption and left the rail's icons
-  /// untouched next to text the user had enlarged.
-  (double, double) _getSizeConfig(double textScale) {
+  /// The actual Text widget remains responsible for ellipsizing if the parent
+  /// imposes tighter constraints.
+  double _labelWidth(TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: style),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    return painter.width;
+  }
+
+  /// Estimates the caption height used to calculate the square.
+  double _labelHeight(TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: style),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    return painter.height;
+  }
+
+  /// Tile and glyph sizing is content-driven.
+  ///
+  /// There is intentionally no fixed width or height here.
+  ///
+  /// Final square size:
+  ///
+  ///   max(
+  ///     icon / icon + caption width,
+  ///     icon + caption height,
+  ///   )
+  ///   + padding
+  ///
+  /// This preserves the square TV button shape while allowing each size to
+  /// scale naturally with its content.
+  (EdgeInsets, double, double, TextStyle) _getSizeConfig(BuildContext context, bool captioned) {
     return switch (size) {
-      TvIconButtonSize.large => (72.0.w * textScale, 40.0.w * textScale),
-      TvIconButtonSize.medium => (56.0.w * textScale, 36.0.w * textScale),
-      TvIconButtonSize.small => (48.0.w * textScale, 24.0.w * textScale),
-      TvIconButtonSize.mini => (36.0.w * textScale, 18.0.w * textScale),
+      TvIconButtonSize.large => (
+        EdgeInsets.symmetric(horizontal: 12.w, vertical: captioned ? 12.w : 12.w),
+        AppTextStyles.t26.fontSize!,
+        12.w,
+        AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500),
+      ),
+
+      TvIconButtonSize.medium => (
+        EdgeInsets.symmetric(horizontal: 10.w, vertical: captioned ? 10.w : 10.w),
+        AppTextStyles.t28.fontSize!,
+        10.w,
+        AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500),
+      ),
+
+      TvIconButtonSize.small => (
+        EdgeInsets.symmetric(horizontal: 8.w, vertical: captioned ? 11.w : 18.w),
+        AppTextStyles.t22.fontSize!,
+        8.w,
+        AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500),
+      ),
+
+      TvIconButtonSize.mini => (
+        EdgeInsets.symmetric(horizontal: 6.w, vertical: captioned ? 8.w : 6.w),
+        AppTextStyles.t20.fontSize!,
+        6.w,
+        AppTextStyles.t12.copyWith(fontWeight: FontWeight.w500),
+      ),
     };
   }
 }
