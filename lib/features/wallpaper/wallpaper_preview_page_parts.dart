@@ -1,0 +1,793 @@
+part of 'wallpaper_preview_page.dart';
+
+
+/// What one button in the preview's action bar does.
+enum _PreviewActionKind { prev, next, fresh, fit, blur, mask, apply, playPause, immersive }
+
+/// One entry of the preview's action bar.
+class _PreviewAction {
+  const _PreviewAction({required this.kind, required this.icon, required this.label, this.busy = false});
+
+  final _PreviewActionKind kind;
+  final IconData icon;
+  final String label;
+  final bool busy;
+}
+
+/// Fullscreen preview of exactly one wallpaper.
+///
+/// The bottom bar is a normal D-pad-navigable row: every button is its own
+/// focus node, ←/→ move between them, OK activates the focused one, and the
+/// page itself never touches the focus tree. That means popping this route
+/// leaves the focus restoration to the framework — the previous page gets
+/// its focus back without any manual bookkeeping.
+class WallpaperPreviewPage extends ConsumerStatefulWidget {
+  const WallpaperPreviewPage({super.key, required this.args});
+
+  final WallpaperPreviewArgs args;
+
+  @override
+  ConsumerState<WallpaperPreviewPage> createState() => _WallpaperPreviewPageState();
+}
+
+class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
+  /// Catalog mode: position in the paged list.
+  int _index = 0;
+
+  /// API mode: the downloaded picture and its fetch state.
+  Uint8List? _apiBytes;
+  bool _apiLoading = false;
+  bool _applying = false;
+
+  /// Focus nodes for the button bar, held by the page so a rebuild (video vs
+  /// image mode changes the button set) cannot drift the highlight.
+  final List<FocusNode> _actionNodes = <FocusNode>[];
+
+  /// Set when the user asked for the next entry while the next page was still
+  /// being fetched; the advance happens as soon as the list grows.
+  bool _waitingForPage = false;
+
+  /// The paging parameters in force.
+  PagingParam<BackgroundItem>? _param;
+
+  /// Live-wallpaper playback. The player exists only for the video kind and is
+  /// disposed with the page.
+  Player? _videoPlayer;
+  VideoController? _videoController;
+  StreamSubscription<bool>? _playingSubscription;
+  bool _videoPlaying = false;
+
+  /// Playback level for the preview's own player.
+  static const double _volume = 100;
+  String? _openedVideoUrl;
+
+  bool get _isVideo => !widget.args.isApiMode && widget.args.kind == BackgroundKind.video;
+
+  @override
+  void initState() {
+    super.initState();
+    _index = widget.args.initialIndex;
+    if (widget.args.isApiMode) {
+      _fetchApiImage();
+    }
+    if (_isVideo) {
+      _createVideoPlayer();
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final node in _actionNodes) {
+      node.dispose();
+    }
+    _playingSubscription?.cancel();
+    _videoPlayer?.dispose();
+    super.dispose();
+  }
+
+  /// Keeps the node count in step with the bar. Surplus nodes are disposed at
+  /// the end of the frame: they may still be attached this frame.
+  void _syncActionNodes(int length) {
+    while (_actionNodes.length < length) {
+      _actionNodes.add(FocusNode(debugLabel: 'preview-action'));
+    }
+    if (_actionNodes.length > length) {
+      final extra = _actionNodes.sublist(length);
+      _actionNodes.removeRange(length, _actionNodes.length);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        for (final node in extra) {
+          node.dispose();
+        }
+      });
+    }
+  }
+
+  void _createVideoPlayer() {
+    final player = Player();
+    _videoPlayer = player;
+    _videoController = VideoController(player, configuration: wallpaperVideoControllerConfiguration());
+    player.setVolume(_volume);
+    _playingSubscription = player.stream.playing.listen((playing) {
+      if (mounted) setState(() => _videoPlaying = playing);
+    });
+  }
+
+  Future<void> _openVideo(String url) async {
+    final player = _videoPlayer;
+    if (player == null || url.isEmpty) return;
+    try {
+      await player.open(Media(url), play: true);
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18nOr('wallpaper_video_failed', 'Playback failed'));
+    }
+  }
+
+  Future<void> _togglePlay() async {
+    // The player may already be gone (hard-stop release in _destroyVideoPlayer);
+    // the play button rebuilds it and reopens the current clip.
+    var player = _videoPlayer;
+    if (player == null) {
+      _createVideoPlayer();
+      player = _videoPlayer;
+      final item = _itemAt(_resolveItems(ref));
+      if (player != null && item.file.isNotEmpty) {
+        _openedVideoUrl = item.file;
+        await player.open(Media(item.file), play: true);
+      }
+      return;
+    }
+    if (_videoPlaying) {
+      await player.pause();
+    } else {
+      await player.play();
+    }
+  }
+
+  /// Fully releases the preview's own player.
+  ///
+  /// Once the clip becomes the wallpaper the background layer plays it through
+  /// its own player; two decoders on one box double the hardware decode cost
+  /// and stack the audio. With "hard stop on exit" enabled the preview player
+  /// is released here and the surface falls back to the poster.
+  void _destroyVideoPlayer() {
+    final player = _videoPlayer;
+    _videoPlayer = null;
+    _videoController = null;
+    _videoPlaying = false;
+    _openedVideoUrl = null;
+    unawaited(_playingSubscription?.cancel());
+    _playingSubscription = null;
+    unawaited(player?.dispose());
+  }
+
+  static const BackgroundItem _emptyItem = BackgroundItem(file: '');
+
+  BackgroundItem _itemAt(List<BackgroundItem> items) {
+    if (items.isEmpty) return _emptyItem;
+    return items[_index.clamp(0, items.length - 1)];
+  }
+
+  Future<void> _fetchApiImage() async {
+    setState(() => _apiLoading = true);
+    var failed = false;
+    try {
+      final bytes = await fetchRandomImage(widget.args.apiSource!);
+      if (!mounted) return;
+      if (bytes == null) {
+        failed = true;
+      } else {
+        setState(() => _apiBytes = bytes);
+      }
+    } catch (_) {
+      failed = true;
+    } finally {
+      if (mounted) {
+        setState(() => _apiLoading = false);
+        if (failed && _apiBytes != null) {
+          ToastUtil.show(i18nOr('wallpaper_fetch_failed', 'Failed to fetch an image, try again'));
+        }
+      }
+    }
+  }
+
+  void _prefetch(List<BackgroundItem> items, {bool force = false}) {
+    final param = _param;
+    if (param == null) return;
+    final state = ref.read(pagingCoreProvider(param));
+    if (!state.canLoadMore || state.controllerState.loading) return;
+    if (!force && _index < items.length - 3) return;
+    ref.read(pagingCoreProvider(param).notifier).loadNextPage();
+  }
+
+  void _next(List<BackgroundItem> items) {
+    if (widget.args.isApiMode) {
+      if (!_apiLoading) _fetchApiImage();
+      return;
+    }
+    if (items.length < 2) return;
+
+    final int next = _index + 1;
+    if (next < items.length) {
+      setState(() => _index = next);
+      _prefetch(items);
+      return;
+    }
+
+    final param = _param;
+    if (param != null && ref.read(pagingCoreProvider(param)).canLoadMore) {
+      _waitingForPage = true;
+      _prefetch(items, force: true);
+      return;
+    }
+    setState(() => _index = 0);
+  }
+
+  void _prev(List<BackgroundItem> items) {
+    if (widget.args.isApiMode) {
+      _next(items);
+      return;
+    }
+    if (items.length < 2) return;
+    setState(() => _index = _index <= 0 ? items.length - 1 : _index - 1);
+  }
+
+  Future<void> _apply(BackgroundItem item) async {
+    if (_applying) return;
+    final bg = SettingsService.to.bg;
+    setState(() => _applying = true);
+    try {
+      if (widget.args.isApiMode) {
+        final bytes = _apiBytes;
+        if (bytes == null) return;
+        bg.setNetworkImageBytes(bytes);
+      } else {
+        switch (widget.args.kind!) {
+          case BackgroundKind.image:
+            bg.setNetworkImage(item.file);
+          case BackgroundKind.video:
+            await _applyVideo(item);
+          case BackgroundKind.gradient:
+            final colors = <Color>[
+              for (final stop in item.gradient ?? const <BackgroundGradientStop>[]) ColorUtil.hexToColor(stop.color),
+            ];
+            if (colors.length < 2) {
+              ToastUtil.show(i18nOr('background_invalid_gradient', '这个渐变数据不完整'));
+              return;
+            }
+            bg.setGradient(colors);
+        }
+      }
+      // After the switch the preview no longer needs its decoder; release it so
+      // it does not double-decode against the background player (or stack audio).
+      if (_isVideo) _destroyVideoPlayer();
+      if (mounted) ToastUtil.show(i18nOr('wallpaper_set_done', 'Background updated'));
+    } catch (error) {
+      if (mounted) {
+        ToastUtil.show(i18nOr('background_apply_failed', 'Failed to apply: {msg}', args: {'msg': '$error'}));
+      }
+    } finally {
+      if (mounted) setState(() => _applying = false);
+    }
+  }
+
+  Future<void> _applyVideo(BackgroundItem item) async {
+    final bg = SettingsService.to.bg;
+    try {
+      final String path = await WallpaperVideoStore.download(item.file);
+      bg.setLocalVideo(path);
+    } catch (_) {
+      bg.setNetworkVideo(item.file);
+      if (mounted) {
+        ToastUtil.show(i18nOr('wallpaper_video_download_failed', '视频下载失败，已改用在线播放'));
+      }
+    }
+  }
+
+  void _cycleFit() {
+    final current = kWallpaperFitModes.indexOf(SettingsService.to.bgState.boxFit);
+    SettingsService.to.bg.setBoxFit(kWallpaperFitModes[(current + 1) % kWallpaperFitModes.length]);
+  }
+
+  void _cycleBlur() {
+    final current = wallpaperBlurIndex(SettingsService.to.bgState.blurSigma);
+    SettingsService.to.bg.setBlurSigma(kWallpaperBlurSteps[(current + 1) % kWallpaperBlurSteps.length]);
+  }
+
+  void _cycleMask() {
+    final current = wallpaperMaskIndex(SettingsService.to.bgState.maskOpacity);
+    SettingsService.to.bg.setMaskOpacity(kWallpaperMaskSteps[(current + 1) % kWallpaperMaskSteps.length]);
+  }
+
+  List<_PreviewAction> _buildActions() {
+    final bgState = SettingsService.to.bgState;
+    return <_PreviewAction>[
+      if (widget.args.isApiMode)
+        _PreviewAction(
+          kind: _PreviewActionKind.fresh,
+          icon: Icons.refresh_rounded,
+          label: i18nOr('wallpaper_change_image', 'New image'),
+          busy: _apiLoading,
+        )
+      else if (_isVideo) ...[
+        _PreviewAction(
+          kind: _PreviewActionKind.playPause,
+          icon: _videoPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+          label: _videoPlaying ? i18nOr('wallpaper_pause', 'Pause') : i18nOr('wallpaper_play', 'Play'),
+        ),
+        _PreviewAction(
+          kind: _PreviewActionKind.prev,
+          icon: Icons.chevron_left_rounded,
+          label: i18nOr('wallpaper_prev', 'Prev'),
+        ),
+        _PreviewAction(
+          kind: _PreviewActionKind.next,
+          icon: Icons.chevron_right_rounded,
+          label: i18nOr('wallpaper_next', 'Next'),
+        ),
+      ] else ...[
+        _PreviewAction(
+          kind: _PreviewActionKind.prev,
+          icon: Icons.chevron_left_rounded,
+          label: i18nOr('wallpaper_prev', 'Prev'),
+        ),
+        _PreviewAction(
+          kind: _PreviewActionKind.next,
+          icon: Icons.chevron_right_rounded,
+          label: i18nOr('wallpaper_next', 'Next'),
+        ),
+      ],
+      _PreviewAction(
+        kind: _PreviewActionKind.fit,
+        icon: Icons.aspect_ratio_outlined,
+        label: wallpaperFitLabel(bgState.boxFit),
+      ),
+      _PreviewAction(
+        kind: _PreviewActionKind.blur,
+        icon: Icons.blur_on_outlined,
+        label: wallpaperBlurLabel(bgState.blurSigma),
+      ),
+      _PreviewAction(
+        kind: _PreviewActionKind.mask,
+        icon: Icons.brightness_6_outlined,
+        label: wallpaperMaskLabel(bgState.maskOpacity),
+      ),
+      _PreviewAction(
+        kind: _PreviewActionKind.apply,
+        icon: Icons.check_rounded,
+        label: i18nOr('wallpaper_set_background', 'Set as background'),
+        busy: _applying,
+      ),
+      _PreviewAction(
+        kind: _PreviewActionKind.immersive,
+        icon: Icons.fullscreen_rounded,
+        label: i18nOr('wallpaper_immersive', 'Immersive'),
+      ),
+    ];
+  }
+
+  /// Opens the immersive route. It used to be a state of this page, whose
+  /// always-mounted Focus stole the bar's key events and dropped focus on
+  /// exit; as its own route the keyboard belongs to that page.
+  Future<void> _openImmersive(List<BackgroundItem> items) async {
+    // This page's player stays mounted under the pushed route; pause it so
+    // the two do not play at once.
+    final player = _videoPlayer;
+    final bool wasPlaying = _videoPlaying;
+    if (wasPlaying) await player?.pause();
+
+    if (!mounted) return;
+    // The two modes build their own args: an API random image has no
+    // directory, and forcing one crashes on sourceId!.
+    final WallpaperPreviewArgs immersiveArgs = widget.args.isApiMode
+        ? WallpaperPreviewArgs.api(widget.args.apiSource!, title: widget.args.title)
+        : WallpaperPreviewArgs.catalog(
+            sourceId: widget.args.sourceId!,
+            categoryId: widget.args.categoryId!,
+            kind: widget.args.kind!,
+            title: widget.args.title,
+            initialIndex: _index,
+          );
+
+    final int? finalIndex = await Navigator.of(context).push<int>(
+      MaterialPageRoute(builder: (_) => WallpaperImmersivePage(args: immersiveArgs)),
+    );
+
+    if (!mounted) return;
+    // The immersive page may have moved on; take its position back so both
+    // show the same item.
+    if (finalIndex != null && finalIndex != _index && finalIndex >= 0 && finalIndex < items.length) {
+      setState(() => _index = finalIndex);
+    }
+    if (wasPlaying) await player?.play();
+  }
+
+  void _run(_PreviewAction action, List<BackgroundItem> items) {
+    switch (action.kind) {
+      case _PreviewActionKind.fresh:
+      case _PreviewActionKind.next:
+        _next(items);
+      case _PreviewActionKind.prev:
+        _prev(items);
+      case _PreviewActionKind.fit:
+        _cycleFit();
+      case _PreviewActionKind.blur:
+        _cycleBlur();
+      case _PreviewActionKind.mask:
+        _cycleMask();
+      case _PreviewActionKind.apply:
+        _apply(_itemAt(items));
+      case _PreviewActionKind.playPause:
+        unawaited(_togglePlay());
+      case _PreviewActionKind.immersive:
+        unawaited(_openImmersive(items));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bgState = ref.watch(backgroundControllerProvider);
+    final List<BackgroundItem> items = _resolveItems(ref);
+
+    if (_waitingForPage && _index + 1 < items.length) {
+      _waitingForPage = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _index += 1);
+      });
+    }
+
+    final BackgroundItem item = _itemAt(items);
+    final actions = _buildActions();
+    _syncActionNodes(actions.length);
+    final bool hasPicture = !widget.args.isApiMode || _apiBytes != null;
+
+    if (_isVideo && item.file.isNotEmpty && item.file != _openedVideoUrl) {
+      // Do not rebuild immediately after the release above - that would undo it.
+      // The play button pulls it back up; a real URL change autoplays as usual.
+      final bool releasedAfterApply = _videoPlayer == null && !_videoPlaying;
+      if (!releasedAfterApply) {
+        _openedVideoUrl = item.file;
+        final String url = item.file;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) unawaited(_openVideo(url));
+        });
+      }
+    }
+
+    // The page body holds no focus node: the bar owns the keyboard and
+    // Left/Right go to framework traversal.
+    return TvPageScaffold(
+      showAppBar: false,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Blur sits under the mask: blur the media first, then the mask, so what the
+  // preview shows is what the applied background looks like.
+          wallpaperBlurred(_buildViewer(bgState, item), bgState.blurSigma),
+          // The mask the app applies over this wallpaper, drawn here too so the
+          // mask action shows what it does: before, the button moved a number
+          // and nothing on screen changed.
+          IgnorePointer(child: _buildMask(bgState)),
+          // Centred loading indicator, not tucked under the title bar.
+          if (widget.args.isApiMode && _apiLoading && hasPicture)
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: Center(
+                  child: SizedBox(height: 44, width: 44, child: AppStatusView(type: AppStatusType.loading, isMini: true)),
+                ),
+              ),
+            ),
+          _buildTopBar(items, item),
+          // Bar pinned to the bottom (gradient + bottom padding).
+          _buildBottomBar(actions, items),
+        ],
+      ),
+    );
+  }
+
+
+  List<BackgroundItem> _resolveItems(WidgetRef ref) {
+    if (widget.args.isApiMode) return const <BackgroundItem>[];
+    final catalog = ref.watch(backgroundCatalogProvider);
+    final source = catalog.sourceById(widget.args.sourceId!);
+    if (source == null) return const <BackgroundItem>[];
+    final category = _pickCategory(source, widget.args.categoryId);
+    if (category == null) return const <BackgroundItem>[];
+
+    final param = wallpaperPagingParam(source, category);
+    _param = param;
+    final state = ref.watch(pagingCoreProvider(param));
+    if (state.canLoadMore && !state.controllerState.loading && _index >= state.items.length - 3) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _prefetch(state.items);
+      });
+    }
+    return state.items;
+  }
+
+  static BackgroundCategory? _pickCategory(BackgroundSource source, String? wanted) {
+    final categories = source.visibleCategories;
+    if (categories.isEmpty) return null;
+    if (wanted == null) return categories.first;
+    for (final category in categories) {
+      if (category.id == wanted) return category;
+    }
+    return categories.first;
+  }
+
+  /// The readability wash the app puts over the wallpaper, in the preview.
+  ///
+  /// Same rule as the app-wide layer: a light palette is washed white, a dark
+  /// one black, so the preview agrees with what set as background will produce.
+  Widget _buildMask(BackgroundConfigModel bgState) {
+    if (bgState.maskOpacity <= 0) return const SizedBox.shrink();
+    final bool lightSurface = context.tvTheme.backgroundColor.computeLuminance() > 0.5;
+    return ColoredBox(
+      color: (lightSurface ? Colors.white : Colors.black).withValues(alpha: bgState.maskOpacity),
+    );
+  }
+
+  Widget _buildViewer(BackgroundConfigModel bgState, BackgroundItem item) {    if (widget.args.isApiMode) {
+      final bytes = _apiBytes;
+      if (bytes == null) {
+        return _apiLoading
+            ? const AppStatusView(type: AppStatusType.loading)
+            : AppStatusView(
+                type: AppStatusType.error,
+                subtitle: i18nOr('wallpaper_fetch_failed', 'Failed to fetch an image, try again'),
+              );
+      }
+      return SizedBox.expand(child: Image.memory(bytes, fit: bgState.boxFit, gaplessPlayback: true));
+    }
+
+    switch (widget.args.kind!) {
+      case BackgroundKind.gradient:
+        return GradientPreview(item: item);
+      case BackgroundKind.video:
+        final controller = _videoController;
+        if (controller == null) {
+          return WallpaperNetworkImage(
+            url: item.poster ?? item.thumb ?? item.file,
+            fit: BoxFit.cover,
+            placeholder: const ColoredBox(color: Colors.black),
+            fallback: const ColoredBox(color: Colors.black),
+          );
+        }
+        return Video(controller: controller, fit: bgState.boxFit, controls: (state) => const SizedBox.shrink());
+      case BackgroundKind.image:
+        return WallpaperNetworkImage(
+          url: item.file,
+          fit: bgState.boxFit,
+          placeholder: _centeredLoading(),
+          fallback: const ColoredBox(color: Colors.black),
+        );
+    }
+  }
+
+  /// Full-screen spinner, centred.
+  Widget _centeredLoading() {
+    return const ColoredBox(
+      color: Colors.black,
+      child: Center(
+        child: SizedBox(height: 44, width: 44, child: AppStatusView(type: AppStatusType.loading, isMini: true)),
+      ),
+    );
+  }
+
+  Widget _buildTopBar(List<BackgroundItem> items, BackgroundItem item) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: IgnorePointer(
+          child: Container(
+          padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 40.sp),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _title(item),
+                  style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (!widget.args.isApiMode && items.length > 1)
+                Text(
+                  '${_index + 1}/${items.length}',
+                  style: AppTextStyles.t20.copyWith(color: Colors.white70),
+                ),
+              if (_isVideo) ...[
+                SizedBox(width: 18.sp),
+                Icon(Icons.volume_up_rounded, size: 18.sp, color: Colors.white70),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomBar(List<_PreviewAction> actions, List<BackgroundItem> items) {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(24.sp, 40.sp, 24.sp, 20.sp),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [Colors.black.withValues(alpha: 0.72), Colors.transparent],
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              i18nOr('wallpaper_preview_hint', '←→ 选择按钮 · OK 确认 · 返回退出'),
+              style: AppTextStyles.t18.copyWith(color: Colors.white70),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(height: 18.sp),
+            // The bar is a normal focus scope now. OrderedTraversalPolicy
+            // keeps ←/→ following the on-screen order, so adding or removing
+            // the playback buttons never breaks navigation.
+            FocusTraversalGroup(
+              policy: OrderedTraversalPolicy(),
+              child: Wrap(
+                spacing: 10.sp,
+                runSpacing: 10.sp,
+                children: [
+                  for (int i = 0; i < actions.length; i++)
+                    _PreviewActionButton(
+                      action: actions[i],
+                      focusNode: _actionNodes[i],
+                      autofocus: i == 0,
+                      onActivate: () => _run(actions[i], items),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _title(BackgroundItem item) {
+    final override = widget.args.title;
+    if (override != null && override.isNotEmpty) return override;
+    if (widget.args.isApiMode) {
+      return '${widget.args.apiSource!.name} · ${i18nOr('wallpaper_random_image', 'Random image')}';
+    }
+    final name = item.name ?? '';
+    return name.isNotEmpty ? name : '${i18nOr('wallpaper', 'Wallpaper')} ${_index + 1}';
+  }
+}
+
+/// One bottom-bar button.
+///
+/// A real focus node: it lights up when focused, activates on OK, and lets the
+/// framework move the highlight with ←/→. Nothing here talks to the page or
+/// manipulates the focus tree, so the route can pop cleanly.
+class _PreviewActionButton extends StatefulWidget {
+  const _PreviewActionButton({
+    required this.action,
+    required this.onActivate,
+    this.focusNode,
+    this.autofocus = false,
+  });
+
+  final _PreviewAction action;
+  final VoidCallback onActivate;
+
+  /// Page-owned nodes, so leaving immersive mode restores focus to the exact
+  /// button.
+  final FocusNode? focusNode;
+  final bool autofocus;
+
+  @override
+  State<_PreviewActionButton> createState() => _PreviewActionButtonState();
+}
+
+class _PreviewActionButtonState extends State<_PreviewActionButton> {
+  late final FocusNode _focusNode = widget.focusNode ?? FocusNode(debugLabel: 'preview-action');
+  late final bool _ownsNode = widget.focusNode == null;
+  bool _focused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_handleFocusChange);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
+    // Caller-supplied nodes are disposed by the caller; only own ones here.
+    if (_ownsNode) _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _handleFocusChange() {
+    if (mounted) setState(() => _focused = _focusNode.hasFocus);
+  }
+
+  KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.select ||
+        key == LogicalKeyboardKey.space ||
+        key == LogicalKeyboardKey.gameButtonA) {
+      widget.onActivate();
+      return KeyEventResult.handled;
+    }
+    // Everything else — including the back key — falls through so the route
+    // pops normally and the framework restores the previous focus.
+    return KeyEventResult.ignored;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.tvTheme;
+    final radius = BorderRadius.circular(26.sp);
+    final Color fill = _focused ? theme.focusColor : theme.cardColor;
+    final Color foreground = Colors.white;
+
+    return Focus(
+      focusNode: _focusNode,
+      autofocus: widget.autofocus,
+      onKeyEvent: _handleKey,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            // Mouse click: move the highlight here too, so TV and mouse stay
+            // in sync instead of fighting each other.
+            _focusNode.requestFocus();
+            widget.onActivate();
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            curve: Curves.easeOutCubic,
+            height: 56.sp,
+            padding: EdgeInsets.symmetric(horizontal: 24.sp),
+            decoration: BoxDecoration(color: fill, borderRadius: radius),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.action.busy)
+                  SizedBox(
+                    width: 26.sp,
+                    height: 26.sp,
+                    child: const AppStatusView(type: AppStatusType.loading, isMini: true, iconColor: Colors.white),
+                  )
+                else
+                  Icon(widget.action.icon, size: 24.sp, color: foreground),
+                SizedBox(width: 10.sp),
+                Text(
+                  widget.action.label,
+                  style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: foreground),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
