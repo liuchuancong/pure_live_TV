@@ -118,7 +118,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
               child: TvInputField(
                 controller: _searchController,
                 hint: i18n('search_room_hint'),
-                height: 76.sp * TvTextScale.factorOf(context),
+                height: 76.ts(context),
                 maxLines: 1,
                 onChanged: (text) => ref.read(tvSearchNotifierProvider.notifier).updateKeyword(text),
                 onSubmitted: _onSearchSubmit,
@@ -129,7 +129,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                     child: Icon(
                       Icons.search_rounded,
                       color: tvTheme.secondaryTextColor,
-                      size: 28.sp * TvTextScale.factorOf(context),
+                      size: 28.ts(context),
                     ),
                   ),
                 ),
@@ -163,13 +163,12 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
   Widget _buildTypeSegmented(Color themeColor, int currentIndex) {
     final tvTheme = context.tvTheme;
     // The segment pills hold t20 labels, so the strip grows with the text.
-    final double textScale = TvTextScale.factorOf(context);
     return Container(
-      height: 56.sp * textScale,
-      padding: EdgeInsets.all(5.sp * textScale),
+      height: 56.ts(context),
+      padding: EdgeInsets.all(5.ts(context)),
       decoration: BoxDecoration(
         color: tvTheme.cardColor.withValues(alpha: 0.65),
-        borderRadius: BorderRadius.circular(28.sp * textScale),
+        borderRadius: BorderRadius.circular(28.ts(context)),
         border: Border.all(color: themeColor.withValues(alpha: 0.4)),
       ),
       child: Row(
@@ -205,7 +204,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
           SizedBox(
             // The chip row's viewport: the chips are pill buttons whose height
             // follows the font, so the band must too or they clip.
-            height: 56.sp * TvTextScale.factorOf(context),
+            height: 56.ts(context),
             child: DpadRegion(
               horizontalEdge: DpadEdgeBehavior.leave,
               child: ListView.separated(
@@ -255,7 +254,6 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
     final tvTheme = context.tvTheme;
     // The pill's every dimension follows its t20 label (same language as
     // TvButton): a fixed 44.sp pill clipped the enlarged text.
-    final double textScale = TvTextScale.factorOf(context);
     return TvFocusable(
       key: Key(key),
       onTap: onTap,
@@ -268,12 +266,12 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 120),
             curve: Curves.easeOutCubic,
-            height: 44.sp * textScale,
-            padding: EdgeInsets.symmetric(horizontal: 22.sp * textScale),
+            height: 44.ts(context),
+            padding: EdgeInsets.symmetric(horizontal: 22.ts(context)),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: focused ? themeColor : tvTheme.cardColor,
-              borderRadius: BorderRadius.circular(22.sp * textScale),
+              borderRadius: BorderRadius.circular(22.ts(context)),
               border: Border.all(color: themeColor, width: focused ? 2.5.sp : 1.5.sp),
               boxShadow: [
                 BoxShadow(
@@ -287,8 +285,8 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (icon != null) ...[
-                  Icon(icon, size: 24.sp * textScale, color: focused ? Colors.white : themeColor),
-                  SizedBox(width: 8.sp * textScale),
+                  Icon(icon, size: 24.ts(context), color: focused ? Colors.white : themeColor),
+                  SizedBox(width: 8.ts(context)),
                 ],
                 Text(
                   label,
@@ -316,7 +314,6 @@ class _SegmentedOption extends StatelessWidget {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
     // The pill tracks its t20 label, like the history chips.
-    final double textScale = TvTextScale.factorOf(context);
 
     return TvFocusable(
       onTap: onTap,
@@ -332,12 +329,12 @@ class _SegmentedOption extends StatelessWidget {
           child: AnimatedContainer(
             duration: animDuration,
             curve: Curves.easeOutCubic,
-            height: 46.sp * textScale,
-            padding: EdgeInsets.symmetric(horizontal: 26.sp * textScale),
+            height: 46.ts(context),
+            padding: EdgeInsets.symmetric(horizontal: 26.ts(context)),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: fill,
-              borderRadius: BorderRadius.circular(23.sp * textScale),
+              borderRadius: BorderRadius.circular(23.ts(context)),
               border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
               boxShadow: [
                 BoxShadow(
@@ -350,8 +347,8 @@ class _SegmentedOption extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 22.sp * textScale, color: ink),
-                SizedBox(width: 8.sp * textScale),
+                Icon(icon, size: 22.ts(context), color: ink),
+                SizedBox(width: 8.ts(context)),
                 Text(
                   label,
                   style: AppTextStyles.t20.copyWith(

@@ -206,7 +206,7 @@ class SiteLogo extends StatelessWidget {
     // The row's labels grow with the app font setting; the logo grows with
     // them so the leading slot keeps its rhythm (same language as
     // [TvPlatformLogo]).
-    final double scaled = size.sp * TvTextScale.factorOf(context);
+    final double scaled = size.ts(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(8.sp),
       child: Image.asset(

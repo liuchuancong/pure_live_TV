@@ -229,7 +229,7 @@ class _TvTabBarState extends State<TvTabBar> {
               // the items, so at min/max scroll extent the first/last tab keeps
               // a margin inside the viewport and the focus scale (1.05) is not
               // clipped by the viewport edge.
-              padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale),
+              padding: EdgeInsets.symmetric(horizontal: 16.ts(context)),
               itemCount: widget.tabs.length,
               itemBuilder: (context, index) {
                 final tab = widget.tabs[index];
@@ -280,7 +280,7 @@ class _TvTabBarState extends State<TvTabBar> {
 
                 return Padding(
                   key: _keyFor(index, tab),
-                  padding: EdgeInsets.symmetric(horizontal: 6.sp * textScale),
+                  padding: EdgeInsets.symmetric(horizontal: 6.ts(context)),
                   child: DpadFocusable(
                     effects: dynamicEffects,
                     focusNode: index == 0 ? widget.firstTabFocusNode : null,

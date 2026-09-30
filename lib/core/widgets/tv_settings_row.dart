@@ -70,7 +70,7 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
         return Transform.scale(
           scale: pressed ? 0.98 : 1.0,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale, vertical: 14.sp * textScale),
+            padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 14.ts(context)),
             // Accent glow on dark palettes, crisp ring on light ones — same
             // focus look as TvRoomCard.
             decoration: BoxDecoration(
@@ -103,8 +103,8 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
                           if (widget.leading != null)
                             widget.leading!
                           else if (widget.icon != null)
-                            Icon(widget.icon, size: 30.sp * textScale, color: iconColor),
-                          if (hasLeading) SizedBox(width: 16.sp * textScale),
+                            Icon(widget.icon, size: 30.ts(context), color: iconColor),
+                          if (hasLeading) SizedBox(width: 16.ts(context)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,7 +161,7 @@ Widget tvSettingsChevron(BuildContext context, bool focused) {
   final tvTheme = context.tvTheme;
   return Icon(
     Icons.chevron_right_rounded,
-    size: 30.sp * TvTextScale.factorOf(context),
+    size: 30.ts(context),
     color: focused ? tvTheme.onFocusedCard : tvTheme.secondaryTextColor,
   );
 }
@@ -184,10 +184,10 @@ Widget tvSettingsValueLabel(BuildContext context, bool focused, String value) {
           ),
         ),
       ),
-      SizedBox(width: 8.sp * TvTextScale.factorOf(context)),
+      SizedBox(width: 8.ts(context)),
       Icon(
         Icons.expand_more_rounded,
-        size: 28.sp * TvTextScale.factorOf(context),
+        size: 28.ts(context),
         color: focused ? tvTheme.onFocusedCard : tvTheme.secondaryTextColor,
       ),
     ],
@@ -210,24 +210,23 @@ class TvSettingsSwitchIndicator extends StatelessWidget {
     // ticker, which a covering page mutes — a mid-fade switch would freeze.
     // A control beside a label that follows the app font: it grows with it,
     // otherwise a small switch sits next to text twice its size.
-    final double textScale = TvTextScale.factorOf(context);
     return SizedBox(
-      width: 62.sp * textScale,
-      height: 34.sp * textScale,
+      width: 62.ts(context),
+      height: 34.ts(context),
       child: Container(
         decoration: BoxDecoration(
           color: value ? on.withValues(alpha: focused ? 0.35 : 0.22) : Colors.transparent,
-          border: Border.all(color: value ? on : off.withValues(alpha: 0.6), width: 2.sp * textScale),
-          borderRadius: BorderRadius.circular(6.sp * textScale),
+          border: Border.all(color: value ? on : off.withValues(alpha: 0.6), width: 2.ts(context)),
+          borderRadius: BorderRadius.circular(6.ts(context)),
         ),
-        padding: EdgeInsets.all(3.sp * textScale),
+        padding: EdgeInsets.all(3.ts(context)),
         child: Align(
           alignment: value ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
-            width: 24.sp * textScale,
+            width: 24.ts(context),
             decoration: BoxDecoration(
               color: value ? on : off.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(3.sp * textScale),
+              borderRadius: BorderRadius.circular(3.ts(context)),
             ),
           ),
         ),

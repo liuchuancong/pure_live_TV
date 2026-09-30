@@ -82,7 +82,7 @@ class _UpdateDialogBodyState extends ConsumerState<_UpdateDialogBody> {
             children: [
               Icon(
                 Icons.system_update_alt_rounded,
-                size: 28.sp * TvTextScale.factorOf(context),
+                size: 28.ts(context),
                 color: theme.focusColor,
               ),
               SizedBox(width: 12.sp),

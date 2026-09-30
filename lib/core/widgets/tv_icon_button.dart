@@ -114,7 +114,7 @@ class TvIconButton extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         child,
-                        SizedBox(height: 2.sp * textScale),
+                        SizedBox(height: 2.ts(context)),
                         Text(
                           label!,
                           maxLines: 1,

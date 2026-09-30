@@ -138,7 +138,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
               // whose labels are drawn 60% larger is effectively narrower, so the
               // threshold moves with the text instead of the cell alone.
               final double textScale = TvTextScale.factorOf(context);
-              final bool compact = constraints.maxWidth < 190.sp * textScale;
+              final bool compact = constraints.maxWidth < 190.ts(context);
               // A playlist ships no per-channel avatar, so an IPTV card numbers
               // its channel instead: a position is what a TV viewer reads as the
               // channel identity, while the shared placeholder would repeat one

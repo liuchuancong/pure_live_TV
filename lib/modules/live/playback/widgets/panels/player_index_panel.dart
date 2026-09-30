@@ -268,7 +268,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
           // The width tracks the text factor with the content: a fixed 400.sp
           // panel kept its width while every label inside grew, and the labels
           // answered by wrapping into ellipsis chains.
-          width: widget.width.sp * TvTextScale.factorOf(context),
+          width: widget.width.ts(context),
           // No decoration of its own: the host container (live_play page's
           // side-panel frame) paints the surface and the single border. A
           // border here too drew two frames one inside the other.

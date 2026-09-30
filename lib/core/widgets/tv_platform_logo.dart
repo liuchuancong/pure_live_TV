@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/index.dart';
 
 /// A platform's logo with a neutral fallback.
@@ -19,7 +18,7 @@ class TvPlatformLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     // The rows this leads grow their labels with the app font setting; the
     // logo grows with them so the row keeps one visual rhythm.
-    final double scaled = size.sp * TvTextScale.factorOf(context);
+    final double scaled = size.ts(context);
     return Image.asset(
       logo,
       width: scaled,

@@ -147,7 +147,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         return [
           for (final item in menuList)
             Padding(
-              padding: EdgeInsets.only(bottom: 20.sp * textScale),
+              padding: EdgeInsets.only(bottom: 20.ts(context)),
               child: _buildAdaptiveItem(
                 ref: ref,
                 item: item,
@@ -174,7 +174,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         return [
           for (final (index2, (labelKey, icon)) in labels.indexed)
             Padding(
-              padding: EdgeInsets.only(bottom: 20.sp * textScale),
+              padding: EdgeInsets.only(bottom: 20.ts(context)),
               child: _buildAdaptiveItem(
                 ref: ref,
                 item: AppMenuItem(index: index2, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
@@ -199,7 +199,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         return [
           for (final (railIndex, (sectionIndex, labelKey, icon)) in entries.indexed)
             Padding(
-              padding: EdgeInsets.only(bottom: 20.sp * textScale),
+              padding: EdgeInsets.only(bottom: 20.ts(context)),
               child: _buildAdaptiveItem(
                 ref: ref,
                 item: AppMenuItem(index: railIndex, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
@@ -373,7 +373,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 // from the menu column. The scrim keeps icons readable; the
                 // background bleeds through instead of a flat card block.
                 color: currentTvTheme.backgroundColor.withValues(alpha: 0.62),
-                padding: EdgeInsets.symmetric(vertical: 24.sp * textScale),
+                padding: EdgeInsets.symmetric(vertical: 24.ts(context)),
                 // The rail scrolls once its entries are taller than the panel: at
                 // 160% ten destinations no longer fit a 1080p screen (and on a
                 // 720p one they never did), and a clipped rail would hide both the
@@ -387,7 +387,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       // mode switch must be reachable no matter how far the
                       // section list has scrolled.
                       Padding(
-                        padding: EdgeInsets.only(bottom: 6.sp * textScale),
+                        padding: EdgeInsets.only(bottom: 6.ts(context)),
                         child: TvDigitalClock(
                           format: isExpanded ? 'HH:mm:ss' : 'HH:mm',
                           style: AppTextStyles.t20.copyWith(
@@ -407,9 +407,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                             height: 1,
                           ),
                         ),
-                      SizedBox(height: 15.sp * textScale),
+                      SizedBox(height: 15.ts(context)),
                       Padding(
-                        padding: EdgeInsets.only(bottom: 20.sp * textScale),
+                        padding: EdgeInsets.only(bottom: 20.ts(context)),
                         child: _buildModeButton(appMode, isExpanded, textScale),
                       ),
                       // The active mode's own navigation — live destinations,
@@ -537,10 +537,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (isExpanded) {
       return Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale),
+        padding: EdgeInsets.symmetric(horizontal: 16.ts(context)),
         child: TvButton(
           title: item.title,
-          icon: Icon(item.icon, size: 36.sp * textScale),
+          icon: Icon(item.icon, size: 36.ts(context)),
           iconPosition: TvIconPosition.left,
           size: TvButtonSize.medium,
           isSecondary: !isSelected,

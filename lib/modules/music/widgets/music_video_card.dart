@@ -67,7 +67,6 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
     final double progress = widget.progress;
     final tvTheme = context.tvTheme;
     final borderRadius = BorderRadius.circular(18.sp);
-    final double textScale = TvTextScale.factorOf(context);
 
     final List<DpadEffect> effects = [
       DpadScaleEffect(
@@ -173,7 +172,7 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
               // slot, the title marquees while focused, and the UP name (with
               // the publish date, when known) sits beneath.
               Padding(
-                padding: EdgeInsets.fromLTRB(10.sp, 8.sp * textScale, 12.sp, 8.sp * textScale),
+                padding: EdgeInsets.fromLTRB(10.sp, 8.ts(context), 12.sp, 8.ts(context)),
                 child: Row(
                   children: [
                     TvCommonAvatar(avatarUrl: archive.upFace, fallbackName: archive.upName, radius: 20.sp),
@@ -188,7 +187,7 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
                             isFocused: isFocused,
                             style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w700, color: titleColor),
                           ),
-                          SizedBox(height: 3.sp * textScale),
+                          SizedBox(height: 3.ts(context)),
                           Text(
                             date.isNotEmpty ? '${archive.upName} · $date' : archive.upName,
                             maxLines: 1,

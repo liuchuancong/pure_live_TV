@@ -122,7 +122,6 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
     final tracks = archive.tracks;
     // Vertical rhythm follows the app font setting: fixed .sp heights clipped
     // their labels the moment the user enlarged the font.
-    final double textScale = TvTextScale.factorOf(context);
 
     return TvPageScaffold(
       title: i18n('video_detail_title'),
@@ -377,7 +376,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                     // reachable, so the cards sit directly in the tree and
                     // Down lands on the first one.
                     SizedBox(
-                      height: 300.sp * 9 / 16 + 108.sp * textScale,
+                      height: 300.sp * 9 / 16 + 108.ts(context),
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         padding: EdgeInsets.only(bottom: 16.sp),
@@ -419,7 +418,6 @@ class _PartTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
-    final double textScale = TvTextScale.factorOf(context);
 
     return TvFocusable(
       onTap: onTap,
@@ -427,7 +425,7 @@ class _PartTile extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
-          height: 76.sp * textScale,
+          height: 76.ts(context),
           padding: EdgeInsets.symmetric(horizontal: 16.sp),
           decoration: BoxDecoration(
             color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,

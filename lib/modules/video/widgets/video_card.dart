@@ -153,7 +153,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
               // setting, and so does the compact threshold — a cell drawn
               // larger is effectively narrower.
               final double textScale = TvTextScale.factorOf(context);
-              final bool compact = constraints.maxWidth < 190.sp * textScale;
+              final bool compact = constraints.maxWidth < 190.ts(context);
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

@@ -4,7 +4,6 @@ import 'package:pure_live/app/router/extensions.dart';
 import 'package:pure_live/core/widgets/tv_button.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/core/widgets/tv_focus_restorer.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// Whether the default app bar may show its back button here.
 ///
@@ -95,12 +94,11 @@ class _TvAppBarState extends State<TvAppBar> with RouteAware {
     // The bar holds the back button and the title, both drawn at the app font
     // scale: a fixed 66.sp bar let an enlarged back button run over its own
     // edge, so the bar follows the text and keeps its chrome together.
-    final double textScale = TvTextScale.factorOf(context);
 
     return Container(
       width: double.infinity,
-      height: 66.sp * textScale,
-      padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale),
+      height: 66.ts(context),
+      padding: EdgeInsets.symmetric(horizontal: 16.ts(context)),
       alignment: Alignment.centerLeft,
       color: Colors.transparent,
       child: Row(
@@ -111,7 +109,7 @@ class _TvAppBarState extends State<TvAppBar> with RouteAware {
               size: TvButtonSize.mini,
               autofocus: false,
               focusNode: widget.backFocusNode,
-              icon: Icon(Icons.arrow_back_ios_new_rounded, size: 24.sp * textScale),
+              icon: Icon(Icons.arrow_back_ios_new_rounded, size: 24.ts(context)),
               onTap: () async {
                 if (widget.beforeBack != null) {
                   final shouldPop = await widget.beforeBack!();
@@ -122,7 +120,7 @@ class _TvAppBarState extends State<TvAppBar> with RouteAware {
                 }
               },
             ),
-            SizedBox(width: 16.sp * textScale),
+            SizedBox(width: 16.ts(context)),
           ],
           Expanded(
             child:
@@ -135,7 +133,7 @@ class _TvAppBarState extends State<TvAppBar> with RouteAware {
                 ),
           ),
           if (widget.actions != null) ...[
-            SizedBox(width: 16.sp * textScale),
+            SizedBox(width: 16.ts(context)),
             Row(mainAxisSize: MainAxisSize.min, children: widget.actions!),
           ],
         ],

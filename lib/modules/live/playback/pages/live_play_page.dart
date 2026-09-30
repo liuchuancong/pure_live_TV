@@ -49,7 +49,7 @@ class LivePlayPage extends ConsumerWidget {
                 // The frame tracks the same text factor the panels inside size
                 // themselves by (400 design px at 100%): a fixed frame clipped
                 // an enlarged panel's rows instead of growing with them.
-                width: 400.sp * TvTextScale.factorOf(context),
+                width: 400.ts(context),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20.sp),
                   child: Container(

@@ -90,7 +90,7 @@ class TvTextScale {
 /// `44.ts(context)` as "the 44 design pixels this label needs at the current
 /// font scale".
 extension TvTextScaledLength on num {
-  double ts(BuildContext context) => toDouble().sp * TvTextScale.factorOf(context);
+  double ts(BuildContext context) => toDouble().ts(context);
 }
 
 /// Grid delegates whose density follows the text.

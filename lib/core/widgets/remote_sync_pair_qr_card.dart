@@ -45,7 +45,7 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
                       ? const CircularProgressIndicator(strokeWidth: 2)
                       : Icon(
                           Icons.error_outline_rounded,
-                          size: 18.sp * TvTextScale.factorOf(context),
+                          size: 18.ts(context),
                           color: tvTheme.secondaryTextColor,
                         ),
                 ),
@@ -63,7 +63,7 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
               TvButton(
                 title: i18nOr('remote_sync_retry', 'Retry'),
                 size: TvButtonSize.mini,
-                icon: Icon(Remix.refresh_line, size: 20.sp * TvTextScale.factorOf(context)),
+                icon: Icon(Remix.refresh_line, size: 20.ts(context)),
                 onTap: () => ref.read(remoteSyncControllerProvider.notifier).restart(),
               ),
             ],
@@ -105,7 +105,7 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
           // its line budget grows with the text: a fixed width + fixed two lines
           // truncated the enlarged hint mid-sentence.
           SizedBox(
-            width: 340.sp * TvTextScale.factorOf(context),
+            width: 340.ts(context),
             child: Text(
               i18nOr('remote_sync_pair_hint', 'Open PureLive on your phone and scan this code to sync settings.'),
               textAlign: TextAlign.center,

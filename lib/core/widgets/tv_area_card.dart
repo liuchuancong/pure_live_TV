@@ -71,7 +71,7 @@ class _TvAreaCardState extends State<TvAreaCard> {
                 // the style below uses), so a line is `fontSize * 1.15` at the
                 // scale the text is drawn at.
                 final double nameLineHeight = 17.sp * 1.15 * textScale;
-                final double nameGap = 8.sp * textScale;
+                final double nameGap = 8.ts(context);
                 final int nameLines = constraints.maxHeight - nameGap >= nameLineHeight * 2 ? 2 : 1;
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,

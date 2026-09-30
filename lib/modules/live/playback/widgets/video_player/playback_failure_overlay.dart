@@ -101,7 +101,7 @@ class _PlaybackFailureOverlayState extends State<PlaybackFailureOverlay> {
               // The message's line budget must survive the enlarged text: a
               // fixed 560.sp held fewer words per line once every glyph grew,
               // and the third line then ellipsised mid-sentence.
-              width: 560.sp * TvTextScale.factorOf(context),
+              width: 560.ts(context),
               child: Text(
                 widget.message,
                 textAlign: TextAlign.center,

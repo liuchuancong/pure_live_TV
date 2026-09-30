@@ -31,7 +31,7 @@ class MusicMiniBar extends ConsumerWidget {
         padding: EdgeInsets.symmetric(horizontal: 16.ts(context) * textScale, vertical: 10.ts(context) * textScale),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(20.sp * textScale),
+          borderRadius: BorderRadius.circular(20.ts(context)),
           border: Border.all(color: accent.withValues(alpha: 0.35)),
         ),
         child: StreamBuilder<PlaybackState>(
@@ -59,7 +59,7 @@ class MusicMiniBar extends ConsumerWidget {
                             ),
                             decoration: BoxDecoration(
                               color: focused ? accent.withValues(alpha: 0.18) : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12.sp * textScale),
+                              borderRadius: BorderRadius.circular(12.ts(context)),
                               border: Border.all(
                                 color: focused ? accent : Colors.transparent,
                                 width: 2.ts(context) * textScale,
@@ -170,10 +170,10 @@ class MusicMiniBar extends ConsumerWidget {
                 ),
                 SizedBox(height: 6.ts(context) * textScale),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(3.sp * textScale),
+                  borderRadius: BorderRadius.circular(3.ts(context)),
                   child: LinearProgressIndicator(
                     value: progress.clamp(0.0, 1.0),
-                    minHeight: 6.sp * textScale,
+                    minHeight: 6.ts(context),
                     backgroundColor: tvTheme.secondaryTextColor.withValues(alpha: 0.25),
                     color: accent,
                   ),

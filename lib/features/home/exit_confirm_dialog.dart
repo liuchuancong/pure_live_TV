@@ -41,7 +41,7 @@ class _ExitConfirmDialog extends StatelessWidget {
             children: [
               Icon(
                 Icons.favorite_rounded,
-                size: 24.sp * TvTextScale.factorOf(context),
+                size: 24.ts(context),
                 color: tvTheme.focusColor,
               ),
               SizedBox(width: 8.sp),
