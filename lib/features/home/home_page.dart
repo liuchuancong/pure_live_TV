@@ -1,8 +1,8 @@
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/modules/vod/index.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/modules/live/hot/hot_page.dart';
 import 'package:pure_live/modules/music/music_section.dart';
 import 'package:pure_live/features/home/home_provider.dart';

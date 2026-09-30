@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
 import 'package:pure_live/core/models/release_model/release_model.dart';

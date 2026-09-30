@@ -1,9 +1,8 @@
-import 'package:pure_live/app/router/app_routes.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app/app_routes.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/app/router/settings_routes.dart' hide $appRoutes;
 
 /// One settings destination: its route, translation keys and icon.
 typedef SettingsEntry = ({String path, String titleKey, String? subtitleKey, IconData icon});

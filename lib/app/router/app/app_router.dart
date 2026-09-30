@@ -1,28 +1,48 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pure_live/features/index.dart';
-import 'package:pure_live/modules/live/index.dart';
 import 'package:pure_live/modules/vod/index.dart';
+import 'package:pure_live/modules/live/index.dart';
 import 'package:pure_live/modules/music/index.dart';
 import 'package:pure_live/modules/video/index.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/app/router/app/app_routes.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/core/widgets/tv_focus_restorer.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
-import 'package:pure_live/app/router/wallpaper_route_observer.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
+import 'package:pure_live/app/router/observers/wallpaper_route_observer.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
-// Typed go_router routes. Every destination is a GoRouteData class; the tree
-// is built from the generated $appRoutes. Navigation uses those classes
-// (`const IptvRoute().push(context)`), so path/argument mistakes are compile
-// errors. AppRoutes owns the path strings shared with the web router.
+import 'package:pure_live/features/settings/pages/app_update_page.dart';
+import 'package:pure_live/features/settings/pages/app_download_page.dart';
+import 'package:pure_live/features/settings/pages/nav_order_section.dart';
+import 'package:pure_live/features/settings/pages/nav_icons_section.dart';
+import 'package:pure_live/modules/live/iptv/pages/iptv_sync_section.dart';
+import 'package:pure_live/features/settings/pages/navigation_section.dart';
+import 'package:pure_live/features/settings/pages/update_history_page.dart';
+import 'package:pure_live/features/settings/pages/device_sync_section.dart';
+import 'package:pure_live/features/settings/pages/account_cookie_page.dart';
+import 'package:pure_live/modules/live/iptv/pages/iptv_manage_section.dart';
+import 'package:pure_live/modules/live/iptv/pages/iptv_import_section.dart';
+import 'package:pure_live/modules/live/iptv/pages/iptv_headers_section.dart';
+import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
+import 'package:pure_live/features/settings/pages/account_bilibili_page.dart';
+import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
+import 'package:pure_live/features/settings/pages/tag_management_section.dart';
+import 'package:pure_live/features/settings/pages/nav_visibility_section.dart';
+import 'package:pure_live/modules/live/iptv/pages/iptv_resources_section.dart';
+import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
+import 'package:pure_live/features/settings/pages/account_settings_section.dart';
+import 'package:pure_live/features/settings/pages/font_family_manager_section.dart';
+import 'package:pure_live/features/settings/pages/platform_display_order_section.dart';
+import 'package:pure_live/features/settings/pages/platform_display_visibility_section.dart';
 
-// The settings tables and shell builder live in settings_routes.dart;
-// re-exported so features that import the router keep their symbols.
-export 'settings_routes.dart';
-
+// The settings routes live in a `part` on purpose: go_router_builder emits one
+// `$appRoutes` per *library*, so a separate `settings_routes.dart` library would
+// generate a second, competing `$appRoutes` — and the local one silently shadows
+// it, leaving every settings path unregistered.
 part 'app_router.g.dart';
+part '../settings/settings_routes.dart';
 
 /// The home shell: side menu plus the tab the user picked.
 @TypedGoRoute<HomeRoute>(path: AppRoutes.kInitial)

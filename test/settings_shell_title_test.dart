@@ -1,8 +1,8 @@
 import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/app/router/app_routes.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
+import 'package:pure_live/app/router/app/app_routes.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
 
 /// The settings routes live in ONE table behind ONE shell.
@@ -15,7 +15,12 @@ import 'package:pure_live/features/settings/tv_settings_page.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  final String routerSource = File('lib/app/router/app_router.dart').readAsStringSync();
+  // The route classes are split over the library and its parts, so the source
+  // guard has to read all of them or it would silently assert nothing.
+  final String routerSource = <String>[
+    'lib/app/router/app/app_router.dart',
+    'lib/app/router/settings/settings_routes.dart',
+  ].map((path) => File(path).readAsStringSync()).join('\n');
 
   test('there is exactly one settings shell, and it is a generated one', () {
     // A hand-built `ShellRoute(` (with a builder argument) would mean a second,
@@ -40,13 +45,27 @@ void main() {
   test('every shell page has a typed route', () {
     // The route classes carry the path constants; the table maps those same
     // paths to pages. A page without a class is unreachable from the typed API.
-    final Set<String> routedPaths = <String>{
-      ...settingsSectionRoutes.keys,
-    };
+    //
+    // `settingsSectionRoutes` is the superset: it is the *push* table the menu
+    // walks, so it also carries the standalone pages (music settings) that own
+    // their scaffold instead of being served by the shell.
+    final Set<String> routedPaths = <String>{...settingsSectionRoutes.keys};
     for (final String path in settingsPageRoutes.keys) {
       expect(routedPaths.contains(path), isTrue, reason: '$path has a page but no typed route');
     }
-    expect(settingsSectionRoutes.length, settingsPageRoutes.length);
+    expect(settingsSectionRoutes.length, greaterThanOrEqualTo(settingsPageRoutes.length));
+  });
+
+  test('the one \$appRoutes registers every settings page', () {
+    // The regression: settings routes used to live in a second library, which
+    // go_router_builder turned into a second `$appRoutes`. The router's local
+    // one shadowed it, `flutter analyze` stayed silent, and every settings path
+    // 404'd at runtime. Routing through the real list is the only check that
+    // catches a shadowed or forgotten route table.
+    final GoRouter router = GoRouter(routes: $appRoutes);
+    for (final String path in <String>[AppRoutes.kSettings, ...settingsPageRoutes.keys]) {
+      expect(router.configuration.findMatch(Uri.parse(path)).isError, isFalse, reason: path);
+    }
   });
 
   test('the whole page table is absolute paths and covers every settings page', () {
@@ -75,9 +94,12 @@ void main() {
     // No duplicates inside the catalog.
     expect(catalogPaths.toSet().length, catalogPaths.length);
 
-    // Every catalog row is a registered page.
+    // Every catalog row must be pushable — the menu pushes
+    // `settingsSectionRoutes[entry.path]`, so a row missing from that table is
+    // a dead menu entry. (It is not necessarily a shell page: music settings
+    // owns its own scaffold.)
     for (final String path in catalogPaths) {
-      expect(settingsPageRoutes.containsKey(path), isTrue, reason: '$path is listed but not registered');
+      expect(settingsSectionRoutes.containsKey(path), isTrue, reason: '$path is listed but not pushable');
     }
   });
 

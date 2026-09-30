@@ -2,9 +2,9 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/web/web_router.dart';
 import 'package:pure_live/modules/live/iptv/services/iptv_import_manager.dart';
 
-import 'package:pure_live/app/router/web_router.dart';
 /// IPTV import page: network playlist URLs only.
 ///
 /// Local file picking is gone — a playlist file is uploaded through the web
@@ -47,7 +47,9 @@ class _IptvImportSectionPageState extends State<IptvImportSectionPage> {
       final ext = p.extension(Uri.parse(target).path).toLowerCase();
       final suffix = {'.m3u', '.m3u8', '.txt'}.contains(ext) ? ext : '.m3u';
       final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}${Platform.pathSeparator}iptv_import_${DateTime.now().millisecondsSinceEpoch}$suffix');
+      final file = File(
+        '${dir.path}${Platform.pathSeparator}iptv_import_${DateTime.now().millisecondsSinceEpoch}$suffix',
+      );
       await file.writeAsString(content);
       final urlName = p.basenameWithoutExtension(Uri.parse(target).path);
       final name = _nameController.text.trim();

@@ -1,7 +1,7 @@
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/web/web_router.dart';
 import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
 
-import 'package:pure_live/app/router/web_router.dart';
 /// IPTV request-header page: User-Agent, Referer and Cookie, each its own
 /// field. These headers are sent with every playlist download/sync and used as
 /// the playback fallback for channels without their own directives; the phone

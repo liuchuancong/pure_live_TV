@@ -1,8 +1,7 @@
 import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/app/router/app_routes.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
+import 'package:pure_live/app/router/app/app_routes.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
 
 /// The settings menu mirrors the desktop app
@@ -124,8 +123,8 @@ void main() {
   });
 
   test('no settings route is an orphan', () {
-    final routesFile = File('lib/app/router/app_routes.dart');
-    final routerFile = File('lib/app/router/app_router.dart');
+    final routesFile = File('lib/app/router/app/app_routes.dart');
+    final routerFile = File('lib/app/router/settings/settings_routes.dart');
     if (!routesFile.existsSync() || !routerFile.existsSync()) {
       markTestSkipped('router sources not found relative to ${Directory.current.path}');
       return;

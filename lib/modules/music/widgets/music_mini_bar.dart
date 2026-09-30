@@ -1,9 +1,9 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:media_core/media_core.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';

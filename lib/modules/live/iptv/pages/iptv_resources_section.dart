@@ -1,5 +1,5 @@
-import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/web/web_router.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/modules/live/iptv/data/database.dart' as database;
 import 'package:pure_live/modules/live/iptv/services/iptv_sync_engine.dart';

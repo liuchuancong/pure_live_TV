@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
-import 'package:pure_live/app/router/app_routes.dart';
+import 'package:pure_live/app/router/app/app_routes.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 /// Keeps the video wallpaper in step with the player page's presence on the

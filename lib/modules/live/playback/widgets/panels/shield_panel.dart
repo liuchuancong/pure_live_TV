@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/web/web_router.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/domains/device/tv_remote_receiver.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';

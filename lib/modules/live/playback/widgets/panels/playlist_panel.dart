@@ -1,5 +1,5 @@
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/modules/live/playback/models/live_play_args.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/modules/live/playback/widgets/panels/player_room_row.dart';

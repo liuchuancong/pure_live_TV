@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/widgets/index.dart';
 import 'package:pure_live/core/utils/toast_util.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/core/theme/tv_text_scale.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_display_options.dart';

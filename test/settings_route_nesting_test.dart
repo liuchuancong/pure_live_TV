@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 /// Guards the go_router behaviour the settings route table depends on.
 ///
-/// The table itself (`settingsPageRoutes` in `lib/app/router/app_router.dart`) is
+/// The table itself (`settingsPageRoutes` in
+/// `lib/app/router/settings/settings_routes.dart`, a `part` of
+/// `lib/app/router/app/app_router.dart`) is
 /// one absolute-path map behind ONE shell; `test/settings_shell_title_test.dart`
 /// asserts that shape. These tests keep the underlying rule executable: a
 /// `ShellRoute` that owns no path contributes no prefix, so a *relative* child

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_controller.dart';
 
 /// Gates music/video mode content behind a bilibili login, the bmsc way: a

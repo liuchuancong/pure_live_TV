@@ -1,5 +1,5 @@
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/features/settings/pages/navigation_menu_meta.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 

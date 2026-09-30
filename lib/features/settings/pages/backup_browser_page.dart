@@ -1,5 +1,5 @@
-import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/web/web_router.dart';
 
 /// Phone page for downloading and importing a backup.
 ///

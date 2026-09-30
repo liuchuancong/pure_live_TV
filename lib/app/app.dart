@@ -1,7 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:go_transitions/go_transitions.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/app/consts/app_theme_consts.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:pure_live/domains/device/global_room_push.dart';

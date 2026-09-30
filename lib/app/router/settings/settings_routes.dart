@@ -1,39 +1,8 @@
-// Settings routes: every settings-page route class, the settings shell and
-// the two path-keyed tables the shell delegates to. Split out of
-// app_router.dart — the app router reads this file's [settingsSectionRoutes]
-// and [settingsSectionPageBuilders] when assembling the tree.
-
-import 'package:flutter/widgets.dart';
-import 'package:go_router/go_router.dart';
-import 'package:pure_live/app/router/app_routes.dart';
-import 'package:pure_live/features/index.dart';
-import 'package:pure_live/features/settings/pages/app_update_page.dart';
-import 'package:pure_live/features/settings/pages/app_download_page.dart';
-import 'package:pure_live/features/settings/pages/nav_order_section.dart';
-import 'package:pure_live/features/settings/pages/nav_icons_section.dart';
-import 'package:pure_live/features/settings/pages/navigation_section.dart';
-import 'package:pure_live/features/settings/pages/update_history_page.dart';
-import 'package:pure_live/features/settings/pages/device_sync_section.dart';
-import 'package:pure_live/features/settings/pages/account_cookie_page.dart';
-import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
-import 'package:pure_live/features/settings/pages/account_bilibili_page.dart';
-import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
-import 'package:pure_live/features/settings/pages/tag_management_section.dart';
-import 'package:pure_live/features/settings/pages/nav_visibility_section.dart';
-import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
-import 'package:pure_live/features/settings/pages/account_settings_section.dart';
-import 'package:pure_live/features/settings/pages/font_family_manager_section.dart';
-import 'package:pure_live/features/settings/pages/platform_display_order_section.dart';
-import 'package:pure_live/features/settings/pages/platform_display_visibility_section.dart';
-
-// Keep every settings section page import the tables below reference.
-import 'package:pure_live/modules/live/iptv/pages/iptv_sync_section.dart';
-import 'package:pure_live/modules/live/iptv/pages/iptv_manage_section.dart';
-import 'package:pure_live/modules/live/iptv/pages/iptv_import_section.dart';
-import 'package:pure_live/modules/live/iptv/pages/iptv_headers_section.dart';
-import 'package:pure_live/modules/live/iptv/pages/iptv_resources_section.dart';
-
-part 'settings_routes.g.dart';
+// A `part` of app_router.dart, not a library of its own: go_router_builder
+// generates one `$appRoutes` per library, and the settings routes must land in
+// the same list the router feeds to `GoRouter`. All imports therefore live in
+// the parent library.
+part of '../app/app_router.dart';
 
 @TypedShellRoute<SettingsShellRoute>(
   routes: <TypedRoute<RouteData>>[
@@ -123,10 +92,8 @@ class MusicSettingsRoute extends GoRouteData with $MusicSettingsRoute {
   const MusicSettingsRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const SettingsSectionScaffold(
-        location: AppRoutes.kSettingsMusic,
-        child: MusicSettingsSectionPage(),
-      );
+  Widget build(BuildContext context, GoRouterState state) =>
+      const SettingsSectionScaffold(location: AppRoutes.kSettingsMusic, child: MusicSettingsSectionPage());
 }
 
 @TypedGoRoute<SettingsIconPickerRoute>(path: AppRoutes.kSettingsIconPicker)
@@ -699,4 +666,3 @@ final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
   AppRoutes.kSettingsDanmuShield: const DanmuShieldRoute(),
   AppRoutes.kAbout: const AboutRoute(),
 };
-

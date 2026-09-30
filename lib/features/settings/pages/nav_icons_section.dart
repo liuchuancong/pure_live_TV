@@ -1,9 +1,9 @@
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/core/consts/icon_catalog.dart';
+import 'package:pure_live/app/router/app/app_routes.dart';
+import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 import 'package:pure_live/features/settings/pages/icon_picker_section.dart';
 import 'package:pure_live/features/settings/pages/navigation_menu_meta.dart';
-import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
-import 'package:pure_live/core/consts/icon_catalog.dart';
 
 /// navigation & display — icons: which icon each side-menu entry shows.
 ///

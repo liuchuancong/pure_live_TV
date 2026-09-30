@@ -1,8 +1,8 @@
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/web/web_router.dart';
 import 'package:pure_live/modules/live/iptv/services/iptv_sync_engine.dart';
 import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
 
-import 'package:pure_live/app/router/web_router.dart';
 /// IPTV auto-sync page: the global switch, the interval and the batch sync of
 /// every source whose per-item auto-sync is on.
 class IptvSyncSectionPage extends ConsumerStatefulWidget {
@@ -74,15 +74,10 @@ class _IptvSyncSectionPageState extends ConsumerState<IptvSyncSectionPage> {
             if (settings.isAutoSyncEnabled)
               TvSettingsMenuTile<int>(
                 title: i18n('sync_interval_title'),
-                subtitle: i18n(
-                  'sync_interval_hours',
-                  args: {'hour': '${settings.autoSyncHoursInterval}'},
-                ),
+                subtitle: i18n('sync_interval_hours', args: {'hour': '${settings.autoSyncHoursInterval}'}),
                 icon: Icons.schedule_rounded,
                 value: settings.autoSyncHoursInterval,
-                valueMap: {
-                  for (final hours in _intervalOptions) hours: '$hours ${i18n('hours')}',
-                },
+                valueMap: {for (final hours in _intervalOptions) hours: '$hours ${i18n('hours')}'},
                 onChanged: _selectInterval,
               ),
             TvSettingsOptionTile(

@@ -1,8 +1,8 @@
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/platforms/sites.dart';
-import 'package:pure_live/app/router/app_routes.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app/app_routes.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/platforms/douyu/douyu_utils.dart';
 
 /// third-party auth — one row per platform, each opening that platform's own page.

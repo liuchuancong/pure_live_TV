@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/services/settings/settings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
+import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/modules/live/playback/models/live_play_args.dart';
-import 'package:pure_live/modules/live/playback/controllers/live_play_controller.dart';
 import 'package:pure_live/modules/live/playback/widgets/panels/player_room_row.dart';
+import 'package:pure_live/modules/live/playback/controllers/live_play_controller.dart';
 part 'room_switch_dialog_parts.dart';

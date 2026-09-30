@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/log_settings/log_settings_controller.dart';
 

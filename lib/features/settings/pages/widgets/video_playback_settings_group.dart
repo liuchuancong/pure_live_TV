@@ -1,6 +1,6 @@
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:pure_live/features/settings/pages/video_settings_section.dart';
 

@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
-import 'package:pure_live/app/router/web_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/app/router/web/web_router.dart';
 import 'package:pure_live/domains/device/tv_remote_receiver.dart';
 
 /// The "open the web form" card: a QR carrying the web remote's

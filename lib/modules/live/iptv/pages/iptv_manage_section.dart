@@ -1,7 +1,7 @@
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
+import 'package:pure_live/app/router/web/web_router.dart';
 
-import 'package:pure_live/app/router/web_router.dart';
 /// IPTV page: the entry menu only. Every concern lives on its own screen —
 /// the resource list, import, auto-sync and request headers — and every one of
 /// those screens carries the QR card, so anything that needs typing happens on

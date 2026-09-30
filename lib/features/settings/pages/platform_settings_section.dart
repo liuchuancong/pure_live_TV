@@ -1,7 +1,7 @@
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
-import 'package:pure_live/app/router/app_router.dart';
 
 class PlatformSettingsSectionPage extends ConsumerWidget {
   const PlatformSettingsSectionPage({super.key});

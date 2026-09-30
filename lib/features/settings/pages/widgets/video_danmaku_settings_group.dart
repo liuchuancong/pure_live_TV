@@ -1,5 +1,5 @@
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 
 /// The danmaku group: the three danmaku destinations.
 class VideoDanmakuSettingsGroup extends ConsumerWidget {

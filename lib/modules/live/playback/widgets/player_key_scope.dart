@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/modules/live/playback/models/live_play_args.dart';
-import 'package:pure_live/modules/live/playback/states/live_play_state.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
+import 'package:pure_live/modules/live/playback/states/live_play_state.dart';
 import 'package:pure_live/modules/live/playback/controllers/live_play_controller.dart';
-import 'package:pure_live/app/router/app_router.dart';
 
 /// Key handling for the whole player — **without d-pad**.
 ///
@@ -166,9 +166,7 @@ class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
       return;
     }
     // Channel switching uses a route replace, so the previous session is released.
-    LivePlayRoute(
-      LivePlayArgs.fromRoom(target, playlist: rooms, showChannelBanner: true),
-    ).replace(context);
+    LivePlayRoute(LivePlayArgs.fromRoom(target, playlist: rooms, showChannelBanner: true)).replace(context);
   }
 
   /// Left double-press follows or unfollows the room.
