@@ -1,6 +1,6 @@
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/modules/live/playback/models/live_play_args.dart';
-import 'package:pure_live/modules/live/playback/controllers/live_play_controller.dart';
+import 'package:pure_live/modules/live/playback/controllers/danmaku_session_controller.dart';
 
 /// Scrolling danmaku history shown in the right-hand panel.
 ///

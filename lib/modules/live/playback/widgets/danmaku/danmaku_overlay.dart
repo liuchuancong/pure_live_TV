@@ -2,10 +2,10 @@ import 'package:flame_barrage/flame_barrage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/player/danmaku_config_builder.dart';
-import 'package:pure_live/modules/live/playback/controllers/live_play_controller.dart';
 import 'package:pure_live/modules/live/playback/models/live_play_args.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/core/emoji/emoji_manager.dart';
+import 'package:pure_live/modules/live/playback/controllers/danmaku_session_controller.dart';
 
 /// flame_barrage overlay drawn on top of the video.
 ///
