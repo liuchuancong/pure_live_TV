@@ -16,6 +16,7 @@ import 'package:pure_live/modules/video/pages/playback/widgets/video_quality_men
 import 'package:pure_live/modules/video/pages/playback/widgets/video_speed_menu.dart';
 import 'package:pure_live/modules/video/pages/playback/widgets/video_subtitle_menu.dart';
 import 'package:pure_live/modules/video/pages/playback/widgets/video_comments_panel.dart';
+import 'package:pure_live/modules/video/pages/playback/widgets/video_info_panel.dart';
 import 'package:pure_live/modules/video/pages/playback/widgets/video_subtitle_lines.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 part 'video_player_widgets.dart';

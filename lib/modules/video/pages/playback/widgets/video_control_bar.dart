@@ -33,6 +33,7 @@ class VideoPlayerControlBar extends ConsumerStatefulWidget {
     required this.onToggleDanmaku,
     required this.onOpenSubtitleMenu,
     required this.onToggleAspect,
+    required this.onOpenInfo,
   });
 
   /// The bar's single key owner. The page requests it when the controls rise,
@@ -63,6 +64,9 @@ class VideoPlayerControlBar extends ConsumerStatefulWidget {
   final VoidCallback? onOpenSubtitleMenu;
   final VoidCallback onToggleAspect;
 
+  /// Opens the in-player 视频信息 panel (triple-action + detail/UP jumps).
+  final VoidCallback onOpenInfo;
+
   @override
   ConsumerState<VideoPlayerControlBar> createState() => VideoPlayerControlBarState();
 }
@@ -84,7 +88,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
     });
   }
 
-  static const int _itemCount = 13;
+  static const int _itemCount = 14;
 
   static String _timeLabel(Duration d) {
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -178,6 +182,8 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
         widget.onOpenSubtitleMenu?.call();
       case 12:
         widget.onToggleAspect();
+      case 13:
+        widget.onOpenInfo();
     }
   }
 
@@ -303,6 +309,13 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
                 active: false,
                 secondary: true,
                 onTap: widget.onToggleAspect,
+              ),
+              (
+                label: i18n('video_info'),
+                icon: Icon(Icons.info_outline_rounded, size: 22.ts(context)),
+                active: false,
+                secondary: true,
+                onTap: widget.commentsEnabled ? widget.onOpenInfo : null,
               ),
             ];
 

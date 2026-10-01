@@ -35,6 +35,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   bool _controlsVisible = false;
   bool _partsOpen = false;
   bool _commentsOpen = false;
+  bool _infoOpen = false;
   final ScrollController _commentsScroll = ScrollController();
   final List<CommentItem> _comments = [];
   bool _commentsLoading = false;
@@ -344,6 +345,10 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         _closeComments();
         return KeyEventResult.handled;
       }
+      if (_infoOpen) {
+        _closeInfo();
+        return KeyEventResult.handled;
+      }
       if (_partsOpen) {
         _closeParts();
         return KeyEventResult.handled;
@@ -357,6 +362,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
 
     if (_anyMenuOpen) return KeyEventResult.ignored;
     if (_commentsOpen) return KeyEventResult.ignored;
+    if (_infoOpen) return KeyEventResult.ignored;
     if (_partsOpen) return KeyEventResult.ignored;
 
     if (_controlsVisible) {
@@ -451,12 +457,31 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     _autoHideTimer?.cancel();
     setState(() {
       _commentsOpen = true;
+      // Comments and the info panel share the right slot — only one shows.
+      _infoOpen = false;
       if (_commentsPage == 0) _loadComments(oid);
     });
   }
 
   void _closeComments() {
     setState(() => _commentsOpen = false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _controlsVisible) _playNode.requestFocus();
+    });
+    _armAutoHide();
+  }
+
+  void _openInfo() {
+    _autoHideTimer?.cancel();
+    setState(() {
+      _infoOpen = true;
+      _commentsOpen = false;
+      _partsOpen = false;
+    });
+  }
+
+  void _closeInfo() {
+    setState(() => _infoOpen = false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _controlsVisible) _playNode.requestFocus();
     });
@@ -471,7 +496,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     final track = state.current;
 
     return PopScope(
-      canPop: !_anyMenuOpen && !_commentsOpen && !_partsOpen && !_controlsVisible,
+      canPop: !_anyMenuOpen && !_commentsOpen && !_infoOpen && !_partsOpen && !_controlsVisible,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         if (_qualityOpen) {
@@ -482,6 +507,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
           setState(() => _subtitleMenuOpen = false);
         } else if (_commentsOpen) {
           _closeComments();
+        } else if (_infoOpen) {
+          _closeInfo();
         } else if (_partsOpen) {
           _closeParts();
         } else if (_controlsVisible) {
@@ -664,9 +691,9 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                     left: 48.sp,
                     right: 48.sp,
                     child: IgnorePointer(
-                      ignoring: !_controlsVisible || _anyMenuOpen || _partsOpen || _commentsOpen,
+                      ignoring: !_controlsVisible || _anyMenuOpen || _partsOpen || _commentsOpen || _infoOpen,
                       child: ExcludeFocus(
-                        excluding: !_controlsVisible || _anyMenuOpen || _partsOpen || _commentsOpen,
+                        excluding: !_controlsVisible || _anyMenuOpen || _partsOpen || _commentsOpen || _infoOpen,
                         child: VideoPlayerControlBar(
                           playNode: _playNode,
                           onInteraction: _armAutoHide,
@@ -701,6 +728,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                                   setState(() => _subtitleMenuOpen = true);
                                 },
                           onToggleAspect: () => setState(() => _aspectFill = !_aspectFill),
+                          onOpenInfo: _openInfo,
                         ),
                       ),
                     ),
@@ -759,6 +787,16 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                         onLoadMore: () => _loadComments(track.archive.aid),
                         onClose: _closeComments,
                       ),
+                    ),
+
+                  // -------------------------------------------------- info panel
+                  if (_infoOpen && track != null)
+                    Positioned(
+                      top: 100.sp,
+                      bottom: 100.sp,
+                      right: 48.sp,
+                      width: 640.ts(context),
+                      child: VideoInfoPanel(archive: track.archive, onClose: _closeInfo),
                     ),
 
                   // -------------------------------------------------- parts panel

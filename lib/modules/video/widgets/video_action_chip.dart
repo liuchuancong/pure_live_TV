@@ -3,11 +3,21 @@ import 'package:pure_live/exports/common_export.dart';
 
 /// One interaction chip: a compact icon+label pill in the focused palette.
 class VideoActionChip extends StatelessWidget {
-  const VideoActionChip({super.key, required this.icon, required this.label, this.active = false, this.onTap});
+  const VideoActionChip({
+    super.key,
+    required this.icon,
+    required this.label,
+    this.active = false,
+    this.autofocus = false,
+    this.onTap,
+  });
 
   final IconData icon;
   final String label;
   final bool active;
+
+  /// Only the leading chip across a panel grabs the keyboard on open.
+  final bool autofocus;
   final VoidCallback? onTap;
 
   @override
@@ -16,6 +26,7 @@ class VideoActionChip extends StatelessWidget {
     final accent = tvTheme.focusColor;
 
     return TvFocusable(
+      autofocus: autofocus,
       onTap: onTap,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
