@@ -152,11 +152,13 @@ class _TvAreaCardState extends State<TvAreaCard> {
       // ancestor). The extra `Scrollable.ensureVisible` here animated to a
       // second, different offset and made the grid jitter while moving.
       onSelect: () {
+        if (tvDialogLockedNow) return;
         // The long press owns this press; its release must not open the area.
         if (_longPressGate.swallowSelect()) return;
         widget.onTap();
       },
       onLongSelect: () {
+        if (tvDialogLockedNow) return;
         _longPressGate.markLongPress();
         widget.onLongPress();
       },

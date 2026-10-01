@@ -307,11 +307,13 @@ class _VideoCardState extends ConsumerState<VideoCard> {
       // TvRoomCard's long-press gate: opening the actions row on a hold must
       // not also fire the hold's release as a tap.
       onSelect: () {
+        if (tvDialogLockedNow) return;
         if (_longPressGate.swallowSelect()) return;
         widget.onTap.call();
       },
       onLongSelect: archive.aid > 0
           ? () {
+              if (tvDialogLockedNow) return;
               _longPressGate.markLongPress();
               setState(() => _actionsOpen = true);
             }

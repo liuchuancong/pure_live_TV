@@ -296,8 +296,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       // ancestor). The extra `Scrollable.ensureVisible` here animated to a
       // second, different offset and made the grid jitter while moving.
       onSelect: () {
-        final isLocked = SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
-        if (isLocked) return;
+        if (tvDialogLockedNow) return;
         // The long press owns this press; its release must not open the room.
         if (_longPressGate.swallowSelect()) return;
         final onTap = widget.onTap;
@@ -314,8 +313,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       onLongSelect: widget.onLongPress == null
           ? null
           : () {
-              final isLocked = SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
-              if (isLocked) return;
+              if (tvDialogLockedNow) return;
               _longPressGate.markLongPress();
               widget.onLongPress!.call();
             },

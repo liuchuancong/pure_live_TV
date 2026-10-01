@@ -4,6 +4,7 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/tv_theme_x.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
+import 'package:pure_live/core/dialog/tv_dialog_lock_provider.dart';
 
 typedef TvFocusableBuilder = Widget Function(BuildContext context, bool isFocused, Widget? child);
 
@@ -54,12 +55,14 @@ class _TvFocusableState extends State<TvFocusable> {
       focusNode: widget.focusNode,
       onDirection: widget.onDirection,
       onSelect: () {
+        if (tvDialogLockedNow) return;
         if (_longPressGate.swallowSelect()) return;
         widget.onTap?.call();
       },
       onLongSelect: widget.onLongPress == null
           ? null
           : () {
+              if (tvDialogLockedNow) return;
               _longPressGate.markLongPress();
               widget.onLongPress!.call();
             },

@@ -213,12 +213,14 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
       autofocus: false,
       effects: effects,
       onSelect: () {
+        if (tvDialogLockedNow) return;
         if (_longPressGate.swallowSelect()) return;
         widget.onTap?.call();
       },
       onLongSelect: widget.onLongPress == null
           ? null
           : () {
+              if (tvDialogLockedNow) return;
               _longPressGate.markLongPress();
               widget.onLongPress!.call();
             },
