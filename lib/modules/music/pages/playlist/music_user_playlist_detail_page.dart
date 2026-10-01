@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -259,35 +258,36 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
                     ],
                   ),
                 ),
+                // No inner DpadRegion here on purpose: the shell's page region
+                // stops at its own rows, and these rows are its siblings, so a
+                // nested region would hide them from the header buttons' Down
+                // press — the key dies on the page region's stop edge and the
+                // list can never take focus.
                 Expanded(
-                  child: DpadRegion(
-                    verticalEdge: DpadEdgeBehavior.leave,
-                    horizontalEdge: DpadEdgeBehavior.leave,
-                    child: ListView.separated(
-                      controller: _scroll,
-                      padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp, top: 16.sp),
-                      itemCount: tracks.length,
-                      separatorBuilder: (_, _) => SizedBox(height: 4.ts(context)),
-                      itemBuilder: (context, index) {
-                        final track = tracks[index];
-                        final isCurrent = playingId == track.id;
-                        return _PlaylistTrackRow(
-                          track: track,
-                          index: index,
-                          isCurrent: isCurrent,
-                          focusNode: _nodeAt(index),
-                          selectMode: _selectMode,
-                          selected: _selectedIds.contains(track.id),
-                          onPlay: () => _selectMode ? _toggleSelected(track.id) : _play(context, ref, tracks, index),
-                          // Select mode: null (not a no-op) so DpadFocusable
-                          // takes the simple onTap path — the no-op still
-                          // armed the long-press timer, whose tap-up route
-                          // could be swallowed by the ListView's scroll
-                          // gesture on the emulator.
-                          onLongPress: _selectMode ? null : () => _showSongMenu(context, ref, track, index),
-                        );
-                      },
-                    ),
+                  child: ListView.separated(
+                    controller: _scroll,
+                    padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp, top: 16.sp),
+                    itemCount: tracks.length,
+                    separatorBuilder: (_, _) => SizedBox(height: 4.ts(context)),
+                    itemBuilder: (context, index) {
+                      final track = tracks[index];
+                      final isCurrent = playingId == track.id;
+                      return _PlaylistTrackRow(
+                        track: track,
+                        index: index,
+                        isCurrent: isCurrent,
+                        focusNode: _nodeAt(index),
+                        selectMode: _selectMode,
+                        selected: _selectedIds.contains(track.id),
+                        onPlay: () => _selectMode ? _toggleSelected(track.id) : _play(context, ref, tracks, index),
+                        // Select mode: null (not a no-op) so DpadFocusable
+                        // takes the simple onTap path — the no-op still
+                        // armed the long-press timer, whose tap-up route
+                        // could be swallowed by the ListView's scroll
+                        // gesture on the emulator.
+                        onLongPress: _selectMode ? null : () => _showSongMenu(context, ref, track, index),
+                      );
+                    },
                   ),
                 ),
               ],
