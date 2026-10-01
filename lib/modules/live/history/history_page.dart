@@ -141,9 +141,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         roomId: room.roomId,
         platform: room.platform,
       ).timeout(_roomRefreshTimeout);
-      // Some platforms answer with another canonical id: re-binding keeps the
-      // identity the history list dedupes by.
-      return preserveHistoryMetadata(refreshed.copyWith(roomId: room.roomId, platform: room.platform), room);
+      // Some platforms answer with another canonical id: withRefreshFrom keeps
+      // the identity the history list dedupes by, and fills whatever the
+      // response left blank (cover/avatar/nick included) from the stored entry
+      // so a partial refresh never blanks the card.
+      return room.withRefreshFrom(refreshed);
     } catch (e) {
       developer.log('History room refresh failed for ${room.identityKey}: $e');
       return null;

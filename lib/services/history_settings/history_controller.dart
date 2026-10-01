@@ -43,12 +43,6 @@ List<LiveRoom> upsertHistoryRoom(List<LiveRoom> current, LiveRoom room, {int lim
   return next;
 }
 
-/// Merges a refreshed room snapshot while keeping the history entry's
-/// display context.
-LiveRoom preserveHistoryMetadata(LiveRoom refreshed, LiveRoom previous) {
-  return refreshed.withAudienceFallbackFrom(previous);
-}
-
 @riverpod
 class HistoryController extends _$HistoryController {
   static HistoryController get to => SettingsService.to.history;

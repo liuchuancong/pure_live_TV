@@ -374,7 +374,13 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       // Some platforms answer with a different canonical id (Douyin reports the
       // web rid, for example). Re-binding keeps the identity that the merge
       // target and the local tags are keyed by.
-      return refreshed.copyWith(roomId: room.roomId, platform: room.platform);
+      //
+      // A partial profile response leaves cover/avatar/nick blank; publishing it
+      // verbatim rewrote a card the user could see into one missing its cover.
+      // withRefreshFrom keeps the followed identity and takes whatever the
+      // response really carries, filling only the fields it left empty from the
+      // stored room, so a refresh never blanks visible metadata.
+      return room.withRefreshFrom(refreshed);
     } catch (e) {
       developer.log('Favorite room refresh failed for ${room.identityKey}: $e');
       return null;
