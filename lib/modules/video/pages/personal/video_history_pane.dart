@@ -85,7 +85,7 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
           final finished = item.finished;
           return TvFocusable(
             onTap: () => openVideoArchive(context, ref, item.archive),
-            onLongPress: () => _delete(item),
+            onLongPress: () => _showActions(item),
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
               margin: EdgeInsets.only(bottom: 10.sp),
@@ -234,6 +234,41 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
     );
   }
 
+  /// Long-press answers with the card overlay's options (newBV's
+  /// SmallVideoCard): 稍后再看 / UP主主页 — plus 删除观看记录, which our
+  /// endpoint has and the reference lacks.
+  Future<void> _showActions(HistoryItem item) async {
+    final action = await TvDialogUtils.show<String>(
+      context: context,
+      builder: (dialogContext) => _HistoryActionDialog(
+        canOpenUp: item.archive.upMid > 0,
+        onPick: (code) => Navigator.of(dialogContext).pop(code),
+      ),
+    );
+    if (action == null || !mounted) return;
+    switch (action) {
+      case 'toview':
+        await _addToView(item);
+      case 'up':
+        UgcUserSpaceRoute(item.archive.upMid, item.archive.upName).push(context);
+      case 'delete':
+        await _delete(item);
+    }
+  }
+
+  Future<void> _addToView(HistoryItem item) async {
+    if (!BilibiliUgcApi.instance.isLoggedIn) {
+      ToastUtil.show(i18n('video_action_need_login'));
+      return;
+    }
+    try {
+      await BilibiliUgcApi.instance.addToView(item.archive.aid);
+      ToastUtil.show(i18n('video_action_toviewed'));
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18n('video_action_failed'));
+    }
+  }
+
   /// Long-press deletes the row from the bilibili watch history and drops it
   /// from the list.
   Future<void> _delete(HistoryItem item) async {
@@ -266,6 +301,50 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
     final m = seconds.remainder(3600) ~/ 60;
     final s = seconds.remainder(60);
     return h > 0 ? '$h:${two(m)}:${two(s)}' : '${two(m)}:${two(s)}';
+  }
+}
+
+/// The long-press options sheet for one history row — the reference card's
+/// overlay icons rendered as a d-pad dialog.
+class _HistoryActionDialog extends StatelessWidget {
+  const _HistoryActionDialog({required this.canOpenUp, required this.onPick});
+
+  final bool canOpenUp;
+  final void Function(String code) onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    return TvDialog(
+      title: i18n('video_history_actions'),
+      width: 640.ts(context),
+      cancelText: i18n('cancel'),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _action(context, 'toview', Icons.watch_later_outlined, 'video_action_toview'),
+          SizedBox(height: 10.ts(context)),
+          if (canOpenUp) ...[
+            _action(context, 'up', Icons.person_outline_rounded, 'video_action_up_page'),
+            SizedBox(height: 10.ts(context)),
+          ],
+          _action(context, 'delete', Icons.delete_outline_rounded, 'video_history_delete'),
+        ],
+      ),
+    );
+  }
+
+  Widget _action(BuildContext context, String code, IconData icon, String labelKey) {
+    return SizedBox(
+      width: double.infinity,
+      child: TvButton(
+        autofocus: code == 'toview',
+        title: i18n(labelKey),
+        icon: Icon(icon, size: 24.ts(context)),
+        size: TvButtonSize.medium,
+        isSecondary: true,
+        onTap: () => onPick(code),
+      ),
+    );
   }
 }
 

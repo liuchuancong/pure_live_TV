@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ToViewItem {
 
- MusicArchive get archive; int get cid; int get addAt;
+ MusicArchive get archive; int get cid; int get addAt;/// Server-side watched seconds; `-1` answers for a finished video — the
+/// reference app partitions its 稍后再看 grid on exactly that.
+ int get progress;
 /// Create a copy of ToViewItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,20 +29,20 @@ $ToViewItemCopyWith<ToViewItem> get copyWith => _$ToViewItemCopyWithImpl<ToViewI
 @override
 bool operator ==(Object other) {
   final _this = this as ToViewItem;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ToViewItem&&(identical(other.archive, _this.archive) || other.archive == _this.archive)&&(identical(other.cid, _this.cid) || other.cid == _this.cid)&&(identical(other.addAt, _this.addAt) || other.addAt == _this.addAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ToViewItem&&(identical(other.archive, _this.archive) || other.archive == _this.archive)&&(identical(other.cid, _this.cid) || other.cid == _this.cid)&&(identical(other.addAt, _this.addAt) || other.addAt == _this.addAt)&&(identical(other.progress, _this.progress) || other.progress == _this.progress));
 }
 
 
 @override
 int get hashCode {
   final _this = this as ToViewItem;
-  return Object.hash(runtimeType,_this.archive,_this.cid,_this.addAt);
+  return Object.hash(runtimeType,_this.archive,_this.cid,_this.addAt,_this.progress);
 }
 
 @override
 String toString() {
   final _this = this as ToViewItem;
-  return 'ToViewItem(archive: ${_this.archive}, cid: ${_this.cid}, addAt: ${_this.addAt})';
+  return 'ToViewItem(archive: ${_this.archive}, cid: ${_this.cid}, addAt: ${_this.addAt}, progress: ${_this.progress})';
 }
 
 
@@ -51,7 +53,7 @@ abstract mixin class $ToViewItemCopyWith<$Res>  {
   factory $ToViewItemCopyWith(ToViewItem value, $Res Function(ToViewItem) _then) = _$ToViewItemCopyWithImpl;
 @useResult
 $Res call({
- MusicArchive archive, int cid, int addAt
+ MusicArchive archive, int cid, int addAt, int progress
 });
 
 
@@ -68,11 +70,12 @@ class _$ToViewItemCopyWithImpl<$Res>
 
 /// Create a copy of ToViewItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? archive = null,Object? cid = null,Object? addAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? archive = null,Object? cid = null,Object? addAt = null,Object? progress = null,}) {
   return _then(ToViewItem(
 archive: null == archive ? _self.archive : archive // ignore: cast_nullable_to_non_nullable
 as MusicArchive,cid: null == cid ? _self.cid : cid // ignore: cast_nullable_to_non_nullable
 as int,addAt: null == addAt ? _self.addAt : addAt // ignore: cast_nullable_to_non_nullable
+as int,progress: null == progress ? _self.progress : progress // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -167,10 +170,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( MusicArchive archive,  int cid,  int addAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( MusicArchive archive,  int cid,  int addAt,  int progress)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ToViewItem() when $default != null:
-return $default(_that.archive,_that.cid,_that.addAt);case _:
+return $default(_that.archive,_that.cid,_that.addAt,_that.progress);case _:
   return orElse();
 
 }
@@ -188,10 +191,10 @@ return $default(_that.archive,_that.cid,_that.addAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( MusicArchive archive,  int cid,  int addAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( MusicArchive archive,  int cid,  int addAt,  int progress)  $default,) {final _that = this;
 switch (_that) {
 case _ToViewItem():
-return $default(_that.archive,_that.cid,_that.addAt);case _:
+return $default(_that.archive,_that.cid,_that.addAt,_that.progress);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +211,10 @@ return $default(_that.archive,_that.cid,_that.addAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( MusicArchive archive,  int cid,  int addAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( MusicArchive archive,  int cid,  int addAt,  int progress)?  $default,) {final _that = this;
 switch (_that) {
 case _ToViewItem() when $default != null:
-return $default(_that.archive,_that.cid,_that.addAt);case _:
+return $default(_that.archive,_that.cid,_that.addAt,_that.progress);case _:
   return null;
 
 }
@@ -223,12 +226,15 @@ return $default(_that.archive,_that.cid,_that.addAt);case _:
 
 
 class _ToViewItem implements ToViewItem {
-  const _ToViewItem({required this.archive, this.cid = 0, this.addAt = 0});
+  const _ToViewItem({required this.archive, this.cid = 0, this.addAt = 0, this.progress = 0});
   
 
 @override final  MusicArchive archive;
 @override@JsonKey() final  int cid;
 @override@JsonKey() final  int addAt;
+/// Server-side watched seconds; `-1` answers for a finished video — the
+/// reference app partitions its 稍后再看 grid on exactly that.
+@override@JsonKey() final  int progress;
 
 /// Create a copy of ToViewItem
 /// with the given fields replaced by the non-null parameter values.
@@ -240,18 +246,18 @@ _$ToViewItemCopyWith<_ToViewItem> get copyWith => __$ToViewItemCopyWithImpl<_ToV
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ToViewItem&&(identical(other.archive, archive) || other.archive == archive)&&(identical(other.cid, cid) || other.cid == cid)&&(identical(other.addAt, addAt) || other.addAt == addAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ToViewItem&&(identical(other.archive, archive) || other.archive == archive)&&(identical(other.cid, cid) || other.cid == cid)&&(identical(other.addAt, addAt) || other.addAt == addAt)&&(identical(other.progress, progress) || other.progress == progress));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,archive,cid,addAt);
+    return Object.hash(runtimeType,archive,cid,addAt,progress);
 }
 
 @override
 String toString() {
-    return 'ToViewItem(archive: $archive, cid: $cid, addAt: $addAt)';
+    return 'ToViewItem(archive: $archive, cid: $cid, addAt: $addAt, progress: $progress)';
 }
 
 
@@ -262,7 +268,7 @@ abstract mixin class _$ToViewItemCopyWith<$Res> implements $ToViewItemCopyWith<$
   factory _$ToViewItemCopyWith(_ToViewItem value, $Res Function(_ToViewItem) _then) = __$ToViewItemCopyWithImpl;
 @override @useResult
 $Res call({
- MusicArchive archive, int cid, int addAt
+ MusicArchive archive, int cid, int addAt, int progress
 });
 
 
@@ -279,11 +285,12 @@ class __$ToViewItemCopyWithImpl<$Res>
 
 /// Create a copy of ToViewItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? archive = null,Object? cid = null,Object? addAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? archive = null,Object? cid = null,Object? addAt = null,Object? progress = null,}) {
   return _then(_ToViewItem(
 archive: null == archive ? _self.archive : archive // ignore: cast_nullable_to_non_nullable
 as MusicArchive,cid: null == cid ? _self.cid : cid // ignore: cast_nullable_to_non_nullable
 as int,addAt: null == addAt ? _self.addAt : addAt // ignore: cast_nullable_to_non_nullable
+as int,progress: null == progress ? _self.progress : progress // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

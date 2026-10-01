@@ -285,7 +285,7 @@ class BilibiliUgcApi {
   /// Deletes one archive's row from the bilibili watch history
   /// (`x/v2/history/delete`, POST with the part's cid as `kid=1`).
   Future<void> deleteHistory({required int aid, required int cid}) async {
-    _client.postForm('https://api.bilibili.com/x/v2/history/delete', {
+    await _client.postForm('https://api.bilibili.com/x/v2/history/delete', {
       'kid': '1',
       'aid': '$aid',
       'cid': '$cid',

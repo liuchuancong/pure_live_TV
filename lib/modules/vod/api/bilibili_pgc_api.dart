@@ -101,12 +101,14 @@ class BilibiliPgcApi {
     return out;
   }
 
-  /// `x/space/bangumi/follow/list`). [type]: 1 bangumi, 2 drama.
-  Future<List<PgcItem>> getFollowedSeasons({int type = 1, int page = 1, int pageSize = 20}) async {
+  /// `x/space/bangumi/follow/list`). [type]: 1 bangumi, 2 drama;
+  /// [followStatus]: 0 all, 1 想看, 2 在看, 3 看过 (the reference's filter dialog).
+  Future<List<PgcItem>> getFollowedSeasons({int type = 1, int followStatus = 0, int page = 1, int pageSize = 20}) async {
     _client.ensureLogin();
     final data = await _tryGet('https://api.bilibili.com/x/space/bangumi/follow/list', query: {
       'vmid': '${_client.myMid}',
       'type': '$type',
+      if (followStatus != 0) 'follow_status': '$followStatus',
       'pn': '$page',
       'ps': '$pageSize',
     });

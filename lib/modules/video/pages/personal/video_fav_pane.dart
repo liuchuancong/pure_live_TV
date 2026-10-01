@@ -28,10 +28,30 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
   int? _openFolderId;
   List<FavResource>? _resources;
 
+  /// The opened folder's paging — the reference walks `pn` at ps=20 and loads
+  /// the next batch at the grid's tail.
+  static const int _resPageSize = 20;
+  final ScrollController _resScroll = ScrollController();
+  int _resPage = 0;
+  bool _resHasMore = true;
+  bool _resLoading = false;
+
   @override
   void initState() {
     super.initState();
+    _resScroll.addListener(_onResScroll);
     _loadFolders();
+  }
+
+  @override
+  void dispose() {
+    _resScroll.removeListener(_onResScroll);
+    _resScroll.dispose();
+    super.dispose();
+  }
+
+  void _onResScroll() {
+    if (_resScroll.hasClients && _resScroll.position.extentAfter < 400) _loadResources();
   }
 
   Future<void> _loadFolders() async {
@@ -66,14 +86,37 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
     setState(() {
       _openFolderId = folder.id;
       _resources = null;
+      _resPage = 0;
+      _resHasMore = true;
+      _resLoading = false;
     });
+    await _loadResources();
+  }
+
+  Future<void> _loadResources() async {
+    final folderId = _openFolderId;
+    if (folderId == null || _resLoading || !_resHasMore) return;
+    setState(() => _resLoading = true);
     try {
-      final resources = await BilibiliUgcApi.instance.getFavResources(folder.id, pageSize: 25);
-      if (!mounted) return;
-      setState(() => _resources = resources);
+      final batch = await BilibiliUgcApi.instance.getFavResources(
+        folderId,
+        page: _resPage + 1,
+        pageSize: _resPageSize,
+      );
+      if (!mounted || _openFolderId != folderId) return;
+      setState(() {
+        _resources = [...(_resources ?? const <FavResource>[]), ...batch];
+        _resPage++;
+        _resHasMore = batch.length >= _resPageSize;
+        _resLoading = false;
+      });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _resources = []);
+      setState(() {
+        _resources = _resources ?? const [];
+        _resHasMore = false;
+        _resLoading = false;
+      });
       ToastUtil.show(e.toString());
     }
   }
@@ -107,10 +150,22 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
             child: DpadRegion(
               horizontalEdge: DpadEdgeBehavior.leave,
               child: GridView.builder(
+                controller: _resScroll,
                 padding: EdgeInsets.all(24.ts(context)),
                 gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
-                itemCount: _resources!.length,
+                itemCount: _resources!.length + (_resHasMore ? 1 : 0),
                 itemBuilder: (context, index) {
+                  if (index >= _resources!.length) {
+                    return Center(
+                      child: _resLoading
+                          ? SizedBox(
+                              width: 30.ts(context),
+                              height: 30.ts(context),
+                              child: CircularProgressIndicator(strokeWidth: 3.ts(context), color: accent),
+                            )
+                          : const SizedBox.shrink(),
+                    );
+                  }
                   final archive = _resources![index].toArchive();
                   return VideoCard(archive: archive, onTap: () => openVideoArchive(context, ref, archive));
                 },

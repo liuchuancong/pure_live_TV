@@ -10,6 +10,10 @@ abstract class ToViewItem with _$ToViewItem {
     required MusicArchive archive,
     @Default(0) int cid,
     @Default(0) int addAt,
+
+    /// Server-side watched seconds; `-1` answers for a finished video — the
+    /// reference app partitions its 稍后再看 grid on exactly that.
+    @Default(0) int progress,
   }) = _ToViewItem;
 
   factory ToViewItem.fromJson(Map<dynamic, dynamic> json) {
@@ -25,6 +29,7 @@ abstract class ToViewItem with _$ToViewItem {
       ),
       cid: int.tryParse(json['cid']?.toString() ?? '') ?? 0,
       addAt: int.tryParse(json['add_at']?.toString() ?? '') ?? 0,
+      progress: int.tryParse(json['progress']?.toString() ?? '') ?? 0,
     );
   }
 }
