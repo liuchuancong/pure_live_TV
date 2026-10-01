@@ -87,6 +87,13 @@ abstract class DanmakuSettingsModel with _$DanmakuSettingsModel {
     /// Minimum clearance between consecutive danmaku in one lane, in logical
     /// pixels (`BarrageConfig.overlapSafeGap`).
     @Default(40.0) double danmakuOverlapSafeGap,
+    /// Same-screen cap forwarded to `BarrageConfig.maxVisibleCount`.
+    ///
+    /// `0` keeps the device-tuned budget (40 blits on a weak GPU, 64 elsewhere);
+    /// any other value overrides it, so a box with headroom can push more lines
+    /// on screen — this mirrors the mobile app's "max on-screen danmaku" knob,
+    /// just defaulted to the TV's own performance profile instead of a flat 48.
+    @Default(0) int danmakuMaxVisibleCount,
     /// Queue cap before the oldest waiting message is dropped
     /// (`BarrageConfig.maxPendingCount`).
     @Default(120) int danmakuMaxPendingCount,

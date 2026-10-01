@@ -53,6 +53,9 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
       danmakuLetterSpacing: (HivePrefUtil.getDouble('danmakuLetterSpacing') ?? 0.0).clamp(0.0, 8.0),
       danmakuFixedDuration: (HivePrefUtil.getInt('danmakuFixedDuration') ?? 4).clamp(1, 15),
       danmakuOverlapSafeGap: (HivePrefUtil.getDouble('danmakuOverlapSafeGap') ?? 40.0).clamp(0.0, 120.0),
+      // 0 = "auto": the config builder falls back to the device budget. Stored
+      // as-is so a peer/backup that named an explicit number still wins.
+      danmakuMaxVisibleCount: (HivePrefUtil.getInt('danmakuMaxVisibleCount') ?? 0).clamp(0, 120),
       danmakuMaxPendingCount: (HivePrefUtil.getInt('danmakuMaxPendingCount') ?? 120).clamp(30, 400),
       danmakuMaxPendingAge: (HivePrefUtil.getInt('danmakuMaxPendingAge') ?? 5).clamp(1, 30),
       danmakuFps: (HivePrefUtil.getInt('danmakuFps') ?? 60).clamp(30, 240),
@@ -194,6 +197,7 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
     HivePrefUtil.setDouble('danmakuLetterSpacing', state.danmakuLetterSpacing);
     HivePrefUtil.setInt('danmakuFixedDuration', state.danmakuFixedDuration);
     HivePrefUtil.setDouble('danmakuOverlapSafeGap', state.danmakuOverlapSafeGap);
+    HivePrefUtil.setInt('danmakuMaxVisibleCount', state.danmakuMaxVisibleCount);
     HivePrefUtil.setInt('danmakuMaxPendingCount', state.danmakuMaxPendingCount);
     HivePrefUtil.setInt('danmakuMaxPendingAge', state.danmakuMaxPendingAge);
     HivePrefUtil.setInt('danmakuFps', state.danmakuFps);

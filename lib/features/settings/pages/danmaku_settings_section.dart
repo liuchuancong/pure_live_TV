@@ -232,6 +232,19 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
                 displayValue: '${state.danmakuMaxPendingAge}s',
                 onChanged: (v) => update((s) => s.copyWith(danmakuMaxPendingAge: v.round())),
               ),
+              TvSettingsSliderTile(
+                title: i18n('danmaku_max_visible_count'),
+                subtitle: i18n('danmaku_max_visible_count_desc'),
+                icon: Icons.layers_rounded,
+                value: state.danmakuMaxVisibleCount.toDouble(),
+                min: 0,
+                max: 120,
+                step: 5,
+                displayValue: state.danmakuMaxVisibleCount == 0
+                    ? i18n('danmaku_visible_auto')
+                    : '${state.danmakuMaxVisibleCount}',
+                onChanged: (v) => update((s) => s.copyWith(danmakuMaxVisibleCount: v.round())),
+              ),
             ],
           ),
           SizedBox(height: 20.ts(context)),

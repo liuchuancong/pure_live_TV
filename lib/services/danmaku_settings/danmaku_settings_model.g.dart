@@ -29,6 +29,8 @@ _DanmakuSettingsModel _$DanmakuSettingsModelFromJson(
   danmakuFixedDuration: (json['danmakuFixedDuration'] as num?)?.toInt() ?? 4,
   danmakuOverlapSafeGap:
       (json['danmakuOverlapSafeGap'] as num?)?.toDouble() ?? 40.0,
+  danmakuMaxVisibleCount:
+      (json['danmakuMaxVisibleCount'] as num?)?.toInt() ?? 0,
   danmakuMaxPendingCount:
       (json['danmakuMaxPendingCount'] as num?)?.toInt() ?? 120,
   danmakuMaxPendingAge: (json['danmakuMaxPendingAge'] as num?)?.toInt() ?? 5,
@@ -95,6 +97,7 @@ Map<String, dynamic> _$DanmakuSettingsModelToJson(
   'danmakuLetterSpacing': instance.danmakuLetterSpacing,
   'danmakuFixedDuration': instance.danmakuFixedDuration,
   'danmakuOverlapSafeGap': instance.danmakuOverlapSafeGap,
+  'danmakuMaxVisibleCount': instance.danmakuMaxVisibleCount,
   'danmakuMaxPendingCount': instance.danmakuMaxPendingCount,
   'danmakuMaxPendingAge': instance.danmakuMaxPendingAge,
   'danmakuFps': instance.danmakuFps,

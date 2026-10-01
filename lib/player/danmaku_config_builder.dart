@@ -18,7 +18,8 @@ import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart'
 ///   then blits one textured quad, instead of re-running its text and stroke
 ///   ops on every frame. This is the single biggest win on TV hardware.
 /// * `maxVisibleCount` is the number of bitmap blits per frame — 40 on a weak
-///   GPU, 64 on a box with room to spare.
+///   GPU, 64 on a box with room to spare. A user override (any non-zero
+///   `danmakuMaxVisibleCount`) replaces that device budget outright.
 /// * `emitInterval` is a *ceiling* on how fast messages are admitted, not a
 ///   rate: a quiet room is unaffected, a burst is paced. 50ms keeps a busy chat
 ///   readable, 100ms is headroom for the weakest boxes.
@@ -59,7 +60,11 @@ BarrageConfig buildDanmakuConfig(
     showStroke: settings.enableDanmakuStroke,
     noEmojiMode: settings.noEmojiMode,
     fps: resolveDanmakuFps(settings, refreshRate: refreshRate),
-    maxVisibleCount: lowEnd ? 40 : 64,
+    // User override first; otherwise the device budget — a weak GPU affords
+    // fewer bitmap blits per frame than a box with headroom. `0` means "auto".
+    maxVisibleCount: settings.danmakuMaxVisibleCount > 0
+        ? settings.danmakuMaxVisibleCount
+        : (lowEnd ? 40 : 64),
     // Spelled out rather than left to the package default: this is the switch the
     // whole TV tuning rests on, and it must not follow a future default change.
     rasterizeItems: true,
