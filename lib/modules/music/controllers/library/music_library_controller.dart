@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/exports/common_export.dart';
 
@@ -45,7 +44,6 @@ class MusicLibraryState {
   const MusicLibraryState({
     this.favorites = const [],
     this.recents = const [],
-    this.followedUps = const [],
     this.likedSongs = const [],
     this.playlists = const [],
   });
@@ -53,16 +51,12 @@ class MusicLibraryState {
   final List<MusicArchive> favorites;
   final List<MusicArchive> recents;
 
-  final List<MusicUp> followedUps;
-
   final List<MusicTrack> likedSongs;
 
   final List<MusicUserPlaylist> playlists;
 
   /// Reactive favorite check for widgets holding the state.
   bool isFavorite(String bvid) => favorites.any((a) => a.bvid == bvid);
-
-  bool isFollowingUp(int mid) => followedUps.any((u) => u.mid == mid);
 
   bool isSongLiked(String trackId) => likedSongs.any((t) => t.id == trackId);
 
@@ -80,14 +74,12 @@ class MusicLibraryState {
   MusicLibraryState copyWith({
     List<MusicArchive>? favorites,
     List<MusicArchive>? recents,
-    List<MusicUp>? followedUps,
     List<MusicTrack>? likedSongs,
     List<MusicUserPlaylist>? playlists,
   }) {
     return MusicLibraryState(
       favorites: favorites ?? this.favorites,
       recents: recents ?? this.recents,
-      followedUps: followedUps ?? this.followedUps,
       likedSongs: likedSongs ?? this.likedSongs,
       playlists: playlists ?? this.playlists,
     );
@@ -105,7 +97,6 @@ class MusicLibraryController extends _$MusicLibraryController {
     return MusicLibraryState(
       favorites: _load('musicFavorites'),
       recents: _load('musicRecents'),
-      followedUps: _loadUps('musicFollowedUps'),
       likedSongs: _loadTracks('musicLikedSongs'),
       playlists: _loadPlaylists(),
     );
@@ -153,31 +144,6 @@ class MusicLibraryController extends _$MusicLibraryController {
   void clearRecents() {
     state = state.copyWith(recents: const []);
     _persist('musicRecents', const []);
-  }
-
-  /// Follow / unfollow an uploader. Front-insert on follow, keyed by mid.
-  ///
-  /// Writes through to the bilibili relation as well (best effort, when
-  /// logged in): the UP-space page reads the platform's state, and a local-only
-  void toggleFollowUp(MusicUp up) {
-    final next = List<MusicUp>.from(state.followedUps);
-    final existing = next.indexWhere((u) => u.mid == up.mid);
-    final bool following;
-    if (existing >= 0) {
-      next.removeAt(existing);
-      following = false;
-      ToastUtil.show(i18n('music_up_unfollowed'));
-    } else {
-      next.insert(0, up);
-      following = true;
-      ToastUtil.show(i18n('music_up_followed'));
-    }
-    state = state.copyWith(followedUps: List.unmodifiable(next));
-    _persistUps('musicFollowedUps', next);
-    final api = BilibiliUgcApi.instance;
-    if (api.isLoggedIn) {
-      api.setFollowing(up.mid, follow: following).catchError((Object _) {});
-    }
   }
 
   // ---------------------------------------------------------------- song likes
@@ -328,23 +294,6 @@ class MusicLibraryController extends _$MusicLibraryController {
 
   void _persist(String key, List<MusicArchive> list) {
     HivePrefUtil.setStringList(key, [for (final a in list) jsonEncode(a.toJson())]);
-  }
-
-  List<MusicUp> _loadUps(String key) {
-    try {
-      final raw = HivePrefUtil.getStringList(key) ?? const [];
-      return [
-        for (final entry in raw)
-          if (jsonDecode(entry) case final Map<String, dynamic> map)
-            if (MusicUp.fromJson(map).mid > 0) MusicUp.fromJson(map),
-      ];
-    } catch (_) {
-      return const [];
-    }
-  }
-
-  void _persistUps(String key, List<MusicUp> list) {
-    HivePrefUtil.setStringList(key, [for (final u in list) jsonEncode(u.toJson())]);
   }
 
   /// Track-list codec shared by liked songs and local playlists: archives are

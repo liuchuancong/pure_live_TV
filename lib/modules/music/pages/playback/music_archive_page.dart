@@ -26,6 +26,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
   String? _error;
   bool _liked = false;
   bool _favoured = false;
+  bool _followingUp = false;
   bool _actionBusy = false;
 
   @override
@@ -40,10 +41,22 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
       if (!mounted) return;
       setState(() => _detail = detail);
       _loadStates(detail.aid);
+      _loadFollowState(detail.upMid);
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e.toString());
     }
+  }
+
+  Future<void> _loadFollowState(int mid) async {
+    if (mid <= 0) return;
+    final api = BilibiliUgcApi.instance;
+    if (!api.isLoggedIn) return;
+    try {
+      final following = await api.isFollowing(mid);
+      if (!mounted) return;
+      setState(() => _followingUp = following);
+    } catch (_) {}
   }
 
   Future<void> _loadStates(int aid) async {
@@ -92,6 +105,18 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
     await _loadStates(aid);
   }
 
+  /// Follow / unfollow this archive's UP against the account's relation. No
+  /// local list: the state is read back through [BilibiliUgcApi.isFollowing],
+  /// so it matches what the UP主 tab and the UP space show.
+  Future<void> _toggleFollowUp(int mid) async {
+    if (mid <= 0) return;
+    final unfollowing = _followingUp;
+    await _runAction(() async {
+      await BilibiliUgcApi.instance.setFollowing(mid, follow: !unfollowing);
+      if (mounted) setState(() => _followingUp = !unfollowing);
+    }, unfollowing ? 'music_up_unfollowed' : 'music_up_followed');
+  }
+
   void _playAll(List<MusicTrack> tracks, int startIndex) {
     // Music mode listens: the queue starts audio-only, and the player page's
     // toggle brings the picture back on demand.
@@ -105,7 +130,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
     final accent = tvTheme.focusColor;
     final archive = _detail ?? widget.archive;
     final library = ref.watch(musicLibraryControllerProvider);
-    final followingUp = archive.upMid > 0 && library.isFollowingUp(archive.upMid);
+    final followingUp = archive.upMid > 0 && _followingUp;
     final tracks = archive.tracks;
     // Vertical rhythm follows the app font setting, and the whole page scrolls
     // like the video detail page: a fixed-height left column overflowed by
@@ -310,11 +335,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                     ),
                                     size: TvButtonSize.mini,
                                     isSecondary: !followingUp,
-                                    onTap: () => ref
-                                        .read(musicLibraryControllerProvider.notifier)
-                                        .toggleFollowUp(
-                                          MusicUp(mid: archive.upMid, name: archive.upName, face: archive.upFace),
-                                        ),
+                                    onTap: () => _toggleFollowUp(archive.upMid),
                                   ),
                               ],
                             ),
