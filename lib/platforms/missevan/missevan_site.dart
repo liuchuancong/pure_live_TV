@@ -88,20 +88,22 @@ class MissevanSite extends LiveSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) {
+    final roomId = room.roomId;
+    final platform = room.platform;
     if (platform != id) throw const MissevanException(MissevanFailure.schema);
     return _api.detail(roomId);
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) =>
-      getRoomDetail(roomId: roomId, platform: platform);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) =>
+      getRoomDetail(LiveRoom(roomId: room.roomId, platform: room.platform));
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String roomId, required String platform}) =>
-      getRoomDetail(roomId: roomId, platform: platform);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) =>
+      getRoomDetail(LiveRoom(roomId: room.roomId, platform: room.platform));
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async =>
-      (await getRoomDetail(roomId: roomId, platform: platform)).isLiveNow;
+  Future<bool> getLiveStatus(LiveRoom room) async =>
+      (await getRoomDetail(LiveRoom(roomId: room.roomId, platform: room.platform))).isLiveNow;
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
     if (detail.platform != id) throw const MissevanException(MissevanFailure.schema);
@@ -125,7 +127,7 @@ class MissevanSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(roomId: detail.roomId, platform: detail.platform);
+    final fresh = await getRoomDetail(LiveRoom(roomId: detail.roomId, platform: detail.platform));
     return LivePlayUrlResolution(
       urls: await getPlayUrls(detail: fresh, quality: quality),
       appliedQualityData: quality.selectionId,

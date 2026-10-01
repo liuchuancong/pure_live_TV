@@ -129,22 +129,19 @@ class WeiboSite extends LiveSite
     data: detail,
   );
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async =>
-      _room(await _api.detail(_id(roomId, platform)));
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async => _room(await _api.detail(_id(room.roomId, room.platform)));
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String roomId, required String platform}) =>
-      getRoomDetail(roomId: roomId, platform: platform);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => getRoomDetail(room);
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) =>
-      getRoomDetail(roomId: roomId, platform: platform);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => getRoomDetail(room);
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
-    final room = await getRoomDetailForRefresh(roomId: roomId, platform: platform);
-    if (room.liveStatus == LiveStatus.unknown) {
-      final data = _detail(room);
+  Future<bool> getLiveStatus(LiveRoom room) async {
+    final fresh = await getRoomDetailForRefresh(room);
+    if (fresh.liveStatus == LiveStatus.unknown) {
+      final data = _detail(fresh);
       throw WeiboException(data.access == WeiboAccess.public ? WeiboFailure.unknownState : WeiboFailure.access);
     }
-    return room.isLiveNow;
+    return fresh.isLiveNow;
   }
 
   @override

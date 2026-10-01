@@ -391,10 +391,9 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
-
-  @override
-  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async {
+    final roomId = room.roomId;
+    final platform = room.platform;
     try {
       final loaded = await _loadRoom(roomId, includePlaybackData: true, ensureSession: true);
       if (loaded.isLiveNow) return loaded;
@@ -421,7 +420,8 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async {
+    final roomId = room.roomId;
     try {
       // The room page is normally available anonymously. Start with that one
       // request; bootstrap/register a device once and retry only when the site
@@ -433,7 +433,9 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) async {
+    final roomId = room.roomId;
+    final platform = room.platform;
     final loaded = await _loadRoom(roomId, includePlaybackData: true, ensureSession: true);
     if (loaded.isLiveNow) return loaded;
 
@@ -608,8 +610,8 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
   }
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
-    final room = await getRoomDetailForRefresh(platform: platform, roomId: roomId);
+  Future<bool> getLiveStatus(LiveRoom detail) async {
+    final room = await getRoomDetailForRefresh(detail);
     return room.isLiveNow;
   }
 

@@ -119,24 +119,26 @@ class SeventeenLiveSite extends LiveSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) =>
-      _detail(roomId, platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) =>
+      _detail(room.roomId, room.platform, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String roomId, required String platform}) =>
-      _detail(roomId, platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) =>
+      _detail(room.roomId, room.platform, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) =>
-      _detail(roomId, platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) =>
+      _detail(room.roomId, room.platform, includeMedia: false);
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
-    final room = await getRoomDetailForRefresh(roomId: roomId, platform: platform);
-    if (room.effectiveLiveStatus == LiveStatus.unknown) {
+  Future<bool> getLiveStatus(LiveRoom room) async {
+    final roomId = room.roomId;
+    final platform = room.platform;
+    final fresh = await getRoomDetailForRefresh(LiveRoom(roomId: roomId, platform: platform));
+    if (fresh.effectiveLiveStatus == LiveStatus.unknown) {
       throw const SeventeenLiveException(SeventeenLiveFailure.unknownState);
     }
-    return room.isLiveNow;
+    return fresh.isLiveNow;
   }
 
   @override
@@ -215,7 +217,7 @@ class SeventeenLiveSite extends LiveSite
 
   Future<LivePlayUrlResolution> _resolve(LiveRoom detail, LivePlayQuality quality, {required bool refresh}) async {
     var room = _snapshot(detail);
-    if (refresh) room = _snapshot(await getRoomDetail(roomId: room.roomId, platform: id));
+    if (refresh) room = _snapshot(await getRoomDetail(LiveRoom(roomId: room.roomId, platform: id)));
     final qualityId = quality.selectionId.toString();
     for (final stream in room.streams) {
       if (stream.qualityId == qualityId) {

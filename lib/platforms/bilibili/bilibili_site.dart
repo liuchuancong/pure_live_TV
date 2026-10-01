@@ -630,10 +630,9 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
-
-  @override
-  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async {
+    final roomId = room.roomId;
+    final platform = room.platform;
     try {
       var roomInfo = await getRoomInfo(roomId: roomId);
       var realRoomId = roomInfo["room_info"]["room_id"].toString();
@@ -675,7 +674,8 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async {
+    final roomId = room.roomId;
     final roomInfo = await getRoomInfo(roomId: roomId);
     // Card verification skips getDanmuInfo. Chat credentials are
     // short-lived and useful only after the user enters this room.
@@ -683,11 +683,13 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String platform, required String roomId}) {
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) {
+    final roomId = room.roomId;
+    final platform = room.platform;
     // Bilibili playback is resolved from the canonical room id by a separate
     // API, so the strict metadata-only room still contains everything the
     // recorder needs and avoids an unrelated danmaku credential request.
-    return getRoomDetailForRefresh(platform: platform, roomId: roomId);
+    return getRoomDetailForRefresh(LiveRoom(roomId: roomId, platform: platform));
   }
 
   LiveRoom _buildRoom(Map<String, dynamic> roomInfo, {required String roomId, Object? danmakuData}) {
@@ -791,7 +793,8 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   }
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
+  Future<bool> getLiveStatus(LiveRoom room) async {
+    final roomId = room.roomId;
     var result = await HttpClient.instance.getJson(
       "https://api.live.bilibili.com/room/v1/Room/get_info",
       queryParameters: {"room_id": roomId},

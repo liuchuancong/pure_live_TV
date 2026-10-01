@@ -117,27 +117,30 @@ class AcfunSite extends LiveSite
   ];
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) async {
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async {
+    final roomId = room.roomId;
     final id = AcfunApi.normalizeAuthorId(roomId);
     return parseRoom(await _api.roomInfo(id), id);
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
-    final room = await getRoomDetailForRefresh(roomId: roomId, platform: platform);
-    if (room.liveStatus == LiveStatus.live) {
-      return room.copyWith(data: await _api.playback(room.roomId));
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async {
+    final roomId = room.roomId;
+    final platform = room.platform;
+    final fresh = await getRoomDetailForRefresh(LiveRoom(roomId: roomId, platform: platform));
+    if (fresh.liveStatus == LiveStatus.live) {
+      return fresh.copyWith(data: await _api.playback(fresh.roomId));
     }
-    return room;
+    return fresh;
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String roomId, required String platform}) =>
-      getRoomDetail(roomId: roomId, platform: platform);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => getRoomDetail(room);
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async =>
-      (await getRoomDetailForRefresh(roomId: roomId, platform: platform)).liveStatus == LiveStatus.live;
+  Future<bool> getLiveStatus(LiveRoom room) async =>
+      (await getRoomDetailForRefresh(LiveRoom(roomId: room.roomId, platform: room.platform))).liveStatus ==
+      LiveStatus.live;
 
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
@@ -165,7 +168,7 @@ class AcfunSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(roomId: detail.roomId, platform: id);
+    final fresh = await getRoomDetail(LiveRoom(roomId: detail.roomId, platform: id));
     final urls = await getPlayUrls(detail: fresh, quality: quality);
     return LivePlayUrlResolution(urls: urls, appliedQualityData: quality.selectionId);
   }

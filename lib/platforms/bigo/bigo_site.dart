@@ -180,22 +180,21 @@ final class BigoSite extends LiveSite
       _room(await _api.studioRoom(siteId: _identity(roomId, platform)), includeMedia: includeMedia);
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) =>
-      _detail(roomId, platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) =>
-      _detail(roomId, platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: false);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String roomId, required String platform}) =>
-      _detail(roomId, platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
-    final room = await getRoomDetailForRefresh(roomId: roomId, platform: platform);
-    if (room.effectiveLiveStatus == LiveStatus.unknown) throw const BigoException(BigoFailure.unknownState);
-    return room.isLiveNow;
+  Future<bool> getLiveStatus(LiveRoom room) async {
+    final roomId = room.roomId;
+    final platform = room.platform;
+    final fresh = await getRoomDetailForRefresh(LiveRoom(roomId: roomId, platform: platform));
+    if (fresh.effectiveLiveStatus == LiveStatus.unknown) throw const BigoException(BigoFailure.unknownState);
+    return fresh.isLiveNow;
   }
 
   @override

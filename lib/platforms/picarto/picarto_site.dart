@@ -82,10 +82,11 @@ class PicartoSite extends LiveSite
   }) => _api.searchProfiles(keyword, page: page, pageSize: pageSize, cancel: cancel);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) async =>
-      (await _api.detail(roomId)).room;
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async =>
+      (await _api.detail(room.roomId)).room;
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async {
+    final roomId = room.roomId;
     final detail = await _api.detail(roomId);
     if (detail.master != null) {
       return detail.room.copyWith(data: parsePicartoHls(await _api.read(detail.master!), detail.master!));
@@ -94,11 +95,11 @@ class PicartoSite extends LiveSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String roomId, required String platform}) =>
-      getRoomDetail(roomId: roomId, platform: platform);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) =>
+      getRoomDetail(LiveRoom(roomId: room.roomId, platform: room.platform));
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async =>
-      (await getRoomDetailForRefresh(roomId: roomId, platform: platform)).isPlayableNow;
+  Future<bool> getLiveStatus(LiveRoom room) async =>
+      (await getRoomDetailForRefresh(LiveRoom(roomId: room.roomId, platform: room.platform))).isPlayableNow;
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
     if (detail.isExplicitlyOfflineNow) return [];
@@ -121,7 +122,7 @@ class PicartoSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(roomId: detail.roomId, platform: id);
+    final fresh = await getRoomDetail(LiveRoom(roomId: detail.roomId, platform: id));
     return LivePlayUrlResolution(
       urls: await getPlayUrls(detail: fresh, quality: quality),
       appliedQualityData: quality.selectionId,

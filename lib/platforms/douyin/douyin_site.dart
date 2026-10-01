@@ -384,11 +384,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver, LiveSiteRoomRe
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
-
-  @override
-  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) =>
-      _roomDetail(roomId, includeEntryExtras: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _roomDetail(room.roomId, includeEntryExtras: true);
 
   /// Cheap metadata path used by favourite-card refreshes.
   ///
@@ -403,14 +399,15 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver, LiveSiteRoomRe
   /// platform could not be asked" and keeps the stored snapshot, whereas an
   /// offline-looking fallback room would rewrite a live followed room as offline.
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) =>
-      _roomDetail(roomId, includeEntryExtras: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _roomDetail(room.roomId, includeEntryExtras: false);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String platform, required String roomId}) {
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) {
+    final roomId = room.roomId;
+    final platform = room.platform;
     // Both the API and HTML paths propagate their final error and retain the
     // stream_url envelope required to resolve every advertised sdk_key.
-    return getRoomDetail(platform: platform, roomId: roomId);
+    return getRoomDetail(LiveRoom(roomId: roomId, platform: platform));
   }
 
   /// Resolves [roomId], which the platform stores either as a short web rid or
@@ -902,8 +899,10 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver, LiveSiteRoomRe
   }
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
-    var result = await getRoomDetail(roomId: roomId, platform: platform);
+  Future<bool> getLiveStatus(LiveRoom room) async {
+    final roomId = room.roomId;
+    final platform = room.platform;
+    var result = await getRoomDetail(LiveRoom(roomId: roomId, platform: platform));
     return result.status;
   }
 

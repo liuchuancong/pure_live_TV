@@ -510,10 +510,9 @@ class DouyuSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
-
-  @override
-  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async {
+    final roomId = room.roomId;
+    final platform = room.platform;
     try {
       final roomInfo = await _fetchRoomInfo(roomId);
 
@@ -531,14 +530,16 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async {
+    final roomId = room.roomId;
     final roomInfo = await _fetchRoomInfo(roomId);
 
     return _buildRoom(roomInfo, roomId: roomId);
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) async {
+    final roomId = room.roomId;
     // Do not use getRoomDetail here: its UI fallback converts a failed betard
     // request into an offline room, which previously stopped recording before
     // Douyu signing/getH5PlayV1 was reached.
@@ -680,7 +681,8 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   }
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
+  Future<bool> getLiveStatus(LiveRoom room) async {
+    final roomId = room.roomId;
     var roomInfo = await _fetchRoomInfo(roomId);
     return isLiveRoomPayload(roomInfo);
   }

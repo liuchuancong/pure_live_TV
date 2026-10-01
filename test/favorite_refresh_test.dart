@@ -19,15 +19,15 @@ class _FailingRefreshSite extends LiveSite implements LiveSiteRoomRefresher {
   int detailCalls = 0;
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) async {
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async {
     refreshCalls++;
     throw Exception('transport failure');
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async {
     detailCalls++;
-    return LiveRoom(roomId: roomId, platform: platform).getLiveRoomWithError();
+    return room.getLiveRoomWithError();
   }
 }
 
@@ -38,12 +38,12 @@ class _AnsweringRefreshSite extends LiveSite implements LiveSiteRoomRefresher {
   final LiveRoom Function(LiveRoom requested) answer;
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) async {
-    return answer(LiveRoom(roomId: roomId, platform: platform));
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async {
+    return answer(room);
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) {
     fail('a card refresh must use the refresher capability, not the UI detail call');
   }
 }

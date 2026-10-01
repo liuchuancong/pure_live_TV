@@ -251,20 +251,17 @@ class ChzzkSite extends LiveSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) =>
-      _detail(roomId, platform, playback: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, playback: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String roomId, required String platform}) =>
-      _detail(roomId, platform, playback: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, playback: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) =>
-      _detail(roomId, platform, playback: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, playback: false);
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async =>
-      (await getRoomDetailForRefresh(roomId: roomId, platform: platform)).isLiveNow;
+  Future<bool> getLiveStatus(LiveRoom room) async =>
+      (await getRoomDetailForRefresh(LiveRoom(roomId: room.roomId, platform: room.platform))).isLiveNow;
 
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
@@ -290,7 +287,7 @@ class ChzzkSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(roomId: detail.roomId, platform: id);
+    final fresh = await getRoomDetail(LiveRoom(roomId: detail.roomId, platform: id));
     return LivePlayUrlResolution(
       urls: await getPlayUrls(detail: fresh, quality: quality),
       appliedQualityData: quality.selectionId,

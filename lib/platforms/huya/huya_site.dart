@@ -288,7 +288,7 @@ class HuyaSite
 
     // Reacquire the room snapshot and build a fresh signature. HLS uses its
     // own AntiCode; FLV first obtains independent native WUP material.
-    final refreshedDetail = await getRoomDetailForRecording(platform: platform, roomId: roomId);
+    final refreshedDetail = await getRoomDetailForRecording(LiveRoom(roomId: roomId, platform: platform));
     if (refreshedDetail.isExplicitlyOfflineNow) {
       return LivePlayUrlResolution(urls: const <String>[], appliedQualityData: quality.selectionId);
     }
@@ -535,15 +535,16 @@ class HuyaSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
-
-  @override
-  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) {
+    final roomId = room.roomId;
+    final platform = room.platform;
     return _loadRoomDetail(platform: platform, roomId: roomId, allowUiFallback: true);
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String platform, required String roomId}) {
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) {
+    final roomId = room.roomId;
+    final platform = room.platform;
     return _loadRoomDetail(platform: platform, roomId: roomId, allowUiFallback: false);
   }
 
@@ -809,7 +810,9 @@ class HuyaSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async {
+    final roomId = room.roomId;
+    final platform = room.platform;
     final resultText = await HttpClient.instance.getText(
       'https://mp.huya.com/cache.php',
       queryParameters: <String, dynamic>{
@@ -939,8 +942,8 @@ class HuyaSite
   }
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
-    final room = await getRoomDetailForRefresh(platform: platform, roomId: roomId);
+  Future<bool> getLiveStatus(LiveRoom detail) async {
+    final room = await getRoomDetailForRefresh(detail);
     return room.isLiveNow;
   }
 
@@ -1040,7 +1043,7 @@ class HuyaSite
   @override
   Future<List<LiveSuperChatMessage>> getSuperChatMessage({required String roomId}) async {
     List<LiveSuperChatMessage> ls = [];
-    LiveRoom detail = await getRoomDetail(roomId: roomId, platform: Sites.huyaSite);
+    LiveRoom detail = await getRoomDetail(LiveRoom(roomId: roomId, platform: Sites.huyaSite));
     HuyaDanmakuArgs args = detail.danmakuData as HuyaDanmakuArgs;
     if (args.topSid != 0) {
       ls = await getHuyaSuperChatMessageList(lPid: args.topSid, first: true);

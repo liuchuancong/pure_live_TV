@@ -247,10 +247,9 @@ class CCSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
-
-  @override
-  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async {
+    final roomId = room.roomId;
+    final platform = room.platform;
     try {
       return await _loadRoomDetail(roomId);
     } catch (e) {
@@ -265,7 +264,8 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String platform, required String roomId}) {
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) {
+    final roomId = room.roomId;
     // Propagate transport/shape errors to the favourite verifier. Treating a
     // failed request as an authoritative offline response corrupts the card
     // state and hides the failure from the retry policy.
@@ -273,7 +273,8 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String platform, required String roomId}) {
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) {
+    final roomId = room.roomId;
     return _loadRoomDetail(roomId);
   }
 
@@ -385,7 +386,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   }
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
+  Future<bool> getLiveStatus(LiveRoom room) async {
     return Future.value(true);
   }
 

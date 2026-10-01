@@ -67,23 +67,23 @@ class XiaohongshuSite extends LiveSite
   );
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async =>
-      _room(await _api.room(_roomId(roomId, platform)), includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async =>
+      _room(await _api.room(_roomId(room.roomId, room.platform)), includeMedia: true);
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) async =>
-      _room(await _api.room(_roomId(roomId, platform)), includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async =>
+      _room(await _api.room(_roomId(room.roomId, room.platform)), includeMedia: false);
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String roomId, required String platform}) async {
-    final detail = await getRoomDetail(roomId: roomId, platform: platform);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) async {
+    final detail = await getRoomDetail(room);
     if (!detail.isExplicitlyOfflineNow) _snapshot(detail);
     return detail;
   }
 
   @override
-  Future<bool> getLiveStatus({required String roomId, required String platform}) async {
-    final room = await getRoomDetailForRefresh(roomId: roomId, platform: platform);
-    if (room.effectiveLiveStatus == LiveStatus.unknown) throw const XiaohongshuException(XiaohongshuFailure.schema);
-    return room.isLiveNow;
+  Future<bool> getLiveStatus(LiveRoom room) async {
+    final fresh = await getRoomDetailForRefresh(room);
+    if (fresh.effectiveLiveStatus == LiveStatus.unknown) throw const XiaohongshuException(XiaohongshuFailure.schema);
+    return fresh.isLiveNow;
   }
 
   @override
@@ -99,7 +99,7 @@ class XiaohongshuSite extends LiveSite
     }
     if (roomId == null) return [];
     try {
-      return [await getRoomDetailForRefresh(roomId: roomId, platform: id)];
+      return [await getRoomDetailForRefresh(LiveRoom(roomId: roomId, platform: id))];
     } on XiaohongshuException catch (error) {
       if (error.kind == XiaohongshuFailure.missing) return [];
       rethrow;
@@ -143,7 +143,7 @@ class XiaohongshuSite extends LiveSite
 
   Future<LivePlayUrlResolution> _resolve(LiveRoom detail, LivePlayQuality quality, {required bool refresh}) async {
     var data = _snapshot(detail);
-    if (refresh) data = _snapshot(await getRoomDetail(roomId: data.requestedRoomId, platform: id));
+    if (refresh) data = _snapshot(await getRoomDetail(LiveRoom(roomId: data.requestedRoomId, platform: id)));
     final urls = data.streams
         .where((s) => _qualityId(s) == quality.selectionId.toString())
         .map((s) => s.uri.toString())

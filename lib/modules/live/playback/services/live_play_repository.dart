@@ -9,12 +9,9 @@ class LivePlayRepository {
   const LivePlayRepository();
 
   /// Loads room details. [hintRoom] carries the platform/room id and the
-  /// display fields already on screen; the site response stays authoritative
-  /// for playback (its stream payload and identity win), while whatever it
-  /// leaves blank is padded from [hintRoom] so a partial response never blanks
-  /// the header mid-session.
+  /// display fields already on screen; the site response stays authoritative.
   Future<LiveRoom> fetchRoomDetail({required LiveRoom hintRoom}) {
-    return Sites.of(hintRoom.normalizedPlatformId).liveSite.getRoomDetailForRoom(hintRoom);
+    return Sites.of(hintRoom.normalizedPlatformId).liveSite.getRoomDetail(hintRoom);
   }
 
   Future<List<LivePlayQuality>> fetchPlayQualities(LiveRoom detail) async {

@@ -57,7 +57,9 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
       if (result.length >= 2) {
         final String roomId = result[0];
         final String platformId = result[1];
-        final liveRoom = await Sites.of(platformId).liveSite.getRoomDetail(roomId: roomId, platform: platformId);
+        final liveRoom = await Sites.of(platformId).liveSite.getRoomDetail(
+          LiveRoom(roomId: roomId, platform: platformId),
+        );
         if (mounted) {
           LivePlayRoute(liveRoom).push(context);
         }

@@ -618,10 +618,9 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   /// ============================================================
 
   @override
-  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
-
-  @override
-  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async {
+    final roomId = room.roomId;
+    final platform = room.platform;
     try {
       return await _fetchRoomDetail(platform: platform, roomId: roomId);
     } catch (e) {
@@ -639,12 +638,16 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   /// ============================================================
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async {
+    final roomId = room.roomId;
+    final platform = room.platform;
     return _fetchRoomDetail(platform: platform, roomId: roomId);
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String platform, required String roomId}) {
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) {
+    final roomId = room.roomId;
+    final platform = room.platform;
     return _fetchRoomDetail(platform: platform, roomId: roomId);
   }
 
@@ -765,7 +768,9 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   }
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
+  Future<bool> getLiveStatus(LiveRoom detail) async {
+    final roomId = detail.roomId;
+    final platform = detail.platform;
     final room = await _fetchRoomDetail(platform: platform, roomId: roomId);
     return room.isLiveNow;
   }

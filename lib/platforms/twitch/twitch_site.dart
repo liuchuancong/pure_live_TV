@@ -513,9 +513,9 @@ class TwitchSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomR
   LiveDanmaku getDanmaku() => TwitchDanmaku();
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
+  Future<bool> getLiveStatus(LiveRoom room) async {
     try {
-      var detail = await getRoomDetail(platform: platform, roomId: roomId);
+      var detail = await getRoomDetail(room);
       return detail.isLiveNow;
     } catch (e) {
       return false;
@@ -679,22 +679,21 @@ class TwitchSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomR
     return items;
   }
 
-  @override
-  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
-
   // A failed lookup is not an offline channel: reporting it as offline showed
   // "not live" for live channels whenever Twitch or the proxy failed, with no
   // retry. Let the room page present the load error like other platforms.
   @override
-  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) => _loadRoomDetail(roomId);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _loadRoomDetail(room.roomId);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String platform, required String roomId}) {
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) {
+    final roomId = room.roomId;
     return _loadRoomDetail(roomId);
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String platform, required String roomId}) {
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) {
+    final roomId = room.roomId;
     return _loadRoomDetail(roomId);
   }
 

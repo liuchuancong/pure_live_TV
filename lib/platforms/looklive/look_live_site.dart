@@ -214,20 +214,17 @@ final class LookLiveSite extends LiveSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) =>
-      _detail(roomId, platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String roomId, required String platform}) =>
-      _detail(roomId, platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) =>
-      _detail(roomId, platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: false);
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
-    final detail = await getRoomDetailForRefresh(roomId: roomId, platform: platform);
+  Future<bool> getLiveStatus(LiveRoom room) async {
+    final detail = await getRoomDetailForRefresh(room);
     if (detail.effectiveLiveStatus == LiveStatus.unknown) throw const LookLiveException(LookLiveFailure.access);
     return detail.isLiveNow;
   }

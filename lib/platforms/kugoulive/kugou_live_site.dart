@@ -197,24 +197,21 @@ final class KugouLiveSite extends LiveSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) =>
-      _detail(roomId, platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String roomId, required String platform}) =>
-      _detail(roomId, platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) =>
-      _detail(roomId, platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: false);
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
-    final room = await getRoomDetailForRefresh(roomId: roomId, platform: platform);
-    if (room.effectiveLiveStatus == LiveStatus.unknown) {
+  Future<bool> getLiveStatus(LiveRoom room) async {
+    final fresh = await getRoomDetailForRefresh(room);
+    if (fresh.effectiveLiveStatus == LiveStatus.unknown) {
       throw const KugouLiveException(KugouLiveFailure.access);
     }
-    return room.isLiveNow;
+    return fresh.isLiveNow;
   }
 
   KugouLiveRoom _snapshot(LiveRoom detail) {

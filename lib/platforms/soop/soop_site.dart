@@ -335,32 +335,32 @@ class SoopSite extends LiveSite implements LiveSiteRoomRefresher, LiveSiteRecord
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async {
+    final roomId = room.roomId;
     try {
       Map<dynamic, dynamic> playerLiveApiFuture = await getPlayerLiveApiData(roomId: roomId);
       var danmakuFuture = geDanmakuArgs(playerLiveApiFuture, roomId);
-      final room = await getLiveRoomByApi(playerLiveApiFuture, danmakuFuture, roomId);
+      final fresh = await getLiveRoomByApi(playerLiveApiFuture, danmakuFuture, roomId);
       {
         final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
         if (currentRoom?.hasIdentity(platform: Sites.soopSite, roomId: roomId) == true) {
-          return room.withAudienceFallbackFrom(currentRoom!);
+          return fresh.withAudienceFallbackFrom(currentRoom!);
         }
       }
-      return room;
+      return fresh;
     } catch (e) {
       CoreLog.error(e);
-      {
-final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
-        if (currentRoom?.hasIdentity(platform: Sites.soopSite, roomId: roomId) == true) {
-          return currentRoom!.getLiveRoomWithError();
-        }
+      final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
+      if (currentRoom?.hasIdentity(platform: Sites.soopSite, roomId: roomId) == true) {
+        return currentRoom!.getLiveRoomWithError();
       }
       return LiveRoom(roomId: roomId, platform: Sites.soopSite).getLiveRoomWithError();
     }
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async {
+    final roomId = room.roomId;
     final data = await getPlayerLiveApiData(roomId: roomId);
     final channel = data['CHANNEL'];
     if (channel is! Map) {
@@ -388,7 +388,8 @@ final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) async {
+    final roomId = room.roomId;
     // The player API response contains viewpreset/rmd/cdn/bno, all of which
     // are required later to sign the selected recording URL. Skip websocket
     // credentials but keep the complete playback envelope.

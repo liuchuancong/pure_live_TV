@@ -367,8 +367,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     try {
       final refreshed = await fetchRoomDetailForRefresh(
         site: Sites.of(room.platform).liveSite,
-        roomId: room.roomId,
-        platform: room.platform,
+        room: room,
       ).timeout(_roomRefreshTimeout);
 
       // Some platforms answer with a different canonical id (Douyin reports the

@@ -129,10 +129,8 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   // =========================================================
 
   @override
-  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
-
-  @override
-  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async {
+    final roomId = room.roomId;
     final db = DbService.to.db;
     final channel = await db.getChannelById(roomId);
     if (channel == null) {
@@ -159,11 +157,11 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String platform, required String roomId}) {
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) {
     // Imported channels already store their playback URL as room data. The
     // database lookup is authoritative and does not use a presentation
     // fallback, so the same loader is the strict recording contract.
-    return getRoomDetail(platform: platform, roomId: roomId);
+    return getRoomDetail(room);
   }
 
   LiveRoom _buildLiveRoom(Channel channel) {
@@ -266,7 +264,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   // =========================================================
 
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
+  Future<bool> getLiveStatus(LiveRoom room) async {
     return true;
   }
 

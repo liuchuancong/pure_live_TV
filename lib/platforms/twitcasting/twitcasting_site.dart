@@ -45,20 +45,19 @@ class TwitcastingSite extends LiveSite
   }) => _api.searchLives(keyword, page: page, pageSize: pageSize, cancel: cancel);
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) {
+  Future<LiveRoom> getRoomDetail(LiveRoom room) {
+    final roomId = room.roomId;
+    final platform = room.platform;
     if (platform != id) throw const TwitcastingException(TwitcastingFailure.schema);
     return _api.detail(roomId);
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) =>
-      getRoomDetail(roomId: roomId, platform: platform);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => getRoomDetail(room);
   @override
-  Future<LiveRoom> getRoomDetailForRecording({required String roomId, required String platform}) =>
-      getRoomDetail(roomId: roomId, platform: platform);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => getRoomDetail(room);
   @override
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async =>
-      (await getRoomDetail(roomId: roomId, platform: platform)).isPlayableNow;
+  Future<bool> getLiveStatus(LiveRoom room) async => (await getRoomDetail(room)).isPlayableNow;
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
     if (detail.platform != id) throw const TwitcastingException(TwitcastingFailure.schema);
@@ -80,7 +79,7 @@ class TwitcastingSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(roomId: detail.roomId, platform: detail.platform);
+    final fresh = await getRoomDetail(detail);
     return LivePlayUrlResolution(
       urls: await getPlayUrls(detail: fresh, quality: quality),
       appliedQualityData: quality.selectionId,

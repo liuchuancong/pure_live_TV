@@ -66,8 +66,7 @@ class _VideoLiveResultsState extends ConsumerState<VideoLiveResults> {
   Future<void> _openRoom(SearchLiveItem room) async {
     try {
       final detail = await Sites.of(Sites.bilibiliSite).liveSite.getRoomDetail(
-        roomId: '${room.roomId}',
-        platform: Sites.bilibiliSite,
+        LiveRoom(roomId: '${room.roomId}', platform: Sites.bilibiliSite),
       );
       if (!mounted) return;
       LivePlayRoute(detail).push(context);

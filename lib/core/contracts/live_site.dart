@@ -200,22 +200,16 @@ class LiveSite {
     return Future.value(<LiveRoom>[]);
   }
 
-  /// Room-first detail fetch for callers that already hold a [LiveRoom].
+  /// Fetches the full room detail for [room].
   ///
-  /// Callers used to have to destructure a room they already had into the
-  /// `platform` + `roomId` pair [getRoomDetail] takes, then merge the old
-  /// fields back onto the response by hand. This takes the room directly.
-  ///
-  /// The default forwards to [getRoomDetail] and pads whatever the response
-  /// left blank (avatar/cover/nick drift between responses) from the room the
-  /// caller already carries, so a partial response never blanks the UI.
-  /// Adapters MAY override it to reuse fields the room already carries (cached
-  /// link, resolved ids) instead of re-deriving them from platform + roomId.
-  /// Callers that only have the pair (deep links, persisted history, recorder
-  /// tasks restored from disk) keep [getRoomDetail].
-  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
-
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
+  /// Takes the room the caller already holds rather than a `platform` +
+  /// `roomId` pair, so adapters can reuse whatever the room carries (cached
+  /// link, resolved ids) instead of re-deriving everything from two bare
+  /// strings. Callers that only have the pair (deep links, persisted history,
+  /// recorder tasks restored from disk) pass a minimal `LiveRoom(roomId:,
+  /// platform:)`.
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async {
+    final platform = room.platform;
     return Future.value(
       LiveRoom(
         cover: '',
@@ -245,30 +239,13 @@ class LiveSite {
     return Future.value(<String>[]);
   }
 
-  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
+  Future<bool> getLiveStatus(LiveRoom room) async {
     return Future.value(false);
   }
 
   Future<List<LiveSuperChatMessage>> getSuperChatMessage({required String roomId}) async {
     return Future.value([]);
   }
-}
-
-/// Shared room-first body for adapters that `implements [LiveSite]` rather than
-/// extending it, so they don't inherit the concrete
-/// [LiveSite.getRoomDetailForRoom] and would otherwise each copy this logic.
-///
-/// Forwards to the adapter's own [LiveSite.getRoomDetail] (the stream payload
-/// and identity stay authoritative) and pads whatever it left blank from the
-/// room the caller already holds.
-Future<LiveRoom> resolveRoomDetailForRoom({required LiveSite site, required LiveRoom room}) async {
-  final roomId = room.roomId;
-  final platform = room.platform;
-  if (roomId.isEmpty || platform.isEmpty) {
-    return room;
-  }
-  final fresh = await site.getRoomDetail(roomId: roomId, platform: platform);
-  return fresh.withHintFallbackFrom(room);
 }
 
 /// Unified playback URL resolution.
@@ -338,7 +315,7 @@ extension LiveSitePlayUrlResolution on LiveSite {
 /// calls without changing the full room-entry contract for every site
 /// implementation.
 abstract interface class LiveSiteRoomRefresher {
-  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform});
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room);
 }
 
 /// Fetches the snapshot a favourite/history card refresh should use.
@@ -353,18 +330,14 @@ abstract interface class LiveSiteRoomRefresher {
 ///
 /// Adapters without the fast path keep the old call and are expected to
 /// propagate their failures to the caller.
-Future<LiveRoom> fetchRoomDetailForRefresh({
-  required LiveSite site,
-  required String roomId,
-  required String platform,
-}) {
+Future<LiveRoom> fetchRoomDetailForRefresh({required LiveSite site, required LiveRoom room}) {
   final refresher = site;
 
   if (refresher is LiveSiteRoomRefresher) {
-    return (refresher as LiveSiteRoomRefresher).getRoomDetailForRefresh(roomId: roomId, platform: platform);
+    return (refresher as LiveSiteRoomRefresher).getRoomDetailForRefresh(room);
   }
 
-  return site.getRoomDetail(roomId: roomId, platform: platform);
+  return site.getRoomDetail(room);
 }
 
 /// Strict, playback-complete room lookup used before a recording starts.
@@ -384,5 +357,5 @@ Future<LiveRoom> fetchRoomDetailForRefresh({
 /// * return an explicit offline/banned room only when the platform said so;
 /// * retain every field required by [LiveSite.getPlayQualites].
 abstract interface class LiveSiteRecordRoomResolver {
-  Future<LiveRoom> getRoomDetailForRecording({required String roomId, required String platform});
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room);
 }
