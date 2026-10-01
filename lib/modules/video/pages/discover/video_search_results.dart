@@ -1,7 +1,9 @@
 part of 'video_search_page.dart';
 
-/// The full-type search section, newBV's search screen for TV: hotwords while
-/// idle, then video / user / movie results per keyword.
+/// The full-type search section, newBV's search screen for TV: hotwords and
+/// recent searches while idle, suggestions while typing, then
+/// video / user / movie / live results per keyword, with the sort+duration
+/// filter on the video tab.
 class VideoSearchSection extends ConsumerStatefulWidget {
   const VideoSearchSection({super.key});
 
@@ -14,22 +16,30 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
   final Map<String, PagingParam<MusicArchive>> _videoParams = {};
   String _keyword = '';
   int _typeIndex = 0;
+  String _order = 'totalrank';
+  int _duration = 0;
   List<Hotword> _hotwords = [];
+  List<String> _suggestions = [];
+  Timer? _suggestTimer;
+  int _suggestSeq = 0;
 
   static const _typeLabels = [
     ('video_search_type_video', Icons.movie_outlined),
     ('video_search_type_user', Icons.person_outline_rounded),
     ('video_search_type_pgc', Icons.live_tv_outlined),
+    ('video_search_type_live', Icons.sensors_rounded),
   ];
 
   @override
   void initState() {
     super.initState();
+    _controller.addListener(_onTextChanged);
     _loadHotwords();
   }
 
   @override
   void dispose() {
+    _suggestTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -42,14 +52,51 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
     } catch (_) {}
   }
 
+  void _onTextChanged() {
+    _suggestTimer?.cancel();
+    final term = _controller.text.trim();
+    if (term.isEmpty) {
+      _suggestSeq++;
+      setState(() => _suggestions = []);
+      return;
+    }
+    _suggestTimer = Timer(const Duration(milliseconds: 350), () => _loadSuggestions(term));
+  }
+
+  Future<void> _loadSuggestions(String term) async {
+    final seq = ++_suggestSeq;
+    try {
+      final items = await BilibiliUgcApi.instance.getSuggestions(term);
+      if (!mounted || seq != _suggestSeq || _controller.text.trim() != term) return;
+      setState(() => _suggestions = items.where((s) => s.trim().isNotEmpty).take(8).toList());
+    } catch (_) {}
+  }
+
   void _submit(String keyword) {
     final trimmed = keyword.trim();
     if (trimmed.isEmpty) return;
-    setState(() => _keyword = trimmed);
+    _suggestTimer?.cancel();
+    _suggestSeq++;
+    ref.read(videoSearchHistoryControllerProvider.notifier).add(trimmed);
+    setState(() {
+      _keyword = trimmed;
+      _suggestions = [];
+    });
+  }
+
+  Future<void> _openFilter() async {
+    final picked = await showVideoSearchFilterDialog(context, order: _order, duration: _duration);
+    if (picked == null || !mounted) return;
+    setState(() {
+      _order = picked.order;
+      _duration = picked.duration;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final showingSuggestions = _suggestions.isNotEmpty && _controller.text.trim() != _keyword;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -58,7 +105,7 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
           child: Row(
             children: [
               SizedBox(
-                width: 560.ts(context),
+                width: 480.ts(context),
                 child: TvInputField(
                   controller: _controller,
                   hint: i18n('video_search_hint'),
@@ -74,6 +121,17 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
                 size: TvButtonSize.mini,
                 onTap: () => _submit(_controller.text),
               ),
+              if (_keyword.isNotEmpty && _typeIndex == 0) ...[
+                SizedBox(width: 12.ts(context)),
+                TvButton(
+                  key: const ValueKey('search_filter'),
+                  title: i18n('video_search_filter'),
+                  icon: Icon(Icons.filter_list_rounded, size: 22.ts(context)),
+                  size: TvButtonSize.mini,
+                  isSecondary: true,
+                  onTap: _openFilter,
+                ),
+              ],
               if (_keyword.isNotEmpty) ...[
                 SizedBox(width: 20.ts(context)),
                 for (final (index, (label, icon)) in _typeLabels.indexed) ...[
@@ -92,31 +150,173 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
           ),
         ),
         Expanded(
-          child: _keyword.isEmpty ? VideoHotwordBoard(hotwords: _hotwords, onPick: _submit) : _buildResults(),
+          child: switch (showingSuggestions) {
+            true => _buildSuggestions(),
+            false when _keyword.isEmpty => _buildIdle(),
+            false => _buildResults(),
+          },
         ),
       ],
+    );
+  }
+
+  Widget _buildIdle() {
+    final history = ref.watch(videoSearchHistoryControllerProvider);
+    if (history.isEmpty) return VideoHotwordBoard(hotwords: _hotwords, onPick: _submit);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(24.ts(context), 4.ts(context), 24.ts(context), 0),
+          child: Text(
+            '${i18n('search_history')}（${i18n('history_long_press_delete')}）',
+            style: AppTextStyles.t20.copyWith(color: context.tvTheme.focusColor),
+          ),
+        ),
+        SizedBox(height: 10.ts(context)),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.ts(context)),
+          child: Wrap(
+            spacing: 12.ts(context),
+            runSpacing: 10.ts(context),
+            children: [
+              for (final keyword in history)
+                TvFocusable(
+                  key: Key('video_history_$keyword'),
+                  onTap: () {
+                    _controller.text = keyword;
+                    _submit(keyword);
+                  },
+                  onLongPress: () => ref.read(videoSearchHistoryControllerProvider.notifier).remove(keyword),
+                  builder: (context, focused, child) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 120),
+                    height: 44.ts(context),
+                    padding: EdgeInsets.symmetric(horizontal: 22.ts(context)),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: focused ? context.tvTheme.focusColor : context.tvTheme.cardColor,
+                      borderRadius: BorderRadius.circular(22.ts(context)),
+                      border: Border.all(color: context.tvTheme.focusColor, width: focused ? 2.5.ts(context) : 1.5.ts(context)),
+                    ),
+                    child: Text(
+                      keyword,
+                      style: AppTextStyles.t16.copyWith(
+                        color: focused ? Colors.black : Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              TvFocusable(
+                key: const Key('video_history_clear'),
+                onTap: () => ref.read(videoSearchHistoryControllerProvider.notifier).clear(),
+                builder: (context, focused, child) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 120),
+                  height: 44.ts(context),
+                  padding: EdgeInsets.symmetric(horizontal: 22.ts(context)),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: focused ? context.tvTheme.focusColor : Colors.transparent,
+                    borderRadius: BorderRadius.circular(22.ts(context)),
+                    border: Border.all(
+                      color: focused ? context.tvTheme.focusColor : Colors.white30,
+                      width: 1.5.ts(context),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.delete_outline_rounded, size: 20.ts(context), color: focused ? Colors.black : Colors.white70),
+                      SizedBox(width: 8.ts(context)),
+                      Text(
+                        i18n('clear_search_history'),
+                        style: AppTextStyles.t16.copyWith(
+                          color: focused ? Colors.black : Colors.white70,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(child: VideoHotwordBoard(hotwords: _hotwords, onPick: _submit)),
+      ],
+    );
+  }
+
+  Widget _buildSuggestions() {
+    final tvTheme = context.tvTheme;
+    return ListView.builder(
+      padding: EdgeInsets.all(24.ts(context)),
+      itemCount: _suggestions.length,
+      itemBuilder: (context, index) {
+        final suggestion = _suggestions[index];
+        return TvFocusable(
+          key: Key('video_suggest_$suggestion'),
+          onTap: () {
+            _controller.text = suggestion;
+            _submit(suggestion);
+          },
+          builder: (context, focused, child) => AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            margin: EdgeInsets.only(bottom: 8.ts(context)),
+            padding: EdgeInsets.symmetric(horizontal: 20.ts(context), vertical: 14.ts(context)),
+            decoration: BoxDecoration(
+              color: focused ? tvTheme.focusColor.withValues(alpha: 0.18) : tvTheme.cardColor,
+              borderRadius: BorderRadius.circular(14.ts(context)),
+              border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.ts(context)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.search_rounded, size: 22.ts(context), color: tvTheme.secondaryTextColor),
+                SizedBox(width: 14.ts(context)),
+                Expanded(
+                  child: Text(
+                    suggestion,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.t18.copyWith(color: tvTheme.primaryTextColor),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildResults() {
     switch (_typeIndex) {
       case 1:
-        return VideoUserResults(keyword: _keyword);
+        return VideoUserResults(key: ValueKey(_keyword), keyword: _keyword);
       case 2:
-        return VideoPgcResults(keyword: _keyword);
+        return VideoPgcResults(key: ValueKey(_keyword), keyword: _keyword);
+      case 3:
+        return VideoLiveResults(key: ValueKey(_keyword), keyword: _keyword);
       default:
         final themeState = ref.watch(themeSettingsControllerProvider);
+        final paramKey = '$_keyword|$_order|$_duration';
         final param = _videoParams.putIfAbsent(
-          _keyword,
+          paramKey,
           () => PagingParam<MusicArchive>(
             mode: PagingMode.serverRemote,
             pageSize: 20,
             keepAlive: true,
-            fetchRemote: (page, size) => BilibiliMusicApi.instance.searchVideos(_keyword, page: page, pageSize: size),
+            fetchRemote: (page, size) => BilibiliMusicApi.instance.searchVideos(
+              _keyword,
+              page: page,
+              pageSize: size,
+              order: _order,
+              duration: _duration,
+            ),
           ),
         );
         return BasePagedTvView<MusicArchive>(
-          key: ValueKey('video_search_$_keyword'),
+          key: ValueKey('video_search_$paramKey'),
           param: param,
           getNotifier: () => ref.read(pagingCoreProvider(param).notifier),
           gridDelegate: TvAdaptiveGrid.media(
@@ -130,191 +330,5 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
               VideoCard(archive: archive, onTap: () => openVideoArchive(context, ref, archive)),
         );
     }
-  }
-}
-
-class VideoUserResultsState extends ConsumerState<VideoUserResults> {
-  final List<SearchUserItem> _users = [];
-  bool _loading = false;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    setState(() => _loading = true);
-    try {
-      final users = await BilibiliUgcApi.instance.searchUsers(widget.keyword);
-      if (!mounted) return;
-      setState(() {
-        _users.addAll(users);
-        _loading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
-
-    if (_loading && _users.isEmpty) return AppStatusView(type: AppStatusType.loading, title: '', subtitle: '');
-    if (_error != null && _users.isEmpty) {
-      return AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error);
-    }
-    return DpadRegion(
-      child: ListView.builder(
-        padding: EdgeInsets.all(24.ts(context)),
-        itemCount: _users.length,
-        itemBuilder: (context, index) {
-          final user = _users[index];
-          return TvFocusable(
-            onTap: () => UgcUserSpaceRoute(user.mid, user.uname).push(context),
-            builder: (context, focused, child) => AnimatedContainer(
-              duration: const Duration(milliseconds: 120),
-              margin: EdgeInsets.only(bottom: 10.sp),
-              padding: EdgeInsets.all(14.ts(context)),
-              decoration: BoxDecoration(
-                color: tvTheme.cardColor,
-                borderRadius: BorderRadius.circular(16.ts(context)),
-                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user.uname,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t18.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: tvTheme.primaryTextColor,
-                          ),
-                        ),
-                        if (user.sign.isNotEmpty)
-                          Text(
-                            user.sign,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
-                          ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    '${readableCount(user.fans.toString())} ${i18n('video_followers')}',
-                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class VideoPgcResultsState extends ConsumerState<VideoPgcResults> {
-  List<SearchPgcItem> _seasons = [];
-  bool _loading = false;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    setState(() => _loading = true);
-    try {
-      final seasons = await BilibiliUgcApi.instance.searchPgc(widget.keyword);
-      if (!mounted) return;
-      setState(() {
-        _seasons = seasons;
-        _loading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
-
-    if (_loading && _seasons.isEmpty) return AppStatusView(type: AppStatusType.loading, title: '', subtitle: '');
-    if (_error != null && _seasons.isEmpty) {
-      return AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error);
-    }
-    return DpadRegion(
-      horizontalEdge: DpadEdgeBehavior.leave,
-      child: GridView.builder(
-        padding: EdgeInsets.all(24.ts(context)),
-        gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
-        itemCount: _seasons.length,
-        itemBuilder: (context, index) {
-          final season = _seasons[index];
-          return TvFocusable(
-            onTap: () => VideoSeasonRoute(
-              PgcItem(seasonId: season.seasonId, title: season.title, cover: season.cover),
-            ).push(context),
-            builder: (context, focused, child) => AnimatedContainer(
-              duration: const Duration(milliseconds: 120),
-              decoration: BoxDecoration(
-                color: tvTheme.cardColor,
-                borderRadius: BorderRadius.circular(14.ts(context)),
-                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.ts(context)),
-              ),
-              child: Column(
-                children: [
-                  Expanded(
-                    flex: 5,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(14.ts(context))),
-                      child: CachedNetworkImage(
-                        imageUrl: season.cover,
-                        fit: BoxFit.cover,
-                        memCacheWidth: 480,
-                        errorWidget: (_, _, _) => Container(color: Colors.black26),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.all(8.ts(context)),
-                      child: Text(
-                        season.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
   }
 }

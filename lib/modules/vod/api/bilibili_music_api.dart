@@ -115,11 +115,21 @@ class BilibiliMusicApi {
   /// Video search (the same endpoint the search page uses, typed `video`).
   ///
   /// Requires the WBI signature; the referer switches to the search host.
-  Future<List<MusicArchive>> searchVideos(String keyword, {int page = 1, int pageSize = 20}) async {
+  /// Video search. [order] is the web's sort key (`totalrank`/`click`/
+  /// `pubdate`/`dm`/`stow`); [duration] is the length tier (0 = any, then
+  /// <10 / 10-30 / 30-60 / >60 minutes) — the filter dialog's two fields.
+  Future<List<MusicArchive>> searchVideos(
+    String keyword, {
+    int page = 1,
+    int pageSize = 20,
+    String order = 'totalrank',
+    int duration = 0,
+  }) async {
     const baseUrl = 'https://api.bilibili.com/x/web-interface/wbi/search/type';
     final url =
         '$baseUrl?search_type=video&keyword=${Uri.encodeQueryComponent(keyword)}'
-        '&order=totalrank&page=$page&page_size=$pageSize&highlight=1&single_column=0';
+        '&order=$order&page=$page&page_size=$pageSize&highlight=1&single_column=0'
+        '${duration > 0 ? '&duration=$duration' : ''}';
     final params = await _client.wbiSign(url);
     final result = await HttpClient.instance.getJson(
       baseUrl,

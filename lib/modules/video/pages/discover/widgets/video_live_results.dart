@@ -1,21 +1,23 @@
 import 'package:dpad/dpad.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 
-/// User results: a list row per UP, opening the shared user-space page.
-class VideoUserResults extends ConsumerStatefulWidget {
-  const VideoUserResults({super.key, required this.keyword});
+/// Live-room results, newBV's fifth search tab: rows open the live player,
+/// the list pages on scroll end.
+class VideoLiveResults extends ConsumerStatefulWidget {
+  const VideoLiveResults({super.key, required this.keyword});
 
   final String keyword;
 
   @override
-  ConsumerState<VideoUserResults> createState() => _VideoUserResultsState();
+  ConsumerState<VideoLiveResults> createState() => _VideoLiveResultsState();
 }
 
-class _VideoUserResultsState extends ConsumerState<VideoUserResults> {
+class _VideoLiveResultsState extends ConsumerState<VideoLiveResults> {
   final ScrollController _scroll = ScrollController();
-  final List<SearchUserItem> _users = [];
+  final List<SearchLiveItem> _rooms = [];
   bool _loading = false;
   bool _hasMore = true;
   int _page = 0;
@@ -44,12 +46,12 @@ class _VideoUserResultsState extends ConsumerState<VideoUserResults> {
     setState(() => _loading = true);
     try {
       final page = _page + 1;
-      final users = await BilibiliUgcApi.instance.searchUsers(widget.keyword, page: page);
+      final rooms = await BilibiliUgcApi.instance.searchLives(widget.keyword, page: page);
       if (!mounted) return;
       setState(() {
-        _users.addAll(users);
+        _rooms.addAll(rooms);
         _page = page;
-        _hasMore = users.length >= 20;
+        _hasMore = rooms.length >= 20;
         _loading = false;
       });
     } catch (e) {
@@ -61,22 +63,38 @@ class _VideoUserResultsState extends ConsumerState<VideoUserResults> {
     }
   }
 
+  Future<void> _openRoom(SearchLiveItem room) async {
+    try {
+      final detail = await Sites.of(Sites.bilibiliSite).liveSite.getRoomDetail(
+        roomId: '${room.roomId}',
+        platform: Sites.bilibiliSite,
+      );
+      if (!mounted) return;
+      LivePlayRoute(detail).push(context);
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18n('load_failed'));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
 
-    if (_loading && _users.isEmpty) return AppStatusView(type: AppStatusType.loading, title: '', subtitle: '');
-    if (_error != null && _users.isEmpty) {
+    if (_loading && _rooms.isEmpty) return AppStatusView(type: AppStatusType.loading, title: '', subtitle: '');
+    if (_error != null && _rooms.isEmpty) {
       return AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error);
+    }
+    if (!_loading && _rooms.isEmpty) {
+      return AppStatusView(type: AppStatusType.empty, title: i18n('video_search_live_empty'), subtitle: '');
     }
     return DpadRegion(
       child: ListView.builder(
         controller: _scroll,
         padding: EdgeInsets.all(24.ts(context)),
-        itemCount: _users.length + (_hasMore ? 1 : 0),
+        itemCount: _rooms.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index >= _users.length) {
+          if (index >= _rooms.length) {
             return Padding(
               padding: EdgeInsets.all(14.ts(context)),
               child: Center(
@@ -88,9 +106,10 @@ class _VideoUserResultsState extends ConsumerState<VideoUserResults> {
               ),
             );
           }
-          final user = _users[index];
+          final room = _rooms[index];
+          final live = room.liveStatus == 1;
           return TvFocusable(
-            onTap: () => UgcUserSpaceRoute(user.mid, user.uname).push(context),
+            onTap: () => _openRoom(room),
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
               margin: EdgeInsets.only(bottom: 10.sp),
@@ -102,33 +121,52 @@ class _VideoUserResultsState extends ConsumerState<VideoUserResults> {
               ),
               child: Row(
                 children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12.ts(context)),
+                    child: CachedNetworkImage(
+                      imageUrl: room.cover,
+                      width: 120.ts(context),
+                      height: 76.ts(context),
+                      fit: BoxFit.cover,
+                      memCacheWidth: 300,
+                      errorWidget: (_, _, _) => Container(color: Colors.black26),
+                    ),
+                  ),
+                  SizedBox(width: 14.ts(context)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          user.uname,
+                          room.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t18.copyWith(
+                          style: AppTextStyles.t16.copyWith(
                             fontWeight: FontWeight.w600,
                             color: tvTheme.primaryTextColor,
                           ),
                         ),
-                        if (user.sign.isNotEmpty)
-                          Text(
-                            user.sign,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
-                          ),
+                        Text(
+                          room.uname,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
+                        ),
                       ],
                     ),
                   ),
-                  Text(
-                    '${readableCount(user.fans.toString())} ${i18n('video_followers')}',
-                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
-                  ),
+                  SizedBox(width: 12.ts(context)),
+                  if (live)
+                    TvButton(
+                      excludeFocus: true,
+                      title: '${readableCount(room.online.toString())} ${i18n('video_search_live_online')}',
+                      size: TvButtonSize.mini,
+                    )
+                  else
+                    Text(
+                      i18n('video_search_live_replay'),
+                      style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                    ),
                 ],
               ),
             ),
@@ -138,5 +176,3 @@ class _VideoUserResultsState extends ConsumerState<VideoUserResults> {
     );
   }
 }
-
-/// Movie results: PGC seasons, straight into the season page.
