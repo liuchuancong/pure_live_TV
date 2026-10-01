@@ -247,6 +247,9 @@ class CCSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   }
 
   @override
+  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
+
+  @override
   Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
     try {
       return await _loadRoomDetail(roomId);

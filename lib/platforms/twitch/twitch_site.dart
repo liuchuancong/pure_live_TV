@@ -680,9 +680,12 @@ class TwitchSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomR
   }
 
   @override
+  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
+
   // A failed lookup is not an offline channel: reporting it as offline showed
   // "not live" for live channels whenever Twitch or the proxy failed, with no
   // retry. Let the room page present the load error like other platforms.
+  @override
   Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) => _loadRoomDetail(roomId);
 
   @override

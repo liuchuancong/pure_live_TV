@@ -200,6 +200,21 @@ class LiveSite {
     return Future.value(<LiveRoom>[]);
   }
 
+  /// Room-first detail fetch for callers that already hold a [LiveRoom].
+  ///
+  /// Callers used to have to destructure a room they already had into the
+  /// `platform` + `roomId` pair [getRoomDetail] takes, then merge the old
+  /// fields back onto the response by hand. This takes the room directly.
+  ///
+  /// The default forwards to [getRoomDetail] and pads whatever the response
+  /// left blank (avatar/cover/nick drift between responses) from the room the
+  /// caller already carries, so a partial response never blanks the UI.
+  /// Adapters MAY override it to reuse fields the room already carries (cached
+  /// link, resolved ids) instead of re-deriving them from platform + roomId.
+  /// Callers that only have the pair (deep links, persisted history, recorder
+  /// tasks restored from disk) keep [getRoomDetail].
+  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
+
   Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
     return Future.value(
       LiveRoom(
@@ -237,6 +252,23 @@ class LiveSite {
   Future<List<LiveSuperChatMessage>> getSuperChatMessage({required String roomId}) async {
     return Future.value([]);
   }
+}
+
+/// Shared room-first body for adapters that `implements [LiveSite]` rather than
+/// extending it, so they don't inherit the concrete
+/// [LiveSite.getRoomDetailForRoom] and would otherwise each copy this logic.
+///
+/// Forwards to the adapter's own [LiveSite.getRoomDetail] (the stream payload
+/// and identity stay authoritative) and pads whatever it left blank from the
+/// room the caller already holds.
+Future<LiveRoom> resolveRoomDetailForRoom({required LiveSite site, required LiveRoom room}) async {
+  final roomId = room.roomId;
+  final platform = room.platform;
+  if (roomId.isEmpty || platform.isEmpty) {
+    return room;
+  }
+  final fresh = await site.getRoomDetail(roomId: roomId, platform: platform);
+  return fresh.withHintFallbackFrom(room);
 }
 
 /// Unified playback URL resolution.

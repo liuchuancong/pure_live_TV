@@ -129,6 +129,9 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   // =========================================================
 
   @override
+  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
+
+  @override
   Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
     final db = DbService.to.db;
     final channel = await db.getChannelById(roomId);

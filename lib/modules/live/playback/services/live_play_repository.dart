@@ -8,13 +8,13 @@ import 'package:pure_live/exports/common_export.dart';
 class LivePlayRepository {
   const LivePlayRepository();
 
-  /// Loads room details. [hintRoom] only supplies platform and room id; the site
-  /// response is authoritative.
+  /// Loads room details. [hintRoom] carries the platform/room id and the
+  /// display fields already on screen; the site response stays authoritative
+  /// for playback (its stream payload and identity win), while whatever it
+  /// leaves blank is padded from [hintRoom] so a partial response never blanks
+  /// the header mid-session.
   Future<LiveRoom> fetchRoomDetail({required LiveRoom hintRoom}) {
-    return Sites.of(hintRoom.normalizedPlatformId).liveSite.getRoomDetail(
-          roomId: hintRoom.normalizedRoomId,
-          platform: hintRoom.normalizedPlatformId,
-        );
+    return Sites.of(hintRoom.normalizedPlatformId).liveSite.getRoomDetailForRoom(hintRoom);
   }
 
   Future<List<LivePlayQuality>> fetchPlayQualities(LiveRoom detail) async {

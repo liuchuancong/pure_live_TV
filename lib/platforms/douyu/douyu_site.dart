@@ -510,6 +510,9 @@ class DouyuSite
   }
 
   @override
+  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
+
+  @override
   Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
     try {
       final roomInfo = await _fetchRoomInfo(roomId);

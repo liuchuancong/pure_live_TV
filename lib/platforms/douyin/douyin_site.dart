@@ -384,6 +384,9 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver, LiveSiteRoomRe
   }
 
   @override
+  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
+
+  @override
   Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) =>
       _roomDetail(roomId, includeEntryExtras: true);
 

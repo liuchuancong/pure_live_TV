@@ -535,6 +535,9 @@ class HuyaSite
   }
 
   @override
+  Future<LiveRoom> getRoomDetailForRoom(LiveRoom room) => resolveRoomDetailForRoom(site: this, room: room);
+
+  @override
   Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) {
     return _loadRoomDetail(platform: platform, roomId: roomId, allowUiFallback: true);
   }
