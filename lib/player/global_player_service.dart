@@ -5,6 +5,7 @@ import 'models/player_engine.dart';
 import 'core/playback_proxy_policy.dart';
 import 'core/owned_input_opener.dart';
 import '../services/settings/settings.dart';
+import '../services/player_settings/player_settings_controller.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:media_core/media_core.dart';
 import 'package:media_core_native/media_core_native.dart';
@@ -425,6 +426,26 @@ class GlobalPlayerService {
   Future<void> initialize({PlayerEngine defaultEngine = PlayerEngine.mediaKit}) async {
     if (_initialized) return;
     MediaKitPlayerAdapter.ensureInitialized();
+
+    // Output settings ride two rails: a live-appliable mpv property change
+    // (hardware decoder, audio output, decode tuning) is written to the engine
+    // that is already playing through applyEngineOptions; a render-context
+    // change (video output driver / custom-output / compat surface) is bound to
+    // the mpv video output and rebuilds the engine on the same backend, which
+    // re-runs the adapter factory (so it re-reads the new vo) and restores the
+    // source, position and play intent. Installed here rather than from the
+    // settings layer so services never import the player back.
+    PlayerSettingsController.outputSettingsDispatcher = ({required bool rebuild}) {
+      final handle = _livePlayer?.controller.handle;
+      if (handle == null) return;
+
+      if (rebuild) {
+        unawaited(handle.rebuildEngine(reason: 'video output settings changed'));
+        return;
+      }
+      unawaited(handle.applyEngineOptions(MediaKitHostConfig.buildEngineOptions()));
+    };
+
     await loadPlatformProvider();
     final kernel = PlayerKernel();
     if (_platformProvider != null) kernel.attachPlatformProvider(_platformProvider!);

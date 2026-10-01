@@ -11,6 +11,19 @@ part 'player_settings_controller.g.dart';
 class PlayerSettingsController extends _$PlayerSettingsController {
   static PlayerSettingsController get to => SettingsService.to.player;
 
+  /// Player-layer hook, installed by [GlobalPlayerService] at startup.
+  ///
+  /// Invoked whenever a stored output setting changes, so the value can reach
+  /// the engine that is already playing instead of waiting for the next
+  /// session. `rebuild` marks that the change rides on the render context
+  /// (video output driver / custom-output / compat surface), which mpv cannot
+  /// hot-swap and must rebuild the engine for; every other output change is a
+  /// live-appliable mpv property.
+  ///
+  /// Declared here and injected from the player layer so this settings service
+  /// never has to import it back.
+  static void Function({required bool rebuild})? outputSettingsDispatcher;
+
   /// First video fit option; used when a stored index no longer exists.
   static const int defaultVideoFitIndex = 0;
 
@@ -73,6 +86,7 @@ class PlayerSettingsController extends _$PlayerSettingsController {
   }
 
   void updateSettings(PlayerSettingsModel newModel) {
+    final old = state;
     final normalized = _normalize(newModel);
     state = normalized;
     HivePrefUtil.setInt('videoFitIndex', normalized.videoFitIndex);
@@ -100,6 +114,32 @@ class PlayerSettingsController extends _$PlayerSettingsController {
     HivePrefUtil.setBool('rememberPortraitRoomOverride', normalized.rememberPortraitRoomOverride);
     HivePrefUtil.setBool('showPortraitDiagnostics', normalized.showPortraitDiagnostics);
     HivePrefUtil.setObject('portraitRoomOverrides', normalized.portraitRoomOverrides);
+    _dispatchOutputChanges(old, normalized);
+  }
+
+  /// Pushes an output-setting change to the running engine (see [GlobalPlayerService]).
+  ///
+  /// Only the fields that feed the libmpv contract are watched; a fit, resolution
+  /// or portrait change must not rebuild or re-option a live player. A video
+  /// output / custom-output / compat-surface change is bound to the render
+  /// context and asks for a rebuild — everything else is a live-appliable
+  /// mpv property.
+  void _dispatchOutputChanges(PlayerSettingsModel oldModel, PlayerSettingsModel next) {
+    final dispatcher = outputSettingsDispatcher;
+    if (dispatcher == null) return;
+
+    final bool touchedOutput = oldModel.enableCodec != next.enableCodec ||
+        oldModel.videoHardwareDecoder != next.videoHardwareDecoder ||
+        oldModel.videoOutputDriver != next.videoOutputDriver ||
+        oldModel.audioOutputDriver != next.audioOutputDriver ||
+        oldModel.customPlayerOutput != next.customPlayerOutput ||
+        oldModel.playerCompatMode != next.playerCompatMode;
+    if (!touchedOutput) return;
+
+    final bool rebuild = oldModel.videoOutputDriver != next.videoOutputDriver ||
+        oldModel.customPlayerOutput != next.customPlayerOutput ||
+        oldModel.playerCompatMode != next.playerCompatMode;
+    dispatcher(rebuild: rebuild);
   }
 
   /// Advances the video fit option and returns the new index.
