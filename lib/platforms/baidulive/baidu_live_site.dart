@@ -237,9 +237,7 @@ final class BaiduLiveSite extends LiveSite
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
-    final roomId = room.roomId;
-    final platform = room.platform;
-    final detail = await getRoomDetailForRefresh(LiveRoom(roomId: roomId, platform: platform));
+    final detail = await getRoomDetailForRefresh(room);
     if (detail.effectiveLiveStatus == LiveStatus.unknown) {
       throw const BaiduLiveException(BaiduLiveFailure.access);
     }

@@ -403,11 +403,9 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver, LiveSiteRoomRe
 
   @override
   Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) {
-    final roomId = room.roomId;
-    final platform = room.platform;
     // Both the API and HTML paths propagate their final error and retain the
     // stream_url envelope required to resolve every advertised sdk_key.
-    return getRoomDetail(LiveRoom(roomId: roomId, platform: platform));
+    return getRoomDetail(room);
   }
 
   /// Resolves [roomId], which the platform stores either as a short web rid or
@@ -900,9 +898,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver, LiveSiteRoomRe
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
-    final roomId = room.roomId;
-    final platform = room.platform;
-    var result = await getRoomDetail(LiveRoom(roomId: roomId, platform: platform));
+    var result = await getRoomDetail(room);
     return result.status;
   }
 

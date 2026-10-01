@@ -210,7 +210,7 @@ class KilakilaSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(LiveRoom(roomId: detail.roomId, platform: detail.platform));
+    final fresh = await getRoomDetail(detail);
     return LivePlayUrlResolution(
       urls: await getPlayUrls(detail: fresh, quality: quality),
       appliedQualityData: quality.selectionId,

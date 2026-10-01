@@ -95,11 +95,9 @@ class PicartoSite extends LiveSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) =>
-      getRoomDetail(LiveRoom(roomId: room.roomId, platform: room.platform));
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => getRoomDetail(room);
   @override
-  Future<bool> getLiveStatus(LiveRoom room) async =>
-      (await getRoomDetailForRefresh(LiveRoom(roomId: room.roomId, platform: room.platform))).isPlayableNow;
+  Future<bool> getLiveStatus(LiveRoom room) async => (await getRoomDetailForRefresh(room)).isPlayableNow;
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
     if (detail.isExplicitlyOfflineNow) return [];
@@ -122,7 +120,7 @@ class PicartoSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(LiveRoom(roomId: detail.roomId, platform: id));
+    final fresh = await getRoomDetail(detail);
     return LivePlayUrlResolution(
       urls: await getPlayUrls(detail: fresh, quality: quality),
       appliedQualityData: quality.selectionId,

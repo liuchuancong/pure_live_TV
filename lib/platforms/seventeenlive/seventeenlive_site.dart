@@ -132,9 +132,7 @@ class SeventeenLiveSite extends LiveSite
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
-    final roomId = room.roomId;
-    final platform = room.platform;
-    final fresh = await getRoomDetailForRefresh(LiveRoom(roomId: roomId, platform: platform));
+    final fresh = await getRoomDetailForRefresh(room);
     if (fresh.effectiveLiveStatus == LiveStatus.unknown) {
       throw const SeventeenLiveException(SeventeenLiveFailure.unknownState);
     }

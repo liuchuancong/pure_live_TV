@@ -260,8 +260,7 @@ class ChzzkSite extends LiveSite
   Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, playback: false);
 
   @override
-  Future<bool> getLiveStatus(LiveRoom room) async =>
-      (await getRoomDetailForRefresh(LiveRoom(roomId: room.roomId, platform: room.platform))).isLiveNow;
+  Future<bool> getLiveStatus(LiveRoom room) async => (await getRoomDetailForRefresh(room)).isLiveNow;
 
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {

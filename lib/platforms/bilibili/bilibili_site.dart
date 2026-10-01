@@ -684,12 +684,10 @@ final currentRoom = Sites.currentRoom(platform, roomId);
 
   @override
   Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) {
-    final roomId = room.roomId;
-    final platform = room.platform;
     // Bilibili playback is resolved from the canonical room id by a separate
     // API, so the strict metadata-only room still contains everything the
     // recorder needs and avoids an unrelated danmaku credential request.
-    return getRoomDetailForRefresh(LiveRoom(roomId: roomId, platform: platform));
+    return getRoomDetailForRefresh(room);
   }
 
   LiveRoom _buildRoom(Map<String, dynamic> roomInfo, {required String roomId, Object? danmakuData}) {

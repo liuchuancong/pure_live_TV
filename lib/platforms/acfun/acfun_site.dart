@@ -125,9 +125,7 @@ class AcfunSite extends LiveSite
 
   @override
   Future<LiveRoom> getRoomDetail(LiveRoom room) async {
-    final roomId = room.roomId;
-    final platform = room.platform;
-    final fresh = await getRoomDetailForRefresh(LiveRoom(roomId: roomId, platform: platform));
+    final fresh = await getRoomDetailForRefresh(room);
     if (fresh.liveStatus == LiveStatus.live) {
       return fresh.copyWith(data: await _api.playback(fresh.roomId));
     }
@@ -139,8 +137,7 @@ class AcfunSite extends LiveSite
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async =>
-      (await getRoomDetailForRefresh(LiveRoom(roomId: room.roomId, platform: room.platform))).liveStatus ==
-      LiveStatus.live;
+      (await getRoomDetailForRefresh(room)).liveStatus == LiveStatus.live;
 
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
@@ -168,7 +165,7 @@ class AcfunSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(LiveRoom(roomId: detail.roomId, platform: id));
+    final fresh = await getRoomDetail(detail);
     final urls = await getPlayUrls(detail: fresh, quality: quality);
     return LivePlayUrlResolution(urls: urls, appliedQualityData: quality.selectionId);
   }
