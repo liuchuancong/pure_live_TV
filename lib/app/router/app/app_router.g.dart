@@ -23,6 +23,7 @@ List<RouteBase> get $appRoutes => [
   $videoDetailRoute,
   $videoPlayerRoute,
   $videoSeasonRoute,
+  $videoTagSearchRoute,
   $ugcCommentsRoute,
   $ugcUserSpaceRoute,
   $musicFavDetailRoute,
@@ -508,6 +509,38 @@ mixin $VideoSeasonRoute on GoRouteData {
   @override
   void replace(BuildContext context) =>
       context.replace(location, extra: _self.$extra);
+}
+
+RouteBase get $videoTagSearchRoute => GoRouteData.$route(
+  path: '/video_tag_search',
+  hasOverriddenOnExit: false,
+  factory: $VideoTagSearchRoute._fromState,
+);
+
+mixin $VideoTagSearchRoute on GoRouteData {
+  static VideoTagSearchRoute _fromState(GoRouterState state) =>
+      VideoTagSearchRoute(state.uri.queryParameters['keyword']!);
+
+  VideoTagSearchRoute get _self => this as VideoTagSearchRoute;
+
+  @override
+  String get location => GoRouteData.$location(
+    '/video_tag_search',
+    queryParams: {'keyword': _self.keyword},
+  );
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
 }
 
 RouteBase get $ugcCommentsRoute => GoRouteData.$route(

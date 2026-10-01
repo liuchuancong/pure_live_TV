@@ -36,6 +36,9 @@ abstract final class AppRoutes {
   /// Video mode: one PGC season's episode list
   static const kVideoSeason = "/video_season";
 
+  /// Video mode: one archive tag's search results
+  static const kVideoTagSearch = "/video_tag_search";
+
   /// The shared bilibili comments page (music and video)
   static const kUgcComments = "/ugc_comments";
 

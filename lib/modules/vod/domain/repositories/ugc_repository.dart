@@ -37,4 +37,7 @@ abstract class UgcRepository {
   Future<List<SubtitleTrack>> getSubtitles({required String bvid, required int cid});
   Future<List<SubtitleCue>> fetchSubtitleCues(String url);
   Future<int> getOnlineCount({required String bvid, required int cid});
+  Future<List<String>> getArchiveTags(String bvid);
+  Future<List<({int id, String title, bool contained})>> getFavFoldersForVideo(int aid);
+  Future<bool> isFollowing(int mid);
 }

@@ -229,6 +229,17 @@ class VideoSeasonRoute extends GoRouteData with $VideoSeasonRoute {
   }
 }
 
+/// One archive tag's search results, reached from a detail-page tag chip.
+@TypedGoRoute<VideoTagSearchRoute>(path: AppRoutes.kVideoTagSearch)
+class VideoTagSearchRoute extends GoRouteData with $VideoTagSearchRoute {
+  VideoTagSearchRoute(this.keyword);
+
+  final String keyword;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => VideoTagSearchPage(keyword: keyword);
+}
+
 /// The shared comments page over one archive's oid.
 @TypedGoRoute<UgcCommentsRoute>(path: AppRoutes.kUgcComments)
 class UgcCommentsRoute extends GoRouteData with $UgcCommentsRoute {

@@ -34,7 +34,12 @@ abstract class MusicArchive with _$MusicArchive {
     @Default('') String description,
     @Default('') String tname,
     @Default('') String publishDate,
+    @Default(0) int likeCount,
+    @Default(0) int coinCount,
+    @Default(0) int favCount,
+    @Default(0) int replyCount,
     @Default([]) List<MusicPart> parts,
+    MusicSeason? season,
   }) = _MusicArchive;
 
   factory MusicArchive.fromJson(Map<String, dynamic> json) => _$MusicArchiveFromJson(json);
@@ -103,7 +108,12 @@ abstract class MusicArchive with _$MusicArchive {
       description: json['desc']?.toString() ?? '',
       tname: json['tname']?.toString() ?? '',
       publishDate: formatTimestamp(int.tryParse(json['pubdate']?.toString() ?? '') ?? 0),
+      likeCount: int.tryParse(json['stat']?['like']?.toString() ?? '') ?? 0,
+      coinCount: int.tryParse(json['stat']?['coin']?.toString() ?? '') ?? 0,
+      favCount: int.tryParse(json['stat']?['favorite']?.toString() ?? '') ?? 0,
+      replyCount: int.tryParse(json['stat']?['reply']?.toString() ?? '') ?? 0,
       parts: parts,
+      season: json['ugc_season'] is Map ? MusicSeason.fromViewJson(json['ugc_season']) : null,
     );
   }
 
@@ -131,5 +141,61 @@ abstract class MusicArchive with _$MusicArchive {
       return [MusicTrack(archive: this, part: MusicPart(cid: 0, page: 1, title: title, duration: duration))];
     }
     return [for (final part in parts) MusicTrack(archive: this, part: part)];
+  }
+}
+
+/// An archive's 合集 (`view`'s `ugc_season`): the UP grouped the videos into
+/// sections of episodes, each episode being another archive.
+@freezed
+abstract class MusicSeason with _$MusicSeason {
+  const factory MusicSeason({
+    @Default(0) int id,
+    @Default('') String title,
+    @Default([]) List<MusicSeasonSection> sections,
+  }) = _MusicSeason;
+
+  factory MusicSeason.fromJson(Map<String, dynamic> json) => _$MusicSeasonFromJson(json);
+
+  factory MusicSeason.fromViewJson(Map<dynamic, dynamic> json) {
+    return MusicSeason(
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      title: json['title']?.toString() ?? '',
+      sections: [
+        for (final section in (json['sections'] as List?) ?? const [])
+          if (section is Map) MusicSeasonSection.fromViewJson(section),
+      ],
+    );
+  }
+}
+
+@freezed
+abstract class MusicSeasonSection with _$MusicSeasonSection {
+  const factory MusicSeasonSection({
+    @Default('') String title,
+    @Default([]) List<MusicArchive> episodes,
+  }) = _MusicSeasonSection;
+
+  factory MusicSeasonSection.fromJson(Map<String, dynamic> json) => _$MusicSeasonSectionFromJson(json);
+
+  /// Episodes arrive as partial archives — enough identity for the detail
+  /// page to reopen each one by bvid; the cover/duration keys the section
+  /// payload uses differ from the archive ones (`arc` nesting), so this maps
+  /// them explicitly rather than reusing `fromViewJson`.
+  factory MusicSeasonSection.fromViewJson(Map<dynamic, dynamic> json) {
+    return MusicSeasonSection(
+      title: json['title']?.toString() ?? '',
+      episodes: [
+        for (final ep in (json['episodes'] as List?) ?? const [])
+          if (ep is Map && (ep['bvid']?.toString() ?? '').isNotEmpty)
+            MusicArchive(
+              aid: int.tryParse(ep['aid']?.toString() ?? '') ?? 0,
+              bvid: ep['bvid'].toString(),
+              title: ep['title']?.toString() ?? '',
+              cover: httpsUrl(ep['cover']?.toString() ?? ep['arc']?['cover']?.toString() ?? ''),
+              duration: int.tryParse(ep['duration']?.toString() ?? ep['arc']?['duration']?.toString() ?? '') ?? 0,
+              upName: ep['author']?.toString() ?? '',
+            ),
+      ],
+    );
   }
 }

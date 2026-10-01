@@ -15,6 +15,7 @@ export 'pages/archive/video_detail_page.dart';
 export 'pages/discover/video_pgc_page.dart';
 export 'pages/discover/video_region_page.dart';
 export 'pages/discover/video_search_page.dart';
+export 'pages/discover/video_tag_search_page.dart';
 export 'pages/discover/video_season_page.dart';
 export 'pages/personal/video_personal_section.dart';
 export 'video_section.dart';

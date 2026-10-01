@@ -369,6 +369,59 @@ class BilibiliUgcApi {
   Future<void> likeComment({required int oid, required int rpid, required bool like}) =>
       _client.postForm('https://api.bilibili.com/x/v2/reply/action', {'oid': '$oid', 'type': '1', 'rpid': '$rpid', 'action': like ? '1' : '0'});
 
+  // ------------------------------------------------------------------ extras
+
+  /// The archive's tag names (`x/tag/archive/tags`) — the detail page chips,
+  /// each one a search term in the reference app.
+  Future<List<String>> getArchiveTags(String bvid) async {
+    try {
+      final data = await _get('https://api.bilibili.com/x/tag/archive/tags', query: {'bvid': bvid});
+      return [
+        for (final item in (data as List?) ?? const [])
+          if (item is Map && (item['tag_name']?.toString() ?? '').isNotEmpty) item['tag_name'].toString(),
+      ];
+    } catch (_) {
+      // Tags never gate the page: a failed read just hides the row.
+      return const [];
+    }
+  }
+
+  /// The user's own folders AND whether this video already sits in each one.
+  /// `list-all` only answers `fav_state` when the call names the media, so
+  /// this is the folder-picker's single round trip (`rid`/`business` per the
+  /// web client).
+  Future<List<({int id, String title, bool contained})>> getFavFoldersForVideo(int aid) async {
+    _client.ensureLogin();
+    final data = await _get('https://api.bilibili.com/x/v3/fav/folder/created/list-all', query: {
+      'up_mid': '${_client.myMid}',
+      'type': '2',
+      'rid': '$aid',
+      'business': 'archive_video',
+    });
+    return [
+      for (final item in (data?['list'] as List?) ?? const [])
+        if (item is Map)
+          (
+            id: int.tryParse(item['id']?.toString() ?? '') ?? 0,
+            title: item['name']?.toString() ?? '',
+            contained: item['fav_state'] == true,
+          ),
+    ];
+  }
+
+  /// Whether the account follows this UP (`x/relation` attribute: 1 follow,
+  /// 2 follower, 3 mutual). Any failure (logged out, blocked) answers false —
+  /// the chip then offers a plain follow, which the API will correctly refuse.
+  Future<bool> isFollowing(int mid) async {
+    try {
+      final data = await _get('https://api.bilibili.com/x/relation', query: {'mid': '$mid'});
+      final attribute = int.tryParse(data?['attribute']?.toString() ?? '') ?? 0;
+      return attribute == 1 || attribute == 2 || attribute == 3;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // -------------------------------------------------------------------- search
 
   /// The trending search words (`x/web-interface/search/square`).

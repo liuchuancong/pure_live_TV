@@ -68,7 +68,7 @@ final class LivePlayControllerProvider
 }
 
 String _$livePlayControllerHash() =>
-    r'a20ea55b6bf55efc5a482f7a3445f9d3964840a5';
+    r'c7364153a7220b55bdcdd18162d762692edc4b28';
 
 /// Drives one live room: detail/quality/URL fetching, playback state
 /// projection, quality and line switching. Danmaku sessions live in

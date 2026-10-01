@@ -136,6 +136,13 @@ class ApiUgcRepository implements UgcRepository {
   @override
   Future<int> getOnlineCount({required String bvid, required int cid}) =>
       BilibiliUgcApi.instance.getOnlineCount(bvid: bvid, cid: cid);
+  @override
+  Future<List<String>> getArchiveTags(String bvid) => BilibiliUgcApi.instance.getArchiveTags(bvid);
+  @override
+  Future<List<({int id, String title, bool contained})>> getFavFoldersForVideo(int aid) =>
+      BilibiliUgcApi.instance.getFavFoldersForVideo(aid);
+  @override
+  Future<bool> isFollowing(int mid) => BilibiliUgcApi.instance.isFollowing(mid);
 }
 
 class ApiPgcRepository implements PgcRepository {
