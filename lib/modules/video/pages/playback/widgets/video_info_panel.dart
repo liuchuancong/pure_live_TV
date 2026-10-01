@@ -1,6 +1,7 @@
 import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/video/widgets/video_action_chip.dart';
 import 'package:pure_live/modules/video/pages/archive/video_detail_dialogs.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -23,6 +24,7 @@ class _VideoInfoPanelState extends State<VideoInfoPanel> {
   bool _liked = false;
   bool _favoured = false;
   bool _busy = false;
+  List<MusicArchive> _related = const [];
 
   int get _aid => widget.archive.aid;
 
@@ -30,6 +32,17 @@ class _VideoInfoPanelState extends State<VideoInfoPanel> {
   void initState() {
     super.initState();
     _loadStates();
+    _loadRelated();
+  }
+
+  Future<void> _loadRelated() async {
+    if (_aid <= 0) return;
+    try {
+      final related = await BilibiliMusicApi.instance.getRelatedVideos(aid: _aid, bvid: widget.archive.bvid);
+      if (mounted) setState(() => _related = related.take(20).toList());
+    } catch (_) {
+      // Related videos are a bonus; a failure leaves the section hidden.
+    }
   }
 
   Future<void> _loadStates() async {
@@ -270,6 +283,25 @@ class _VideoInfoPanelState extends State<VideoInfoPanel> {
                       ),
                     ],
                   ),
+                  if (_related.isNotEmpty) ...[
+                    SizedBox(height: 20.ts(context)),
+                    Text(
+                      i18n('video_related_title'),
+                      style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: accent),
+                    ),
+                    SizedBox(height: 8.ts(context)),
+                    SizedBox(
+                      height: 150.ts(context),
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _related.length,
+                        itemBuilder: (context, index) => _RelatedTile(
+                          archive: _related[index],
+                          onTap: () => VideoDetailRoute(_related[index]).push(context),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -296,6 +328,70 @@ class _Stat extends StatelessWidget {
         SizedBox(width: 4.ts(context)),
         Text(value, style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white70)),
       ],
+    );
+  }
+}
+
+/// One compact related-video tile: a cover with the UP and title under it.
+class _RelatedTile extends StatelessWidget {
+  const _RelatedTile({required this.archive, required this.onTap});
+
+  final MusicArchive archive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+    final accent = tvTheme.focusColor;
+
+    return SizedBox(
+      width: 200.ts(context),
+      child: Padding(
+        padding: EdgeInsets.only(right: 12.ts(context)),
+        child: TvFocusable(
+          onTap: onTap,
+          builder: (context, focused, _) => Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.ts(context)),
+              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Container(
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      color: tvTheme.cardColor,
+                      borderRadius: BorderRadius.circular(10.ts(context)),
+                    ),
+                    child: CachedNetworkImage(
+                      imageUrl: archive.cover,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 400,
+                      errorWidget: (context, url, error) =>
+                          Icon(Icons.broken_image_outlined, color: tvTheme.secondaryTextColor),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 4.ts(context)),
+                Text(
+                  archive.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white),
+                ),
+                Text(
+                  archive.upName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.t14.copyWith(color: Colors.white54),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
