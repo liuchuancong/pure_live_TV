@@ -29,7 +29,7 @@ class VideoPlayerControlBar extends ConsumerStatefulWidget {
     required this.onOpenSpeedMenu,
     required this.danmakuOn,
     required this.subtitleOn,
-    required this.aspectFill,
+    required this.aspectMode,
     required this.onToggleDanmaku,
     required this.onOpenSubtitleMenu,
     required this.onToggleAspect,
@@ -56,7 +56,7 @@ class VideoPlayerControlBar extends ConsumerStatefulWidget {
   final VoidCallback onOpenSpeedMenu;
   final bool danmakuOn;
   final bool subtitleOn;
-  final bool aspectFill;
+  final int aspectMode;
   final VoidCallback onToggleDanmaku;
 
   /// Opens the subtitle track picker — null (pill inert) when the archive
@@ -304,10 +304,12 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
                 onTap: widget.onOpenSubtitleMenu,
               ),
               (
-                label: i18n(widget.aspectFill ? 'video_aspect_fill' : 'video_aspect_fit'),
+                label: widget.aspectMode == 0
+                    ? i18n('video_aspect_default')
+                    : (widget.aspectMode == 1 ? '4:3' : '16:9'),
                 icon: Icon(Icons.aspect_ratio_rounded, size: 22.ts(context)),
-                active: false,
-                secondary: true,
+                active: widget.aspectMode != 0,
+                secondary: widget.aspectMode == 0,
                 onTap: widget.onToggleAspect,
               ),
               (

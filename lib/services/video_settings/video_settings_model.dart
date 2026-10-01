@@ -24,6 +24,18 @@ abstract class VideoSettingsModel with _$VideoSettingsModel {
 
     /// The personal page's landing tab: index into its tab list.
     @Default(0) int personalTabIndex,
+
+    /// newBV's ClosedCaptionMenu appearance knobs, applied live to the CC
+    /// overlay. [subtitleFontSize] is a design size (8-48),
+    /// [subtitleBgOpacity] the line background alpha (0-1), and
+    /// [subtitleBottomPadding] extra offset (0-48) above the base position.
+    @Default(20) int subtitleFontSize,
+    @Default(0.55) double subtitleBgOpacity,
+    @Default(0) int subtitleBottomPadding,
+
+    /// newBV's PictureMenu 宽高比: 0 = 默认 (native), 1 = 4:3, 2 = 16:9. The
+    /// last two stretch the picture into a fixed-ratio box.
+    @Default(0) int aspectRatioMode,
   }) = _VideoSettingsModel;
 
   factory VideoSettingsModel.fromJson(Map<String, dynamic> json) => _$VideoSettingsModelFromJson(json);

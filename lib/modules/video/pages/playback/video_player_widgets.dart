@@ -50,7 +50,6 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   bool _subtitleMenuOpen = false;
   bool _danmakuOn = true;
   bool _subtitleOn = false;
-  bool _aspectFill = false;
   final GlobalKey<VodDanmakuOverlayState> _danmakuKey = GlobalKey();
 
   // Per-part player extras: subtitles, online count, progress heartbeat.
@@ -488,12 +487,34 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     _armAutoHide();
   }
 
+  /// newBV's PictureMenu 宽高比: 默认 keeps the native fit; 4:3 / 16:9 stretch
+  /// the picture into a fixed-ratio box centered on screen.
+  Widget _videoSurface(PlayerHandle handle, int mode) {
+    if (mode == 0) return HandleVideoSurface(handle: handle, fit: BoxFit.contain);
+    final ratio = mode == 1 ? 4 / 3 : 16 / 9;
+    return Center(
+      child: AspectRatio(
+        aspectRatio: ratio,
+        child: HandleVideoSurface(handle: handle, fit: BoxFit.fill),
+      ),
+    );
+  }
+
+  /// Cycle 默认 → 4:3 → 16:9 → 默认, shared with the quality menu's radio.
+  void _cycleAspect() {
+    final settings = ref.read(videoSettingsControllerProvider);
+    ref.read(videoSettingsControllerProvider.notifier).updateSettings(
+      settings.copyWith(aspectRatioMode: (settings.aspectRatioMode + 1) % 3),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(musicPlayerControllerProvider);
     final controller = ref.read(musicPlayerControllerProvider.notifier);
     final tvTheme = context.tvTheme;
     final track = state.current;
+    final aspectMode = ref.watch(videoSettingsControllerProvider.select((m) => m.aspectRatioMode));
 
     return PopScope(
       canPop: !_anyMenuOpen && !_commentsOpen && !_infoOpen && !_partsOpen && !_controlsVisible,
@@ -528,8 +549,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                 fit: StackFit.expand,
                 children: [
                   // ------------------------------------------------ the picture
-                  if (controller.handle != null)
-                    HandleVideoSurface(handle: controller.handle!, fit: _aspectFill ? BoxFit.cover : BoxFit.contain)
+                  if (controller.handle != null) _videoSurface(controller.handle!, aspectMode)
                   else
                     VideoIdleSurface(track: track, resolving: state.resolving),
 
@@ -619,9 +639,14 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                     Positioned(
                       left: 0,
                       right: 0,
-                      bottom: 140.sp,
+                      bottom: 140.sp + ref.watch(videoSettingsControllerProvider.select((m) => m.subtitleBottomPadding)).sp,
                       child: IgnorePointer(
-                        child: SubtitleLines(cues: _subtitleCues, handle: controller.handle!),
+                        child: SubtitleLines(
+                          cues: _subtitleCues,
+                          handle: controller.handle!,
+                          fontSize: ref.watch(videoSettingsControllerProvider.select((m) => m.subtitleFontSize)).toDouble(),
+                          bgOpacity: ref.watch(videoSettingsControllerProvider.select((m) => m.subtitleBgOpacity)),
+                        ),
                       ),
                     ),
 
@@ -719,7 +744,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                           },
                           danmakuOn: _danmakuOn,
                           subtitleOn: _subtitleOn,
-                          aspectFill: _aspectFill,
+                          aspectMode: aspectMode,
                           onToggleDanmaku: () => setState(() => _danmakuOn = !_danmakuOn),
                           onOpenSubtitleMenu: _subtitleTracks.isEmpty
                               ? null
@@ -727,7 +752,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                                   _autoHideTimer?.cancel();
                                   setState(() => _subtitleMenuOpen = true);
                                 },
-                          onToggleAspect: () => setState(() => _aspectFill = !_aspectFill),
+                          onToggleAspect: _cycleAspect,
                           onOpenInfo: _openInfo,
                         ),
                       ),

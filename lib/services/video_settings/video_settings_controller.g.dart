@@ -51,7 +51,7 @@ final class VideoSettingsControllerProvider
 }
 
 String _$videoSettingsControllerHash() =>
-    r'552e58625b3680dc781bf5eaa56fb5f57c4e7a3c';
+    r'fedffb820733515f159b87cdb9691aaa908a48ea';
 
 /// opens at (quality, speed, detail-first) and which section the mode lands on.
 /// Music is deliberately untouched — this controller is only read from the

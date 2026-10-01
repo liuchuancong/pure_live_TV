@@ -29,6 +29,10 @@ class VideoSettingsController extends _$VideoSettingsController {
       startSection: HivePrefUtil.getInt('videoStartSection') ?? 0,
       homeTabIndex: HivePrefUtil.getInt('videoHomeTab') ?? 1,
       personalTabIndex: HivePrefUtil.getInt('videoPersonalTab') ?? 0,
+      subtitleFontSize: HivePrefUtil.getInt('videoSubtitleFontSize') ?? 20,
+      subtitleBgOpacity: HivePrefUtil.getDouble('videoSubtitleBgOpacity') ?? 0.55,
+      subtitleBottomPadding: HivePrefUtil.getInt('videoSubtitleBottomPadding') ?? 0,
+      aspectRatioMode: HivePrefUtil.getInt('videoAspectRatioMode') ?? 0,
     );
   }
 
@@ -42,5 +46,9 @@ class VideoSettingsController extends _$VideoSettingsController {
     HivePrefUtil.setInt('videoStartSection', state.startSection);
     HivePrefUtil.setInt('videoHomeTab', state.homeTabIndex);
     HivePrefUtil.setInt('videoPersonalTab', state.personalTabIndex);
+    HivePrefUtil.setInt('videoSubtitleFontSize', state.subtitleFontSize);
+    HivePrefUtil.setDouble('videoSubtitleBgOpacity', state.subtitleBgOpacity);
+    HivePrefUtil.setInt('videoSubtitleBottomPadding', state.subtitleBottomPadding);
+    HivePrefUtil.setInt('videoAspectRatioMode', state.aspectRatioMode);
   }
 }

@@ -5,10 +5,22 @@ import 'package:pure_live/modules/vod/models/models.dart';
 
 /// The subtitle line stack, driven by a timer against the handle position.
 class SubtitleLines extends StatefulWidget {
-  const SubtitleLines({super.key, required this.cues, required this.handle});
+  const SubtitleLines({
+    super.key,
+    required this.cues,
+    required this.handle,
+    this.fontSize = 20,
+    this.bgOpacity = 0.55,
+  });
 
   final List<SubtitleCue> cues;
   final PlayerHandle handle;
+
+  /// Design font size (newBV's ClosedCaptionMenu 大小).
+  final double fontSize;
+
+  /// Background alpha behind each line (newBV's 透明度).
+  final double bgOpacity;
 
   @override
   State<SubtitleLines> createState() => _SubtitleLinesState();
@@ -54,16 +66,15 @@ class _SubtitleLinesState extends State<SubtitleLines> {
             margin: EdgeInsets.only(top: 4.sp),
             padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 6.ts(context)),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.55),
+              color: Colors.black.withValues(alpha: widget.bgOpacity),
               borderRadius: BorderRadius.circular(8.ts(context)),
             ),
             child: Text(
               line,
               textAlign: TextAlign.center,
-              style: AppTextStyles.t20.copyWith(
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.of(widget.fontSize, weight: FontWeight.w600).copyWith(
                 color: Colors.white,
-                shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+                shadows: const [Shadow(color: Colors.black, blurRadius: 4)],
               ),
             ),
           ),

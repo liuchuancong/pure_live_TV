@@ -22,7 +22,13 @@ mixin _$VideoSettingsModel {
  bool get showVideoDetail;/// newBV's persistent mini progress line on the player's bottom edge.
  bool get persistentProgress;/// The video section the sidebar lands on: index into [VideoSection.values].
  int get startSection; int get homeTabIndex;/// The personal page's landing tab: index into its tab list.
- int get personalTabIndex;
+ int get personalTabIndex;/// newBV's ClosedCaptionMenu appearance knobs, applied live to the CC
+/// overlay. [subtitleFontSize] is a design size (8-48),
+/// [subtitleBgOpacity] the line background alpha (0-1), and
+/// [subtitleBottomPadding] extra offset (0-48) above the base position.
+ int get subtitleFontSize; double get subtitleBgOpacity; int get subtitleBottomPadding;/// newBV's PictureMenu 宽高比: 0 = 默认 (native), 1 = 4:3, 2 = 16:9. The
+/// last two stretch the picture into a fixed-ratio box.
+ int get aspectRatioMode;
 /// Create a copy of VideoSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -36,20 +42,20 @@ $VideoSettingsModelCopyWith<VideoSettingsModel> get copyWith => _$VideoSettingsM
 @override
 bool operator ==(Object other) {
   final _this = this as VideoSettingsModel;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoSettingsModel&&(identical(other.preferredQuality, _this.preferredQuality) || other.preferredQuality == _this.preferredQuality)&&(identical(other.defaultSpeed, _this.defaultSpeed) || other.defaultSpeed == _this.defaultSpeed)&&(identical(other.showVideoDetail, _this.showVideoDetail) || other.showVideoDetail == _this.showVideoDetail)&&(identical(other.persistentProgress, _this.persistentProgress) || other.persistentProgress == _this.persistentProgress)&&(identical(other.startSection, _this.startSection) || other.startSection == _this.startSection)&&(identical(other.homeTabIndex, _this.homeTabIndex) || other.homeTabIndex == _this.homeTabIndex)&&(identical(other.personalTabIndex, _this.personalTabIndex) || other.personalTabIndex == _this.personalTabIndex));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoSettingsModel&&(identical(other.preferredQuality, _this.preferredQuality) || other.preferredQuality == _this.preferredQuality)&&(identical(other.defaultSpeed, _this.defaultSpeed) || other.defaultSpeed == _this.defaultSpeed)&&(identical(other.showVideoDetail, _this.showVideoDetail) || other.showVideoDetail == _this.showVideoDetail)&&(identical(other.persistentProgress, _this.persistentProgress) || other.persistentProgress == _this.persistentProgress)&&(identical(other.startSection, _this.startSection) || other.startSection == _this.startSection)&&(identical(other.homeTabIndex, _this.homeTabIndex) || other.homeTabIndex == _this.homeTabIndex)&&(identical(other.personalTabIndex, _this.personalTabIndex) || other.personalTabIndex == _this.personalTabIndex)&&(identical(other.subtitleFontSize, _this.subtitleFontSize) || other.subtitleFontSize == _this.subtitleFontSize)&&(identical(other.subtitleBgOpacity, _this.subtitleBgOpacity) || other.subtitleBgOpacity == _this.subtitleBgOpacity)&&(identical(other.subtitleBottomPadding, _this.subtitleBottomPadding) || other.subtitleBottomPadding == _this.subtitleBottomPadding)&&(identical(other.aspectRatioMode, _this.aspectRatioMode) || other.aspectRatioMode == _this.aspectRatioMode));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as VideoSettingsModel;
-  return Object.hash(runtimeType,_this.preferredQuality,_this.defaultSpeed,_this.showVideoDetail,_this.persistentProgress,_this.startSection,_this.homeTabIndex,_this.personalTabIndex);
+  return Object.hash(runtimeType,_this.preferredQuality,_this.defaultSpeed,_this.showVideoDetail,_this.persistentProgress,_this.startSection,_this.homeTabIndex,_this.personalTabIndex,_this.subtitleFontSize,_this.subtitleBgOpacity,_this.subtitleBottomPadding,_this.aspectRatioMode);
 }
 
 @override
 String toString() {
   final _this = this as VideoSettingsModel;
-  return 'VideoSettingsModel(preferredQuality: ${_this.preferredQuality}, defaultSpeed: ${_this.defaultSpeed}, showVideoDetail: ${_this.showVideoDetail}, persistentProgress: ${_this.persistentProgress}, startSection: ${_this.startSection}, homeTabIndex: ${_this.homeTabIndex}, personalTabIndex: ${_this.personalTabIndex})';
+  return 'VideoSettingsModel(preferredQuality: ${_this.preferredQuality}, defaultSpeed: ${_this.defaultSpeed}, showVideoDetail: ${_this.showVideoDetail}, persistentProgress: ${_this.persistentProgress}, startSection: ${_this.startSection}, homeTabIndex: ${_this.homeTabIndex}, personalTabIndex: ${_this.personalTabIndex}, subtitleFontSize: ${_this.subtitleFontSize}, subtitleBgOpacity: ${_this.subtitleBgOpacity}, subtitleBottomPadding: ${_this.subtitleBottomPadding}, aspectRatioMode: ${_this.aspectRatioMode})';
 }
 
 
@@ -60,7 +66,7 @@ abstract mixin class $VideoSettingsModelCopyWith<$Res>  {
   factory $VideoSettingsModelCopyWith(VideoSettingsModel value, $Res Function(VideoSettingsModel) _then) = _$VideoSettingsModelCopyWithImpl;
 @useResult
 $Res call({
- int preferredQuality, double defaultSpeed, bool showVideoDetail, bool persistentProgress, int startSection, int homeTabIndex, int personalTabIndex
+ int preferredQuality, double defaultSpeed, bool showVideoDetail, bool persistentProgress, int startSection, int homeTabIndex, int personalTabIndex, int subtitleFontSize, double subtitleBgOpacity, int subtitleBottomPadding, int aspectRatioMode
 });
 
 
@@ -77,7 +83,7 @@ class _$VideoSettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of VideoSettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? preferredQuality = null,Object? defaultSpeed = null,Object? showVideoDetail = null,Object? persistentProgress = null,Object? startSection = null,Object? homeTabIndex = null,Object? personalTabIndex = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? preferredQuality = null,Object? defaultSpeed = null,Object? showVideoDetail = null,Object? persistentProgress = null,Object? startSection = null,Object? homeTabIndex = null,Object? personalTabIndex = null,Object? subtitleFontSize = null,Object? subtitleBgOpacity = null,Object? subtitleBottomPadding = null,Object? aspectRatioMode = null,}) {
   return _then(VideoSettingsModel(
 preferredQuality: null == preferredQuality ? _self.preferredQuality : preferredQuality // ignore: cast_nullable_to_non_nullable
 as int,defaultSpeed: null == defaultSpeed ? _self.defaultSpeed : defaultSpeed // ignore: cast_nullable_to_non_nullable
@@ -86,6 +92,10 @@ as bool,persistentProgress: null == persistentProgress ? _self.persistentProgres
 as bool,startSection: null == startSection ? _self.startSection : startSection // ignore: cast_nullable_to_non_nullable
 as int,homeTabIndex: null == homeTabIndex ? _self.homeTabIndex : homeTabIndex // ignore: cast_nullable_to_non_nullable
 as int,personalTabIndex: null == personalTabIndex ? _self.personalTabIndex : personalTabIndex // ignore: cast_nullable_to_non_nullable
+as int,subtitleFontSize: null == subtitleFontSize ? _self.subtitleFontSize : subtitleFontSize // ignore: cast_nullable_to_non_nullable
+as int,subtitleBgOpacity: null == subtitleBgOpacity ? _self.subtitleBgOpacity : subtitleBgOpacity // ignore: cast_nullable_to_non_nullable
+as double,subtitleBottomPadding: null == subtitleBottomPadding ? _self.subtitleBottomPadding : subtitleBottomPadding // ignore: cast_nullable_to_non_nullable
+as int,aspectRatioMode: null == aspectRatioMode ? _self.aspectRatioMode : aspectRatioMode // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -171,10 +181,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int preferredQuality,  double defaultSpeed,  bool showVideoDetail,  bool persistentProgress,  int startSection,  int homeTabIndex,  int personalTabIndex)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int preferredQuality,  double defaultSpeed,  bool showVideoDetail,  bool persistentProgress,  int startSection,  int homeTabIndex,  int personalTabIndex,  int subtitleFontSize,  double subtitleBgOpacity,  int subtitleBottomPadding,  int aspectRatioMode)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _VideoSettingsModel() when $default != null:
-return $default(_that.preferredQuality,_that.defaultSpeed,_that.showVideoDetail,_that.persistentProgress,_that.startSection,_that.homeTabIndex,_that.personalTabIndex);case _:
+return $default(_that.preferredQuality,_that.defaultSpeed,_that.showVideoDetail,_that.persistentProgress,_that.startSection,_that.homeTabIndex,_that.personalTabIndex,_that.subtitleFontSize,_that.subtitleBgOpacity,_that.subtitleBottomPadding,_that.aspectRatioMode);case _:
   return orElse();
 
 }
@@ -192,10 +202,10 @@ return $default(_that.preferredQuality,_that.defaultSpeed,_that.showVideoDetail,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int preferredQuality,  double defaultSpeed,  bool showVideoDetail,  bool persistentProgress,  int startSection,  int homeTabIndex,  int personalTabIndex)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int preferredQuality,  double defaultSpeed,  bool showVideoDetail,  bool persistentProgress,  int startSection,  int homeTabIndex,  int personalTabIndex,  int subtitleFontSize,  double subtitleBgOpacity,  int subtitleBottomPadding,  int aspectRatioMode)  $default,) {final _that = this;
 switch (_that) {
 case _VideoSettingsModel():
-return $default(_that.preferredQuality,_that.defaultSpeed,_that.showVideoDetail,_that.persistentProgress,_that.startSection,_that.homeTabIndex,_that.personalTabIndex);case _:
+return $default(_that.preferredQuality,_that.defaultSpeed,_that.showVideoDetail,_that.persistentProgress,_that.startSection,_that.homeTabIndex,_that.personalTabIndex,_that.subtitleFontSize,_that.subtitleBgOpacity,_that.subtitleBottomPadding,_that.aspectRatioMode);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -212,10 +222,10 @@ return $default(_that.preferredQuality,_that.defaultSpeed,_that.showVideoDetail,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int preferredQuality,  double defaultSpeed,  bool showVideoDetail,  bool persistentProgress,  int startSection,  int homeTabIndex,  int personalTabIndex)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int preferredQuality,  double defaultSpeed,  bool showVideoDetail,  bool persistentProgress,  int startSection,  int homeTabIndex,  int personalTabIndex,  int subtitleFontSize,  double subtitleBgOpacity,  int subtitleBottomPadding,  int aspectRatioMode)?  $default,) {final _that = this;
 switch (_that) {
 case _VideoSettingsModel() when $default != null:
-return $default(_that.preferredQuality,_that.defaultSpeed,_that.showVideoDetail,_that.persistentProgress,_that.startSection,_that.homeTabIndex,_that.personalTabIndex);case _:
+return $default(_that.preferredQuality,_that.defaultSpeed,_that.showVideoDetail,_that.persistentProgress,_that.startSection,_that.homeTabIndex,_that.personalTabIndex,_that.subtitleFontSize,_that.subtitleBgOpacity,_that.subtitleBottomPadding,_that.aspectRatioMode);case _:
   return null;
 
 }
@@ -227,7 +237,7 @@ return $default(_that.preferredQuality,_that.defaultSpeed,_that.showVideoDetail,
 @JsonSerializable()
 
 class _VideoSettingsModel implements VideoSettingsModel {
-  const _VideoSettingsModel({this.preferredQuality = 0, this.defaultSpeed = 1.0, this.showVideoDetail = true, this.persistentProgress = true, this.startSection = 0, this.homeTabIndex = 1, this.personalTabIndex = 0});
+  const _VideoSettingsModel({this.preferredQuality = 0, this.defaultSpeed = 1.0, this.showVideoDetail = true, this.persistentProgress = true, this.startSection = 0, this.homeTabIndex = 1, this.personalTabIndex = 0, this.subtitleFontSize = 20, this.subtitleBgOpacity = 0.55, this.subtitleBottomPadding = 0, this.aspectRatioMode = 0});
   factory _VideoSettingsModel.fromJson(Map<String, dynamic> json) => _$VideoSettingsModelFromJson(json);
 
 /// answer's own pick.
@@ -243,6 +253,16 @@ class _VideoSettingsModel implements VideoSettingsModel {
 @override@JsonKey() final  int homeTabIndex;
 /// The personal page's landing tab: index into its tab list.
 @override@JsonKey() final  int personalTabIndex;
+/// newBV's ClosedCaptionMenu appearance knobs, applied live to the CC
+/// overlay. [subtitleFontSize] is a design size (8-48),
+/// [subtitleBgOpacity] the line background alpha (0-1), and
+/// [subtitleBottomPadding] extra offset (0-48) above the base position.
+@override@JsonKey() final  int subtitleFontSize;
+@override@JsonKey() final  double subtitleBgOpacity;
+@override@JsonKey() final  int subtitleBottomPadding;
+/// newBV's PictureMenu 宽高比: 0 = 默认 (native), 1 = 4:3, 2 = 16:9. The
+/// last two stretch the picture into a fixed-ratio box.
+@override@JsonKey() final  int aspectRatioMode;
 
 /// Create a copy of VideoSettingsModel
 /// with the given fields replaced by the non-null parameter values.
@@ -257,18 +277,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _VideoSettingsModel&&(identical(other.preferredQuality, preferredQuality) || other.preferredQuality == preferredQuality)&&(identical(other.defaultSpeed, defaultSpeed) || other.defaultSpeed == defaultSpeed)&&(identical(other.showVideoDetail, showVideoDetail) || other.showVideoDetail == showVideoDetail)&&(identical(other.persistentProgress, persistentProgress) || other.persistentProgress == persistentProgress)&&(identical(other.startSection, startSection) || other.startSection == startSection)&&(identical(other.homeTabIndex, homeTabIndex) || other.homeTabIndex == homeTabIndex)&&(identical(other.personalTabIndex, personalTabIndex) || other.personalTabIndex == personalTabIndex));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _VideoSettingsModel&&(identical(other.preferredQuality, preferredQuality) || other.preferredQuality == preferredQuality)&&(identical(other.defaultSpeed, defaultSpeed) || other.defaultSpeed == defaultSpeed)&&(identical(other.showVideoDetail, showVideoDetail) || other.showVideoDetail == showVideoDetail)&&(identical(other.persistentProgress, persistentProgress) || other.persistentProgress == persistentProgress)&&(identical(other.startSection, startSection) || other.startSection == startSection)&&(identical(other.homeTabIndex, homeTabIndex) || other.homeTabIndex == homeTabIndex)&&(identical(other.personalTabIndex, personalTabIndex) || other.personalTabIndex == personalTabIndex)&&(identical(other.subtitleFontSize, subtitleFontSize) || other.subtitleFontSize == subtitleFontSize)&&(identical(other.subtitleBgOpacity, subtitleBgOpacity) || other.subtitleBgOpacity == subtitleBgOpacity)&&(identical(other.subtitleBottomPadding, subtitleBottomPadding) || other.subtitleBottomPadding == subtitleBottomPadding)&&(identical(other.aspectRatioMode, aspectRatioMode) || other.aspectRatioMode == aspectRatioMode));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,preferredQuality,defaultSpeed,showVideoDetail,persistentProgress,startSection,homeTabIndex,personalTabIndex);
+    return Object.hash(runtimeType,preferredQuality,defaultSpeed,showVideoDetail,persistentProgress,startSection,homeTabIndex,personalTabIndex,subtitleFontSize,subtitleBgOpacity,subtitleBottomPadding,aspectRatioMode);
 }
 
 @override
 String toString() {
-    return 'VideoSettingsModel(preferredQuality: $preferredQuality, defaultSpeed: $defaultSpeed, showVideoDetail: $showVideoDetail, persistentProgress: $persistentProgress, startSection: $startSection, homeTabIndex: $homeTabIndex, personalTabIndex: $personalTabIndex)';
+    return 'VideoSettingsModel(preferredQuality: $preferredQuality, defaultSpeed: $defaultSpeed, showVideoDetail: $showVideoDetail, persistentProgress: $persistentProgress, startSection: $startSection, homeTabIndex: $homeTabIndex, personalTabIndex: $personalTabIndex, subtitleFontSize: $subtitleFontSize, subtitleBgOpacity: $subtitleBgOpacity, subtitleBottomPadding: $subtitleBottomPadding, aspectRatioMode: $aspectRatioMode)';
 }
 
 
@@ -279,7 +299,7 @@ abstract mixin class _$VideoSettingsModelCopyWith<$Res> implements $VideoSetting
   factory _$VideoSettingsModelCopyWith(_VideoSettingsModel value, $Res Function(_VideoSettingsModel) _then) = __$VideoSettingsModelCopyWithImpl;
 @override @useResult
 $Res call({
- int preferredQuality, double defaultSpeed, bool showVideoDetail, bool persistentProgress, int startSection, int homeTabIndex, int personalTabIndex
+ int preferredQuality, double defaultSpeed, bool showVideoDetail, bool persistentProgress, int startSection, int homeTabIndex, int personalTabIndex, int subtitleFontSize, double subtitleBgOpacity, int subtitleBottomPadding, int aspectRatioMode
 });
 
 
@@ -296,7 +316,7 @@ class __$VideoSettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of VideoSettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? preferredQuality = null,Object? defaultSpeed = null,Object? showVideoDetail = null,Object? persistentProgress = null,Object? startSection = null,Object? homeTabIndex = null,Object? personalTabIndex = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? preferredQuality = null,Object? defaultSpeed = null,Object? showVideoDetail = null,Object? persistentProgress = null,Object? startSection = null,Object? homeTabIndex = null,Object? personalTabIndex = null,Object? subtitleFontSize = null,Object? subtitleBgOpacity = null,Object? subtitleBottomPadding = null,Object? aspectRatioMode = null,}) {
   return _then(_VideoSettingsModel(
 preferredQuality: null == preferredQuality ? _self.preferredQuality : preferredQuality // ignore: cast_nullable_to_non_nullable
 as int,defaultSpeed: null == defaultSpeed ? _self.defaultSpeed : defaultSpeed // ignore: cast_nullable_to_non_nullable
@@ -305,6 +325,10 @@ as bool,persistentProgress: null == persistentProgress ? _self.persistentProgres
 as bool,startSection: null == startSection ? _self.startSection : startSection // ignore: cast_nullable_to_non_nullable
 as int,homeTabIndex: null == homeTabIndex ? _self.homeTabIndex : homeTabIndex // ignore: cast_nullable_to_non_nullable
 as int,personalTabIndex: null == personalTabIndex ? _self.personalTabIndex : personalTabIndex // ignore: cast_nullable_to_non_nullable
+as int,subtitleFontSize: null == subtitleFontSize ? _self.subtitleFontSize : subtitleFontSize // ignore: cast_nullable_to_non_nullable
+as int,subtitleBgOpacity: null == subtitleBgOpacity ? _self.subtitleBgOpacity : subtitleBgOpacity // ignore: cast_nullable_to_non_nullable
+as double,subtitleBottomPadding: null == subtitleBottomPadding ? _self.subtitleBottomPadding : subtitleBottomPadding // ignore: cast_nullable_to_non_nullable
+as int,aspectRatioMode: null == aspectRatioMode ? _self.aspectRatioMode : aspectRatioMode // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

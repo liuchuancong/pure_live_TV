@@ -15,6 +15,15 @@ class VideoQualityMenu extends ConsumerWidget {
     final controller = ref.read(musicPlayerControllerProvider.notifier);
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
+    final aspectMode = ref.watch(videoSettingsControllerProvider.select((m) => m.aspectRatioMode));
+    void setAspect(int mode) {
+      final settings = ref.read(videoSettingsControllerProvider);
+      ref.read(videoSettingsControllerProvider.notifier).updateSettings(
+        settings.copyWith(aspectRatioMode: mode),
+      );
+    }
+
+    const aspectOptions = [(0, 'video_aspect_default'), (1, '4:3'), (2, '16:9')];
 
     return Container(
       decoration: BoxDecoration(
@@ -73,6 +82,54 @@ class VideoQualityMenu extends ConsumerWidget {
                             BilibiliMusicApi.qualityLabel(option.quality).isEmpty
                                 ? '${option.quality}'
                                 : BilibiliMusicApi.qualityLabel(option.quality),
+                            style: AppTextStyles.t16.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: isCurrent ? accent : Colors.white,
+                            ),
+                          ),
+                        ),
+                        if (isCurrent) Icon(Icons.check_rounded, size: 22.ts(context), color: accent),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          Padding(
+            padding: EdgeInsets.only(left: 16.ts(context), top: 4.ts(context), bottom: 8.ts(context)),
+            child: Row(
+              children: [
+                Icon(Icons.aspect_ratio_rounded, size: 22.ts(context), color: accent),
+                SizedBox(width: 8.ts(context)),
+                Text(
+                  i18n('video_aspect_title'),
+                  style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+          for (final (mode, labelKey) in aspectOptions)
+            Padding(
+              padding: EdgeInsets.only(left: 12.sp, right: 12.sp, bottom: 8.sp),
+              child: TvFocusable(
+                autofocus: mode == aspectMode,
+                onTap: () => setAspect(mode),
+                builder: (context, focused, child) {
+                  final isCurrent = mode == aspectMode;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 120),
+                    height: 56.ts(context),
+                    padding: EdgeInsets.symmetric(horizontal: 14.ts(context)),
+                    decoration: BoxDecoration(
+                      color: isCurrent ? accent.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(12.ts(context)),
+                      border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            labelKey.startsWith('video_') ? i18n(labelKey) : labelKey,
                             style: AppTextStyles.t16.copyWith(
                               fontWeight: FontWeight.w500,
                               color: isCurrent ? accent : Colors.white,
