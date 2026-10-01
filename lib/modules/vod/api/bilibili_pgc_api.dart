@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:pure_live/modules/vod/api/bilibili_api_client.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/core/common/http_client.dart';
@@ -15,6 +17,9 @@ class BilibiliPgcApi {
   static final BilibiliPgcApi instance = BilibiliPgcApi._();
 
   final BilibiliApiClient _client = BilibiliApiClient.instance;
+
+  /// The 追番 toggle's login gate.
+  bool get isLoggedIn => _client.loggedIn;
 
   Future<Map<dynamic, dynamic>?> _tryGet(String url, {Map<String, String>? query}) async {
     try {
@@ -40,6 +45,7 @@ class BilibiliPgcApi {
     3: 'documentary',
     4: 'movie',
     5: 'tv',
+    6: 'variety',
   };
 
   Future<List<PgcItem>> getFeed({required int pgcType, int page = 1, int pageSize = 20}) async {
@@ -119,10 +125,62 @@ class BilibiliPgcApi {
     return PgcSeason.fromJson(Map<String, dynamic>.from(data));
   }
 
+  /// 追番 — the pair of newBV's follow toggle (`pgc/web/follow/add`).
+  Future<void> followSeason({required int seasonId}) async {
+    await _client.postForm(
+      'https://api.bilibili.com/pgc/web/follow/add',
+      {'season_id': '$seasonId'},
+      referer: 'https://www.bilibili.com/',
+    );
+  }
+
   Future<void> unfollowSeason({required int seasonId}) async {
-    await _client.postForm('https://api.bilibili.com/pgc/web/follow/del', {
-      'season_id': '$seasonId',
-    });
+    await _client.postForm(
+      'https://api.bilibili.com/pgc/web/follow/del',
+      {'season_id': '$seasonId'},
+      referer: 'https://www.bilibili.com/',
+    );
+  }
+
+  /// The category page's 轮播 (newBV's `getPgcWebInitialStateData`): the
+  /// banner items only live in the SSR page's `__INITIAL_STATE__`, and the
+  /// 影视 categories carry their ids in the link (`…/play/ss12345`) instead
+  /// of a `season_id` field.
+  Future<List<PgcItem>> getBanners(int pgcType) async {
+    final name = _feedNames[pgcType];
+    if (name == null) return const [];
+    try {
+      final html = await HttpClient.instance.getText(
+        'https://www.bilibili.com/$name',
+        header: await _client.headers(referer: 'https://www.bilibili.com/'),
+      );
+      final marker = '__INITIAL_STATE__=';
+      final start = html.indexOf(marker);
+      final end = html.indexOf(';(function', start);
+      if (start < 0 || end <= start) return const [];
+      final decoded = jsonDecode(html.substring(start + marker.length, end));
+      final modules = decoded is Map ? decoded['modules'] : null;
+      final banner = modules is Map ? modules['banner'] : null;
+      if (banner is! Map) return const [];
+      final parseFromLink = const [1668, 1675, 1682].contains(banner['module_id']);
+      final out = <PgcItem>[];
+      for (final item in (banner['items'] as List?) ?? const []) {
+        if (item is! Map) continue;
+        var seasonId = lenientIntOf(item['season_id']);
+        final link = item['link']?.toString() ?? '';
+        if (seasonId <= 0 && parseFromLink) {
+          final seg = link.split('/').where((s) => s.isNotEmpty).last;
+          if (seg.startsWith('ss')) seasonId = int.tryParse(seg.substring(2)) ?? 0;
+        }
+        if (seasonId <= 0) continue;
+        var cover = (item['big_cover'] ?? item['cover'])?.toString() ?? '';
+        if (cover.startsWith('//')) cover = 'https:$cover';
+        out.add(PgcItem(seasonId: seasonId, title: item['title']?.toString() ?? '', cover: cover));
+      }
+      return out;
+    } catch (_) {
+      return const [];
+    }
   }
 
   /// Playback URLs for one episode, converted into the shared playurl model.

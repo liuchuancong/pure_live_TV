@@ -18,6 +18,7 @@ class _VideoPgcPageState extends ConsumerState<VideoPgcPage> {
     (3, 'video_pgc_documentary'),
     (4, 'video_pgc_movie'),
     (5, 'video_pgc_tv'),
+    (6, 'video_pgc_variety'),
   ];
 
   int _selected = 0;
@@ -25,6 +26,7 @@ class _VideoPgcPageState extends ConsumerState<VideoPgcPage> {
   final Map<int, int> _pageOf = {};
   final Map<int, bool> _hasMoreOf = {};
   final Map<int, String?> _errors = {};
+  final Map<int, List<PgcItem>> _banners = {};
   bool _loading = false;
 
   int get _type => _types[_selected].$1;
@@ -33,11 +35,22 @@ class _VideoPgcPageState extends ConsumerState<VideoPgcPage> {
   void initState() {
     super.initState();
     _loadFirst();
+    _loadBanners();
   }
 
   Future<void> _loadFirst() async {
     if (_pages.containsKey(_type)) return;
     await _loadMore();
+  }
+
+  /// The category's 轮播 strip, loaded once per category (the source scrapes
+  /// the SSR page for it; a failure just means no strip).
+  Future<void> _loadBanners() async {
+    final type = _type;
+    if (_banners.containsKey(type)) return;
+    final items = await BilibiliPgcApi.instance.getBanners(type);
+    if (!mounted || type != _type) return;
+    setState(() => _banners[type] = items);
   }
 
   Future<void> _loadMore() async {
@@ -67,6 +80,7 @@ class _VideoPgcPageState extends ConsumerState<VideoPgcPage> {
     if (index == _selected) return;
     setState(() => _selected = index);
     _loadFirst();
+    _loadBanners();
   }
 
   /// The bar's OK-twice refresh: back to page 1 for the current category.
@@ -97,6 +111,7 @@ class _VideoPgcPageState extends ConsumerState<VideoPgcPage> {
           onTabChange: _select,
           onTabRefresh: (_) => _refresh(),
         ),
+        if ((_banners[_type] ?? const []).isNotEmpty) _PgcBannerStrip(items: _banners[_type]!),
         Expanded(
           child: _errors[_type] != null && (items?.isEmpty ?? true)
               ? AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _errors[_type])
@@ -134,6 +149,68 @@ class _VideoPgcPageState extends ConsumerState<VideoPgcPage> {
                 ),
         ),
       ],
+    );
+  }
+}
+
+class _PgcBannerStrip extends StatelessWidget {
+  const _PgcBannerStrip({required this.items});
+
+  final List<PgcItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+    final accent = tvTheme.focusColor;
+    return SizedBox(
+      height: 220.ts(context),
+      child: DpadRegion(
+        horizontalEdge: DpadEdgeBehavior.leave,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.fromLTRB(24.ts(context), 6.ts(context), 24.ts(context), 10.ts(context)),
+          itemCount: items.length,
+          separatorBuilder: (_, _) => SizedBox(width: 16.ts(context)),
+          itemBuilder: (context, index) {
+            final item = items[index];
+            return TvFocusable(
+              onTap: () => VideoSeasonRoute(item).push(context),
+              builder: (context, focused, child) => SizedBox(
+                width: 500.ts(context),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Container(
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16.ts(context)),
+                          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.ts(context)),
+                        ),
+                        child: CachedNetworkImage(
+                          imageUrl: item.cover,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 800,
+                          errorWidget: (_, _, _) => ColoredBox(color: tvTheme.cardColor),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 8.ts(context)),
+                    TvMarqueeText(
+                      text: item.title,
+                      isFocused: focused,
+                      style: AppTextStyles.t14.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: tvTheme.primaryTextColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

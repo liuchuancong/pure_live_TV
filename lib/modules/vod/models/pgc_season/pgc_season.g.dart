@@ -22,6 +22,20 @@ _PgcSeason _$PgcSeasonFromJson(Map<String, dynamic> json) => _PgcSeason(
       (json['styles'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
   pubTime: json['pubTime'] as String? ?? '',
+  follow: json['follow'] == null ? 0 : lenientIntOf(json['follow']),
+  newEpDesc: json['newEpDesc'] as String? ?? '',
+  lastEpId: json['lastEpId'] == null ? 0 : lenientIntOf(json['lastEpId']),
+  lastEpIndex: json['lastEpIndex'] as String? ?? '',
+  sections:
+      (json['sections'] as List<dynamic>?)
+          ?.map((e) => PgcSection.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  altSeasons:
+      (json['altSeasons'] as List<dynamic>?)
+          ?.map((e) => PgcItem.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$PgcSeasonToJson(_PgcSeason instance) =>
@@ -35,4 +49,22 @@ Map<String, dynamic> _$PgcSeasonToJson(_PgcSeason instance) =>
       'rating': instance.rating,
       'styles': instance.styles,
       'pubTime': instance.pubTime,
+      'follow': instance.follow,
+      'newEpDesc': instance.newEpDesc,
+      'lastEpId': instance.lastEpId,
+      'lastEpIndex': instance.lastEpIndex,
+      'sections': instance.sections,
+      'altSeasons': instance.altSeasons,
     };
+
+_PgcSection _$PgcSectionFromJson(Map<String, dynamic> json) => _PgcSection(
+  title: json['title'] as String? ?? '',
+  episodes:
+      (json['episodes'] as List<dynamic>?)
+          ?.map((e) => PgcEpisode.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+);
+
+Map<String, dynamic> _$PgcSectionToJson(_PgcSection instance) =>
+    <String, dynamic>{'title': instance.title, 'episodes': instance.episodes};
