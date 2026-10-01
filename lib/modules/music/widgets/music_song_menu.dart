@@ -52,6 +52,16 @@ Future<void> showMusicSongMenu(
                 unawaited(controller.playNext(track));
               },
             ),
+          if (!isCurrent)
+            _menuTile(
+              context,
+              Icons.watch_later_rounded,
+              i18n('music_play_later'),
+              onTap: () {
+                Navigator.of(context).pop();
+                controller.playLater([track]);
+              },
+            ),
           _menuTile(
             context,
             isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,

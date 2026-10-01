@@ -11,12 +11,24 @@ import 'package:pure_live/modules/music/pages/playback/widgets/player_now_playin
 /// badge on the right — richer than a bare title, and the row every other
 /// player list already speaks.
 class _QueueRow extends StatelessWidget {
-  const _QueueRow({required this.track, required this.index, required this.isCurrent, required this.selected});
+  const _QueueRow({
+    required this.track,
+    required this.index,
+    required this.isCurrent,
+    required this.selected,
+    this.showCheck = false,
+    this.checked = false,
+  });
 
   final MusicTrack track;
   final int index;
   final bool isCurrent;
   final bool selected;
+
+  /// Multi-select mode: the leading slot becomes a checkbox instead of the
+  /// row number.
+  final bool showCheck;
+  final bool checked;
 
   /// Height of one row, margins included — the host list's `itemExtent` and
   /// its keep-in-view arithmetic read the same constant, so the highlight
@@ -48,7 +60,13 @@ class _QueueRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 34.ts(context),
-            child: isCurrent
+            child: showCheck
+                ? Icon(
+                    checked ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                    size: 30.ts(context),
+                    color: checked ? accent : Colors.white38,
+                  )
+                : isCurrent
                 ? Icon(Icons.play_arrow_rounded, size: 32.ts(context), color: selected ? Colors.white : accent)
                 : Text(
                     '${index + 1}',
@@ -145,6 +163,52 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
   /// The highlight the remote is walking. It starts on the playing row — the
   /// whole point of opening the list mid-playback.
   late int _selected;
+
+  /// Multi-select mode (the lx MultipleModeBar): OK ticks rows instead of
+  /// jumping, and the header swaps to the batch actions.
+  bool _multi = false;
+
+  /// Checked rows, keyed by track id so a queue edit cannot strand a stale
+  /// index.
+  final Set<String> _checked = <String>{};
+
+  /// The move-target step of the batch "move here" action: arrow keys aim the
+  /// insertion marker, OK drops the checked block there.
+  bool _moving = false;
+
+  void _exitMulti() {
+    setState(() {
+      _multi = false;
+      _moving = false;
+      _checked.clear();
+    });
+  }
+
+  /// The checked tracks still sitting in the queue, in queue order.
+  List<MusicTrack> _checkedTracks(List<MusicTrack> queue) {
+    return [for (final track in queue) if (_checked.contains(track.id)) track];
+  }
+
+  void _toggleAllChecked(List<MusicTrack> queue) {
+    setState(() {
+      if (_checked.length >= queue.length) {
+        _checked.clear();
+      } else {
+        _checked
+          ..clear()
+          ..addAll(queue.map((t) => t.id));
+      }
+    });
+  }
+
+  void _applyMove() {
+    final ids = Set<String>.from(_checked);
+    setState(() {
+      _moving = false;
+      _checked.clear();
+    });
+    ref.read(musicPlayerControllerProvider.notifier).moveIds(ids, _selected);
+  }
 
   @override
   void initState() {
@@ -245,10 +309,6 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
       return KeyEventResult.handled;
     }
 
-    if (_isConfirm(key)) {
-      ref.read(musicPlayerControllerProvider.notifier).jumpTo(_selected);
-      return KeyEventResult.handled;
-    }
     if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.arrowDown) {
       setState(() {
         _selected = (_selected + (key == LogicalKeyboardKey.arrowDown ? 1 : -1) + count) % count;
@@ -256,7 +316,33 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
       _scrollToSelection();
       return KeyEventResult.handled;
     }
+
+    if (_isConfirm(key)) {
+      if (_moving) {
+        _applyMove();
+        return KeyEventResult.handled;
+      }
+      if (_multi) {
+        setState(() {
+          final id = queue[_selected].id;
+          if (!_checked.remove(id)) _checked.add(id);
+        });
+        return KeyEventResult.handled;
+      }
+      ref.read(musicPlayerControllerProvider.notifier).jumpTo(_selected);
+      return KeyEventResult.handled;
+    }
     if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.escape) {
+      // The remote walks one layer per press: move target → multi-select →
+      // panel.
+      if (_moving) {
+        setState(() => _moving = false);
+        return KeyEventResult.handled;
+      }
+      if (_multi) {
+        _exitMulti();
+        return KeyEventResult.handled;
+      }
       widget.onClose();
       return KeyEventResult.handled;
     }
@@ -287,34 +373,96 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                 SizedBox(width: 6.ts(context)),
                 Expanded(
                   child: Text(
-                    '${i18n('music_tab_queue')}（${queue.length}）',
+                    _multi
+                        ? '${i18n('music_queue_multi_title')}（${_checked.length}/${queue.length}）'
+                        : '${i18n('music_tab_queue')}（${queue.length}）',
                     style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                   ),
                 ),
-                TvIconButton(
-                  icon: const Icon(Icons.playlist_remove_rounded),
-                  size: TvIconButtonSize.small,
-                  isSecondary: true,
-                  onTap: queue.isEmpty ? null : _confirmClear,
-                ),
-                SizedBox(width: 6.ts(context)),
-                TvIconButton(
-                  icon: Icon(switch (state.mode) {
-                    MusicPlayMode.sequence => Icons.playlist_play_rounded,
-                    MusicPlayMode.loopOne => Icons.repeat_one_rounded,
-                    MusicPlayMode.random => Icons.shuffle_rounded,
-                  }),
-                  size: TvIconButtonSize.small,
-                  isSecondary: true,
-                  onTap: controller.cycleMode,
-                ),
-                SizedBox(width: 6.ts(context)),
-                TvIconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  size: TvIconButtonSize.small,
-                  isSecondary: true,
-                  onTap: widget.onClose,
-                ),
+                if (!_multi) ...[
+                  TvIconButton(
+                    icon: const Icon(Icons.checklist_rounded),
+                    size: TvIconButtonSize.small,
+                    isSecondary: true,
+                    onTap: queue.isEmpty
+                        ? null
+                        : () => setState(() {
+                              _multi = true;
+                              _checked.clear();
+                            }),
+                  ),
+                  SizedBox(width: 6.ts(context)),
+                  TvIconButton(
+                    icon: const Icon(Icons.playlist_remove_rounded),
+                    size: TvIconButtonSize.small,
+                    isSecondary: true,
+                    onTap: queue.isEmpty ? null : _confirmClear,
+                  ),
+                  SizedBox(width: 6.ts(context)),
+                  TvIconButton(
+                    icon: Icon(switch (state.mode) {
+                      MusicPlayMode.sequence => Icons.repeat_rounded,
+                      MusicPlayMode.loopOne => Icons.repeat_one_rounded,
+                      MusicPlayMode.random => Icons.shuffle_rounded,
+                      MusicPlayMode.orderStop => Icons.playlist_play_rounded,
+                    }),
+                    size: TvIconButtonSize.small,
+                    isSecondary: true,
+                    onTap: controller.cycleMode,
+                  ),
+                  SizedBox(width: 6.ts(context)),
+                  TvIconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    size: TvIconButtonSize.small,
+                    isSecondary: true,
+                    onTap: widget.onClose,
+                  ),
+                ] else ...[
+                  TvIconButton(
+                    icon: Icon(_moving ? Icons.done_all_rounded : Icons.select_all_rounded),
+                    size: TvIconButtonSize.small,
+                    isSecondary: true,
+                    selected: _moving,
+                    onTap: _moving
+                        ? _applyMove
+                        : (_checked.isEmpty ? null : () => setState(() => _moving = true)),
+                  ),
+                  SizedBox(width: 6.ts(context)),
+                  TvIconButton(
+                    icon: const Icon(Icons.watch_later_rounded),
+                    size: TvIconButtonSize.small,
+                    isSecondary: true,
+                    onTap: _checked.isEmpty
+                        ? null
+                        : () {
+                            controller.playLater(_checkedTracks(queue));
+                            setState(_checked.clear);
+                          },
+                  ),
+                  SizedBox(width: 6.ts(context)),
+                  TvIconButton(
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    size: TvIconButtonSize.small,
+                    isSecondary: true,
+                    onTap: _checked.isEmpty ? null : () => controller.removeIds(Set<String>.from(_checked)),
+                  ),
+                  SizedBox(width: 6.ts(context)),
+                  TvIconButton(
+                    icon: Icon(_checked.length >= queue.length && queue.isNotEmpty
+                        ? Icons.deselect_rounded
+                        : Icons.playlist_add_check_rounded),
+                    size: TvIconButtonSize.small,
+                    isSecondary: true,
+                    onTap: queue.isEmpty ? null : () => _toggleAllChecked(queue),
+                  ),
+                  SizedBox(width: 6.ts(context)),
+                  TvIconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    size: TvIconButtonSize.small,
+                    isSecondary: true,
+                    onTap: _exitMulti,
+                  ),
+                ],
               ],
             ),
           ),
@@ -341,12 +489,16 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                       itemBuilder: (context, index) {
                         final track = queue[index];
                         return GestureDetector(
-                          onLongPress: () => _showRowMenu(index),
+                          // Multi-select owns OK/long-press: a row menu popup
+                          // mid-checking would drop the mode.
+                          onLongPress: _multi ? null : () => _showRowMenu(index),
                           child: _QueueRow(
                             track: track,
                             index: index,
                             isCurrent: index == state.index,
                             selected: index == selected,
+                            showCheck: _multi,
+                            checked: _checked.contains(track.id),
                           ),
                         );
                       },
@@ -358,7 +510,11 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                i18nOr('ui_panel_keys', '↑↓ 选择 · OK 确认 · ← 返回'),
+                _moving
+                    ? i18nOr('ui_queue_keys_move', '↑↓ 目标位置 · OK 移动 · ← 取消')
+                    : _multi
+                    ? i18nOr('ui_queue_keys_multi', '↑↓ 选择 · OK 勾选 · ← 退出多选')
+                    : i18nOr('ui_panel_keys', '↑↓ 选择 · OK 播放 · ← 返回'),
                 style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white38),
               ),
             ),

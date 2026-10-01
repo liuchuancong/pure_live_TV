@@ -31,6 +31,8 @@ class MusicPlayerState {
     this.speed = 1.0,
     this.qualityOptions = const [],
     this.error = '',
+    this.tempQueue = const [],
+    this.sleepMinutes = 0,
   });
 
   final List<MusicTrack> queue;
@@ -50,6 +52,15 @@ class MusicPlayerState {
   final List<MusicStreamOption> qualityOptions;
   final String error;
 
+  /// The "play later" strip (the lx tempPlayList): consumed by [next] ahead of
+  /// the queue's own order, and never reordered by queue edits.
+  final List<MusicTrack> tempQueue;
+
+  /// Minutes left on the sleep timer, or 0 when none is armed. The number is
+  /// the armed length, not a live countdown — the UI reads it for the tile
+  /// subtitle only.
+  final int sleepMinutes;
+
   MusicTrack? get current => index >= 0 && index < queue.length ? queue[index] : null;
 
   bool get hasQueue => queue.isNotEmpty;
@@ -64,6 +75,8 @@ class MusicPlayerState {
     double? speed,
     List<MusicStreamOption>? qualityOptions,
     String? error,
+    List<MusicTrack>? tempQueue,
+    int? sleepMinutes,
   }) {
     return MusicPlayerState(
       queue: queue ?? this.queue,
@@ -75,6 +88,8 @@ class MusicPlayerState {
       speed: speed ?? this.speed,
       qualityOptions: qualityOptions ?? this.qualityOptions,
       error: error ?? this.error,
+      tempQueue: tempQueue ?? this.tempQueue,
+      sleepMinutes: sleepMinutes ?? this.sleepMinutes,
     );
   }
 }
@@ -109,6 +124,22 @@ class MusicPlayerController extends _$MusicPlayerController {
   /// Null = the play-url answer's own pick — music never sets this.
   int? _preferredQuality;
   final Random _random = Random();
+
+  /// Track ids played since random mode was (re)armed, in play order.
+  /// [next] appends the track it leaves; [previous] walks back through it.
+  final List<String> _randomHistory = <String>[];
+
+  // ------------------------------------------------------------------ sleep timer
+
+  /// The armed countdown; null while no sleep timer runs.
+  Timer? _sleepTimer;
+
+  /// Set when the countdown expired under "finish the current track": the
+  /// next completion pauses instead of advancing.
+  bool _sleepAfterTrack = false;
+
+  /// Hive switch read when the countdown expires.
+  static const String _sleepFinishCurrentKey = 'musicSleepFinishCurrent';
 
   // ------------------------------------------------------------- last session
 
@@ -175,11 +206,19 @@ class MusicPlayerController extends _$MusicPlayerController {
         archives[track.archive.bvid] = track.archive;
         order.add('${track.archive.bvid}#${track.part.page}');
       }
+      // The play-later strip rides along too: its tracks must survive an app
+      // restart, and their archives may exist nowhere else.
+      final tempOrder = <String>[];
+      for (final track in state.tempQueue) {
+        archives[track.archive.bvid] = track.archive;
+        tempOrder.add('${track.archive.bvid}#${track.part.page}');
+      }
       HivePrefUtil.setString(
         _sessionKey,
         jsonEncode({
           'archives': [for (final archive in archives.values) archive.toJson()],
           'order': order,
+          'temp': tempOrder,
           'index': state.index < 0 ? 0 : state.index,
           'speed': state.speed,
           'positionMs': _handle?.position.inMilliseconds ?? 0,
@@ -190,7 +229,7 @@ class MusicPlayerController extends _$MusicPlayerController {
     }
   }
 
-  ({List<MusicTrack> tracks, int index, double speed, Duration position})? _loadSession() {
+  ({List<MusicTrack> tracks, List<MusicTrack> temp, int index, double speed, Duration position})? _loadSession() {
     try {
       final raw = HivePrefUtil.getString(_sessionKey);
       if (raw == null || raw.isEmpty) return null;
@@ -200,24 +239,29 @@ class MusicPlayerController extends _$MusicPlayerController {
         for (final entry in (json['archives'] as List?) ?? const <dynamic>[])
           if (entry is Map<String, dynamic>) entry['bvid']?.toString() ?? '': MusicArchive.fromJson(entry),
       };
-      final tracks = <MusicTrack>[];
-      for (final ref in (json['order'] as List?) ?? const <dynamic>[]) {
-        final parts = ref?.toString().split('#');
-        if (parts == null || parts.length != 2) continue;
-        final archive = archives[parts[0]];
-        if (archive == null) continue;
-        final page = int.tryParse(parts[1]) ?? 1;
-        final part =
-            archive.parts.where((p) => p.page == page).firstOrNull ??
-            (archive.parts.isEmpty ? null : archive.parts.first);
-        if (part == null) continue;
-        tracks.add(MusicTrack(archive: archive, part: part));
+      List<MusicTrack> decodeOrder(dynamic refs) {
+        final tracks = <MusicTrack>[];
+        for (final ref in (refs as List?) ?? const <dynamic>[]) {
+          final parts = ref?.toString().split('#');
+          if (parts == null || parts.length != 2) continue;
+          final archive = archives[parts[0]];
+          if (archive == null) continue;
+          final page = int.tryParse(parts[1]) ?? 1;
+          final part =
+              archive.parts.where((p) => p.page == page).firstOrNull ??
+              (archive.parts.isEmpty ? null : archive.parts.first);
+          if (part == null) continue;
+          tracks.add(MusicTrack(archive: archive, part: part));
+        }
+        return tracks;
       }
+      final tracks = decodeOrder(json['order']);
       if (tracks.isEmpty) return null;
+      final temp = decodeOrder(json['temp']);
       final index = (int.tryParse(json['index']?.toString() ?? '') ?? 0).clamp(0, tracks.length - 1);
       final speed = double.tryParse(json['speed']?.toString() ?? '') ?? 1.0;
       final position = Duration(milliseconds: int.tryParse(json['positionMs']?.toString() ?? '') ?? 0);
-      return (tracks: tracks, index: index, speed: speed, position: position);
+      return (tracks: tracks, temp: temp, index: index, speed: speed, position: position);
     } catch (_) {
       return null;
     }
@@ -237,6 +281,7 @@ class MusicPlayerController extends _$MusicPlayerController {
       queue: List.unmodifiable(session.tracks),
       index: session.index,
       speed: session.speed,
+      tempQueue: List.unmodifiable(session.temp),
       error: '',
     );
     await _openCurrent(session.position);
@@ -252,7 +297,11 @@ class MusicPlayerController extends _$MusicPlayerController {
 
   @override
   MusicPlayerState build() {
-    ref.onDispose(_releaseHandle);
+    ref.onDispose(() {
+      _releaseHandle();
+      _sleepTimer?.cancel();
+      _sleepTimer = null;
+    });
     // Music-mode defaults from the music settings section: the play mode and
     // the audio-only preference the user picked rule until they change them.
     final savedMode = MusicPlayMode.values
@@ -280,12 +329,14 @@ class MusicPlayerController extends _$MusicPlayerController {
   Future<void> playQueue(List<MusicTrack> tracks, {int startIndex = 0, bool? audioOnly}) async {
     if (tracks.isEmpty) return;
     final index = startIndex.clamp(0, tracks.length - 1);
+    _randomHistory.clear();
     state = state.copyWith(
       queue: List.unmodifiable(tracks),
       index: index,
       error: '',
       audioOnly: audioOnly,
       qualityOptions: const [],
+      tempQueue: const [],
     );
     await _openCurrent();
   }
@@ -362,27 +413,145 @@ class MusicPlayerController extends _$MusicPlayerController {
     state = state.copyWith(queue: List.unmodifiable(queue), index: nextIndex);
   }
 
+  // ------------------------------------------------------------- play-later
+
+  /// Adds tracks to the "play later" strip (the lx tempPlayList): they leave
+  /// the queue (no double slot) and [next] consumes the strip, in order,
+  /// before the queue's own advance rules. The playing track is skipped — it
+  /// owns neither a queue slot to free nor a strip slot.
+  void playLater(List<MusicTrack> tracks) {
+    final queue = List<MusicTrack>.from(state.queue);
+    final temp = List<MusicTrack>.from(state.tempQueue);
+    final known = <String>{...temp.map((t) => t.id)};
+    final currentId = state.current?.id;
+    var added = 0;
+    for (final track in tracks) {
+      if (track.id == currentId || known.contains(track.id)) continue;
+      final at = queue.indexWhere((t) => t.id == track.id);
+      final effective = at >= 0 ? queue.removeAt(at) : track;
+      temp.add(effective);
+      known.add(effective.id);
+      added++;
+    }
+    if (added == 0) return;
+    // Removals before the playing slot shift it; re-derive it by id.
+    var index = state.index;
+    if (currentId != null) {
+      final at = queue.indexWhere((t) => t.id == currentId);
+      if (at >= 0) index = at;
+    }
+    state = state.copyWith(queue: List.unmodifiable(queue), index: index, tempQueue: List.unmodifiable(temp));
+    ToastUtil.show(added > 1 ? '${i18n('music_play_later_added')} ×$added' : i18n('music_play_later_added'));
+  }
+
+  // ------------------------------------------------------------- batch edits
+
+  /// Removes every listed track in one state write (the multi-select batch op).
+  Future<void> removeIds(Set<String> ids) async {
+    if (ids.isEmpty) return;
+    final currentId = state.current?.id;
+    final queue = List<MusicTrack>.from(state.queue)..removeWhere((t) => ids.contains(t.id));
+    if (queue.isEmpty) {
+      await stop();
+      return;
+    }
+    final removedCurrent = currentId != null && ids.contains(currentId);
+    var index = state.index;
+    if (!removedCurrent && currentId != null) {
+      final at = queue.indexWhere((t) => t.id == currentId);
+      if (at >= 0) index = at;
+    } else {
+      index = index.clamp(0, queue.length - 1);
+    }
+    state = state.copyWith(queue: List.unmodifiable(queue), index: index);
+    if (removedCurrent) await _openCurrent();
+  }
+
+  /// Moves every listed track to the marked position (the multi-select
+  /// "move here"), keeping their relative order. [targetIndex] is the marker's
+  /// index in the CURRENT queue; the block lands where it points after the
+  /// moved entries are lifted out.
+  void moveIds(Set<String> ids, int targetIndex) {
+    if (ids.isEmpty || ids.length >= state.queue.length) return;
+    final moved = <MusicTrack>[];
+    final rest = <MusicTrack>[];
+    var movedBefore = 0;
+    for (var i = 0; i < state.queue.length; i++) {
+      final track = state.queue[i];
+      if (ids.contains(track.id)) {
+        moved.add(track);
+        if (i < targetIndex) movedBefore++;
+      } else {
+        rest.add(track);
+      }
+    }
+    if (moved.isEmpty || rest.isEmpty) return;
+    final insertAt = (targetIndex - movedBefore).clamp(0, rest.length);
+    final queue = List<MusicTrack>.unmodifiable(<MusicTrack>[...rest.sublist(0, insertAt), ...moved, ...rest.sublist(insertAt)]);
+    final currentId = state.current?.id;
+    final index = queue.indexWhere((t) => t.id == currentId);
+    state = state.copyWith(queue: queue, index: index < 0 ? state.index.clamp(0, queue.length - 1) : index);
+    ToastUtil.show(i18n('music_queue_moved'));
+  }
+
   // ------------------------------------------------------------- advance rules
 
   Future<void> next() async {
+    // The play-later strip owns the next slot before the queue's own rules.
+    if (state.tempQueue.isNotEmpty) {
+      final upNext = state.tempQueue.first;
+      state = state.copyWith(tempQueue: List.unmodifiable(state.tempQueue.sublist(1)));
+      final queue = List<MusicTrack>.from(state.queue);
+      final existing = queue.indexWhere((t) => t.id == upNext.id);
+      var insertAt = (state.index + 1).clamp(0, queue.length);
+      if (existing >= 0) {
+        queue.removeAt(existing);
+        if (existing < insertAt) insertAt -= 1;
+      }
+      queue.insert(insertAt.clamp(0, queue.length), upNext);
+      state = state.copyWith(queue: List.unmodifiable(queue));
+      await jumpTo(insertAt.clamp(0, queue.length - 1));
+      return;
+    }
     final queue = state.queue;
     if (queue.isEmpty) return;
     var target = state.index;
     switch (state.mode) {
       case MusicPlayMode.random:
         if (queue.length > 1) {
-          do {
-            target = _random.nextInt(queue.length);
-          } while (target == state.index);
-        } else {
-          target = state.index;
+          final picked = _pickRandomTarget();
+          if (picked == null) return;
+          _randomHistory.add(queue[state.index].id);
+          target = picked;
         }
       case MusicPlayMode.sequence:
       case MusicPlayMode.loopOne:
         // Manual next always moves, even under Repeat one.
         target = (state.index + 1) % queue.length;
+      case MusicPlayMode.orderStop:
+        if (state.index >= queue.length - 1) return;
+        target = state.index + 1;
     }
     await jumpTo(target);
+  }
+
+  /// The next random pick: an unplayed entry when one exists, else the first
+  /// draw of a fresh round (the whole shuffled pass replays, lx-style). Answers
+  /// null only when there is nowhere to go.
+  int? _pickRandomTarget() {
+    final queue = state.queue;
+    final played = _randomHistory.toSet();
+    final candidates = <int>[
+      for (var i = 0; i < queue.length; i++)
+        if (i != state.index && !played.contains(queue[i].id)) i,
+    ];
+    if (candidates.isEmpty) {
+      _randomHistory.clear();
+      final others = <int>[for (var i = 0; i < queue.length; i++) if (i != state.index) i];
+      if (others.isEmpty) return null;
+      return others[_random.nextInt(others.length)];
+    }
+    return candidates[_random.nextInt(candidates.length)];
   }
 
   Future<void> previous() async {
@@ -396,17 +565,35 @@ class MusicPlayerController extends _$MusicPlayerController {
       if (!handle.isPlaying) await _ignoreCancelled(handle.play);
       return;
     }
+    // Random walks back through the shuffled order: the history entries leave
+    // the record as they are revisited, so forward from there reshuffles only
+    // what was undone.
+    if (state.mode == MusicPlayMode.random && _randomHistory.isNotEmpty) {
+      final currentId = queue[state.index].id;
+      while (_randomHistory.isNotEmpty) {
+        final id = _randomHistory.removeLast();
+        if (id == currentId) continue;
+        final at = queue.indexWhere((t) => t.id == id);
+        if (at < 0) continue;
+        await jumpTo(at);
+        return;
+      }
+    }
     await jumpTo((state.index - 1 + queue.length) % queue.length);
   }
 
   Future<void> cycleMode() async {
-    state = state.copyWith(mode: state.mode.next);
+    setPlayMode(state.mode.next);
+    ToastUtil.show(i18n(state.mode.i18nKey));
   }
 
   /// video is open (video parts do not shuffle or loop) and restores the
   /// music mode when it leaves.
   void setPlayMode(MusicPlayMode mode) {
     if (state.mode == mode) return;
+    // The random pass is per-mode state: re-arming random starts a fresh
+    // shuffle, leaving it drops the half-walked history.
+    _randomHistory.clear();
     state = state.copyWith(mode: mode);
   }
 
@@ -586,8 +773,52 @@ class MusicPlayerController extends _$MusicPlayerController {
     await _releaseHandle();
     _currentUrls = null;
     _currentBvid = null;
+    _randomHistory.clear();
     // The queue is gone but the listening preferences survive the session.
-    state = MusicPlayerState(mode: state.mode, audioOnly: state.audioOnly, speed: state.speed);
+    state = MusicPlayerState(
+      mode: state.mode,
+      audioOnly: state.audioOnly,
+      speed: state.speed,
+      sleepMinutes: state.sleepMinutes,
+    );
+  }
+
+  // ------------------------------------------------------------- sleep timer
+
+  /// Arms (or with [minutes] <= 0 disarms) the countdown to the music player.
+  /// When it expires, either playback pauses at once or — with the
+  /// "finish the current track" setting on — the running track is allowed to
+  /// end and the pause happens there.
+  void setSleepTimer(int minutes) {
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    _sleepAfterTrack = false;
+    if (minutes <= 0) {
+      state = state.copyWith(sleepMinutes: 0);
+      return;
+    }
+    state = state.copyWith(sleepMinutes: minutes);
+    _sleepTimer = Timer(Duration(minutes: minutes), _onSleepDue);
+    ToastUtil.show('${i18n('music_sleep_armed')} · $minutes ${i18n('music_sleep_minutes_unit')}');
+  }
+
+  void _onSleepDue() {
+    _sleepTimer = null;
+    if (HivePrefUtil.getString(_sleepFinishCurrentKey) == 'true') {
+      _sleepAfterTrack = true;
+      ToastUtil.show(i18n('music_sleep_wait_track'));
+      return;
+    }
+    state = state.copyWith(sleepMinutes: 0);
+    final handle = _handle;
+    if (handle != null) {
+      unawaited(
+        _ignoreCancelled(() async {
+          if (handle.isPlaying) await handle.pause();
+        }),
+      );
+    }
+    ToastUtil.show(i18n('music_sleep_stopped'));
   }
 
   /// Live playback takes the speakers: the open stream is dropped but the
@@ -768,6 +999,22 @@ class MusicPlayerController extends _$MusicPlayerController {
   }
 
   Future<void> _onCompleted() async {
+    // A sleep timer that expired under "finish the current track" owns this
+    // completion instead of the advance rules.
+    if (_sleepAfterTrack) {
+      _sleepAfterTrack = false;
+      state = state.copyWith(sleepMinutes: 0);
+      final handle = _handle;
+      if (handle != null) {
+        // The track just ended on its own; pause so the queue holds position
+        // and the next open (play/pause) resumes it.
+        await _ignoreCancelled(() async {
+          if (handle.isPlaying) await handle.pause();
+        });
+      }
+      ToastUtil.show(i18n('music_sleep_stopped'));
+      return;
+    }
     switch (state.mode) {
       case MusicPlayMode.loopOne:
         final handle = _handle;
@@ -778,6 +1025,21 @@ class MusicPlayerController extends _$MusicPlayerController {
         // The video page runs sequential too, but its last part is THE end —
         // no wrap, the session just sits finished.
         if (!wrapAtQueueEnd && state.index >= state.queue.length - 1) return;
+        await next();
+      case MusicPlayMode.orderStop:
+        if (state.index >= state.queue.length - 1) {
+          // Sequential play reached the end: the session parks here. The
+          // play-later strip still owns the next slot, so give it the turn.
+          if (state.tempQueue.isEmpty) {
+            final handle = _handle;
+            if (handle != null) {
+              await _ignoreCancelled(() async {
+                if (handle.isPlaying) await handle.pause();
+              });
+            }
+            return;
+          }
+        }
         await next();
       case MusicPlayMode.random:
         await next();
