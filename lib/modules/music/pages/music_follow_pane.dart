@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 /// the account's followed uploaders as full-width rows — avatar, name,
 /// signature. Tapping opens the UP's space; long-press unfollows against the
@@ -121,12 +122,7 @@ class _MusicFollowPaneState extends ConsumerState<MusicFollowPane> {
     // overflow them.
     return GridView.builder(
       padding: EdgeInsets.all(24.ts(context)),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 5,
-        childAspectRatio: 1.5,
-        crossAxisSpacing: 14.ts(context),
-        mainAxisSpacing: 14.ts(context),
-      ),
+      gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref, gridColums: 5),
       itemCount: follows.length + (_hasMore || _loading ? 1 : 0),
       itemBuilder: (context, index) {
         if (index >= follows.length) {
