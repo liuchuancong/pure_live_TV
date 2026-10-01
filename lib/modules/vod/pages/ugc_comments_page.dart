@@ -88,22 +88,7 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
       setState(() {
         final at = _comments.indexWhere((c) => c.rpid == comment.rpid);
         if (at >= 0) {
-          _comments[at] = CommentItem(
-            rpid: comment.rpid,
-            oid: comment.oid,
-            type: comment.type,
-            mid: comment.mid,
-            uname: comment.uname,
-            face: comment.face,
-            content: comment.content,
-            ctime: comment.ctime,
-            like: comment.like + (comment.liked ? -1 : 1),
-            rcount: comment.rcount,
-            liked: !comment.liked,
-            isTop: comment.isTop,
-            isUp: comment.isUp,
-            replies: comment.replies,
-          );
+          _comments[at] = comment.copyWith(like: comment.like + (comment.liked ? -1 : 1), liked: !comment.liked);
         }
       });
     } catch (_) {

@@ -3,6 +3,8 @@ import 'package:media_core/media_core.dart';
 import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/pages/widgets/comment_pictures.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class VideoCommentsPanel extends StatefulWidget {
   const VideoCommentsPanel({
@@ -34,11 +36,13 @@ class VideoCommentsPanel extends StatefulWidget {
   State<VideoCommentsPanel> createState() => VideoCommentsPanelState();
 }
 
-/// newBV's comment surface: every row can be liked, and a comment with
-/// carries first, the full set fetched from the reply endpoint on expand.
+/// newBV's comment surface: every row can be liked, an author carries level and
+/// UP badges with any image attachments, and a threaded comment previews three
+/// sub-replies first with the full set paged in from the reply endpoint.
 class VideoCommentsPanelState extends State<VideoCommentsPanel> {
   final Map<int, ({int like, bool liked})> _likeOverrides = {};
   final Map<int, List<CommentItem>> _replies = {};
+  final Map<int, int> _replyPage = {};
   final Set<int> _expanded = {};
   final Set<int> _replyLoading = {};
 
@@ -57,6 +61,13 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
 
   List<CommentItem> _repliesOf(CommentItem comment) => _replies[comment.rpid] ?? comment.replies;
 
+  int _loadedCount(CommentItem comment) => _replies[comment.rpid]?.length ?? comment.replies.length;
+
+  bool _canLoadMore(CommentItem comment) =>
+      _expanded.contains(comment.rpid) &&
+      !_replyLoading.contains(comment.rpid) &&
+      _loadedCount(comment) < comment.rcount;
+
   Future<void> _toggleReplies(CommentItem comment) async {
     if (!_expanded.remove(comment.rpid)) {
       _expanded.add(comment.rpid);
@@ -65,7 +76,12 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
         setState(() {});
         try {
           final replies = await BilibiliUgcApi.instance.getCommentReplies(oid: widget.oid, rpid: comment.rpid);
-          if (mounted) setState(() => _replies[comment.rpid] = replies);
+          if (mounted) {
+            setState(() {
+              _replies[comment.rpid] = replies;
+              _replyPage[comment.rpid] = 1;
+            });
+          }
         } catch (_) {
           // The preview replies stay on screen when the fetch fails.
         } finally {
@@ -76,6 +92,30 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
       }
     }
     setState(() {});
+  }
+
+  Future<void> _loadMoreReplies(CommentItem comment) async {
+    final rpid = comment.rpid;
+    if (_replyLoading.contains(rpid)) return;
+    final page = (_replyPage[rpid] ?? 1) + 1;
+    _replyLoading.add(rpid);
+    setState(() {});
+    try {
+      final more = await BilibiliUgcApi.instance.getCommentReplies(oid: widget.oid, rpid: rpid, page: page);
+      if (mounted) {
+        final existing = _replies[rpid] ?? const <CommentItem>[];
+        final seen = existing.map((e) => e.rpid).toSet();
+        setState(() {
+          _replies[rpid] = [...existing, ...more.where((e) => !seen.contains(e.rpid))];
+          _replyPage[rpid] = page;
+        });
+      }
+    } catch (_) {
+      // The already-loaded replies stay; the next focus on 加载更多 retries.
+    } finally {
+      _replyLoading.remove(rpid);
+      if (mounted) setState(() {});
+    }
   }
 
   @override
@@ -160,17 +200,19 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
                           ),
                         );
                       }
+                      final comment = widget.comments[index];
                       return _CommentTile(
-                        comment: widget.comments[index],
-                        oid: widget.oid,
+                        comment: comment,
                         autofocus: index == 0,
                         like: _likeOf,
                         liked: _likedOf,
-                        onLike: () => unawaited(_like(widget.comments[index])),
-                        expanded: _expanded.contains(widget.comments[index].rpid),
-                        replies: _repliesOf(widget.comments[index]),
-                        repliesLoading: _replyLoading.contains(widget.comments[index].rpid),
-                        onToggleReplies: () => unawaited(_toggleReplies(widget.comments[index])),
+                        onLike: () => unawaited(_like(comment)),
+                        expanded: _expanded.contains(comment.rpid),
+                        replies: _repliesOf(comment),
+                        repliesLoading: _replyLoading.contains(comment.rpid),
+                        canLoadMore: _canLoadMore(comment),
+                        onToggleReplies: () => unawaited(_toggleReplies(comment)),
+                        onLoadMoreReplies: () => unawaited(_loadMoreReplies(comment)),
                       );
                     },
                   ),
@@ -179,6 +221,14 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
       ),
     );
   }
+}
+
+/// The author line, newBV's name + "  Lv.N" (level>0) + "  UP主" suffixes.
+String _authorLabel(String uname, int level, bool isUp) {
+  final buffer = StringBuffer(uname);
+  if (level > 0) buffer.write('  Lv.$level');
+  if (isUp) buffer.write('  ${i18n('video_comments_up')}');
+  return buffer.toString();
 }
 
 /// One sort label in the panel header — the live one wears the accent fill.
@@ -216,37 +266,39 @@ class _SortChip extends StatelessWidget {
   }
 }
 
-/// One comment: body OK opens the thread, the like pill is its own focusable.
+/// One comment: the like pill is its own focusable, the thread toggle loads the
+/// full sub-reply set, and image attachments open the full-screen viewer.
 class _CommentTile extends StatelessWidget {
   const _CommentTile({
     required this.autofocus,
     required this.comment,
-    required this.oid,
     required this.like,
     required this.liked,
     required this.onLike,
     required this.expanded,
     required this.replies,
     required this.repliesLoading,
+    required this.canLoadMore,
     required this.onToggleReplies,
+    required this.onLoadMoreReplies,
   });
 
   /// The panel opens with the keyboard on the first comment's like pill.
   final bool autofocus;
   final CommentItem comment;
-  final int oid;
   final int Function(CommentItem) like;
   final bool Function(CommentItem) liked;
   final VoidCallback onLike;
   final bool expanded;
   final List<CommentItem> replies;
   final bool repliesLoading;
+  final bool canLoadMore;
   final VoidCallback onToggleReplies;
+  final VoidCallback onLoadMoreReplies;
 
   @override
   Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
+    final accent = context.tvTheme.focusColor;
     final hasThread = comment.rcount > 0;
 
     return Container(
@@ -260,15 +312,39 @@ class _CommentTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  comment.uname,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: accent),
+              ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: comment.face,
+                  width: 32.ts(context),
+                  height: 32.ts(context),
+                  fit: BoxFit.cover,
+                  errorWidget: (context, url, error) =>
+                      Icon(Icons.person_rounded, size: 32.ts(context), color: Colors.white54),
                 ),
               ),
+              SizedBox(width: 8.ts(context)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _authorLabel(comment.uname, comment.level, comment.isUp),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: accent),
+                    ),
+                    SizedBox(height: 4.ts(context)),
+                    Text(
+                      comment.content,
+                      style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white, height: 1.4),
+                    ),
+                    CommentPicturesRow(urls: comment.pictures, thumbnail: 64),
+                  ],
+                ),
+              ),
+              SizedBox(width: 8.ts(context)),
               TvFocusable(
                 autofocus: autofocus,
                 onTap: onLike,
@@ -306,17 +382,12 @@ class _CommentTile extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 6.ts(context)),
-          Text(
-            comment.content,
-            style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white, height: 1.4),
-          ),
           if (hasThread) ...[
             SizedBox(height: 6.ts(context)),
             TvFocusable(
               onTap: onToggleReplies,
               builder: (context, focused, _) => Text(
-                repliesLoading
+                repliesLoading && replies.isEmpty
                     ? i18n('video_replies_loading')
                     : expanded
                     ? i18n('video_replies_collapse')
@@ -336,19 +407,40 @@ class _CommentTile extends StatelessWidget {
                 children: [
                   for (final reply in replies)
                     Padding(
-                      padding: EdgeInsets.only(bottom: 4.sp),
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: '${reply.uname}: ',
-                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: accent),
-                            ),
-                            TextSpan(
-                              text: reply.content,
-                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w300, color: Colors.white70),
-                            ),
-                          ],
+                      padding: EdgeInsets.only(bottom: 8.sp),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _authorLabel(reply.uname, reply.level, reply.isUp),
+                            style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: accent),
+                          ),
+                          SizedBox(height: 2.ts(context)),
+                          Text(
+                            reply.content,
+                            style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w300, color: Colors.white70, height: 1.4),
+                          ),
+                          CommentPicturesRow(urls: reply.pictures, thumbnail: 56),
+                        ],
+                      ),
+                    ),
+                  if (repliesLoading && replies.isNotEmpty)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6.ts(context)),
+                      child: SizedBox(
+                        width: 18.ts(context),
+                        height: 18.ts(context),
+                        child: CircularProgressIndicator(strokeWidth: 2.ts(context), color: accent),
+                      ),
+                    ),
+                  if (canLoadMore)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 4.ts(context)),
+                      child: TvFocusable(
+                        onTap: onLoadMoreReplies,
+                        builder: (context, focused, _) => Text(
+                          i18n('video_replies_more'),
+                          style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: focused ? accent : Colors.white54),
                         ),
                       ),
                     ),

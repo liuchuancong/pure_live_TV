@@ -54,7 +54,7 @@ class UgcCommentTile extends StatelessWidget {
                         children: [
                           Flexible(
                             child: Text(
-                              comment.uname,
+                              _authorLabel(comment.uname, comment.level, comment.isUp),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.t18.copyWith(
@@ -163,4 +163,12 @@ class UgcCommentTile extends StatelessWidget {
     final date = DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
     return '${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}';
   }
+}
+
+/// The author line, newBV's name + "  Lv.N" (level>0) + "  UP主" suffixes.
+String _authorLabel(String uname, int level, bool isUp) {
+  final buffer = StringBuffer(uname);
+  if (level > 0) buffer.write('  Lv.$level');
+  if (isUp) buffer.write('  ${i18n('video_comments_up')}');
+  return buffer.toString();
 }
