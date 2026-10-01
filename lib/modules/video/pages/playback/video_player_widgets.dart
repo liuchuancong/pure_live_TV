@@ -40,7 +40,13 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   bool _commentsLoading = false;
   bool _commentsHasMore = true;
   int _commentsPage = 0;
+
+  /// newBV's sort switch: hot (mode 3) or newest (mode 2). Flipping it resets
+  /// the panel and re-pages from the top.
+  bool _commentsHot = true;
   bool _qualityOpen = false;
+  bool _speedOpen = false;
+  bool _subtitleMenuOpen = false;
   bool _danmakuOn = true;
   bool _subtitleOn = false;
   bool _aspectFill = false;
@@ -49,6 +55,10 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   // Per-part player extras: subtitles, online count, progress heartbeat.
   List<SubtitleCue> _subtitleCues = const [];
   SubtitleTrack? _subtitleTrack;
+
+  /// Every CC track the open part ships — the subtitle menu lists these and
+  /// lets the viewer pick one (newBV's ClosedCaptionMenu radio).
+  List<SubtitleTrack> _subtitleTracks = const [];
   int _onlineCount = 0;
   int _onlineCountForCid = 0;
   int _lastExtrasCid = 0;
@@ -57,6 +67,10 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   Timer? _autoHideTimer;
   static const Duration _autoHideAfter = Duration(seconds: 5);
   String? _lastTrackId;
+
+  /// The part whose saved position has already been seeked this session, so
+  /// stepping back to an already-resumed part does not seek it twice.
+  String? _resumeAppliedTrackId;
 
   /// The mode the music player held before this page is restored on exit.
   MusicPlayMode? _modeBeforeVideo;
@@ -92,6 +106,11 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       if (track?.id == _lastTrackId) return;
       _lastTrackId = track?.id;
       _loadPartExtras(track);
+      if (track != null) unawaited(_maybeResume(track));
+      // Comments belong to the archive: a new track reopens the well.
+      _comments.clear();
+      _commentsPage = 0;
+      _commentsHasMore = true;
     }, fireImmediately: true);
   }
 
@@ -136,6 +155,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         setState(() {
           _subtitleCues = const [];
           _subtitleTrack = null;
+          _subtitleTracks = const [];
           _subtitleOn = false;
           _onlineCount = 0;
           _lastExtrasCid = 0;
@@ -148,21 +168,15 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     setState(() {
       _subtitleCues = const [];
       _subtitleTrack = null;
+      _subtitleTracks = const [];
       _subtitleOn = false;
       _onlineCount = 0;
     });
     try {
       final subtitles = await BilibiliUgcApi.instance.getSubtitles(bvid: track.archive.bvid, cid: cid);
       if (!mounted || track.id != _lastTrackId) return;
-      setState(() {
-        _subtitleTrack = subtitles.isEmpty ? null : subtitles.first;
-        _subtitleOn = _subtitleTrack != null;
-      });
-      if (_subtitleTrack != null) {
-        final cues = await BilibiliUgcApi.instance.fetchSubtitleCues(_subtitleTrack!.url);
-        if (!mounted || track.id != _lastTrackId) return;
-        setState(() => _subtitleCues = cues);
-      }
+      _subtitleTracks = subtitles;
+      if (subtitles.isNotEmpty) await _applySubtitleTrack(track, subtitles.first);
     } catch (_) {
       // Subtitles are a bonus; nothing degrades without them.
     }
@@ -182,6 +196,59 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
           .reportHistory(aid: track.archive.aid, cid: cid, progress: 0, bvid: track.archive.bvid)
           .catchError((Object _) {});
     }
+  }
+
+  /// Picks the part's subtitle track (null switches the lines off), the same
+  /// radio list newBV's CC menu drives.
+  Future<void> _applySubtitleTrack(MusicTrack track, SubtitleTrack? selected) async {
+    setState(() {
+      _subtitleTrack = selected;
+      _subtitleOn = selected != null;
+      _subtitleCues = const [];
+    });
+    if (selected == null) return;
+    try {
+      final cues = await BilibiliUgcApi.instance.fetchSubtitleCues(selected.url);
+      if (!mounted || track.id != _lastTrackId) return;
+      setState(() => _subtitleCues = cues);
+    } catch (_) {
+      // A track that will not load stays selected; the lines just stay empty.
+    }
+  }
+
+  /// newBV's 继续播放: a part with a saved local position opens there — once
+  /// per part id, so stepping back into a finished part does not re-seek it.
+  /// The freshly opened backend is not immediately seekable, so this waits
+  /// (bounded) for the stream to prove it is live, like the controller's own
+  /// position restore.
+  Future<void> _maybeResume(MusicTrack track) async {
+    if (_resumeAppliedTrackId == track.id) return;
+    _resumeAppliedTrackId = track.id;
+    final entry = ref.read(videoProgressControllerProvider.notifier).entryFor(track.archive.bvid);
+    if (entry == null || entry.cid != track.part.cid || entry.position < 10) return;
+    final controller = ref.read(musicPlayerControllerProvider.notifier);
+    for (var i = 0; i < 40; i++) {
+      if (!mounted || ref.read(musicPlayerControllerProvider).current?.id != track.id) return;
+      final handle = controller.handle;
+      if (handle != null && (handle.duration > Duration.zero || handle.isPlaying)) {
+        final duration = handle.duration;
+        if (duration == Duration.zero || duration > Duration(seconds: entry.position + 10)) {
+          await controller.seekTo(Duration(seconds: entry.position));
+          if (mounted && ref.read(musicPlayerControllerProvider).current?.id == track.id) {
+            ToastUtil.show(i18n('video_resumed_from', args: {'time': _formatClock(entry.position)}));
+          }
+        }
+        return;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+  }
+
+  static String _formatClock(int seconds) {
+    final m = (seconds ~/ 60).toString().padLeft(2, '0');
+    final s = (seconds % 60).toString().padLeft(2, '0');
+    final h = seconds ~/ 3600;
+    return h > 0 ? '$h:$m:$s' : '$m:$s';
   }
 
   /// The local resume store tick — every 10s the position lands in
@@ -229,7 +296,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     _rootNode.requestFocus();
   }
 
-  bool get _anyMenuOpen => _qualityOpen;
+  bool get _anyMenuOpen => _qualityOpen || _speedOpen || _subtitleMenuOpen;
 
   KeyEventResult _onRootKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
@@ -263,6 +330,16 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         _armAutoHide();
         return KeyEventResult.handled;
       }
+      if (_speedOpen) {
+        setState(() => _speedOpen = false);
+        _armAutoHide();
+        return KeyEventResult.handled;
+      }
+      if (_subtitleMenuOpen) {
+        setState(() => _subtitleMenuOpen = false);
+        _armAutoHide();
+        return KeyEventResult.handled;
+      }
       if (_commentsOpen) {
         _closeComments();
         return KeyEventResult.handled;
@@ -278,7 +355,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       return KeyEventResult.ignored;
     }
 
-    if (_qualityOpen) return KeyEventResult.ignored;
+    if (_anyMenuOpen) return KeyEventResult.ignored;
     if (_commentsOpen) return KeyEventResult.ignored;
     if (_partsOpen) return KeyEventResult.ignored;
 
@@ -337,7 +414,11 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     _commentsLoading = true;
     try {
       final page = _commentsPage + 1;
-      final (roots, _, hasMore) = await BilibiliUgcApi.instance.getComments(oid: oid, page: page, hot: true);
+      final (roots, _, hasMore) = await BilibiliUgcApi.instance.getComments(
+        oid: oid,
+        page: page,
+        hot: _commentsHot,
+      );
       if (!mounted) return;
       setState(() {
         _comments.addAll(roots);
@@ -348,6 +429,20 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     } catch (_) {
       if (mounted) setState(() => _commentsLoading = false);
     }
+  }
+
+  /// Hot ↔ newest: the two sorts are separate pages, so a switch clears what
+  /// is on screen and re-pages from the top.
+  void _switchCommentsSort(bool hot) {
+    if (_commentsHot == hot) return;
+    setState(() {
+      _commentsHot = hot;
+      _comments.clear();
+      _commentsPage = 0;
+      _commentsHasMore = true;
+    });
+    final oid = ref.read(musicPlayerControllerProvider).current?.archive.aid ?? 0;
+    unawaited(_loadComments(oid));
   }
 
   void _openComments(MusicTrack? track) {
@@ -381,6 +476,10 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         if (didPop) return;
         if (_qualityOpen) {
           setState(() => _qualityOpen = false);
+        } else if (_speedOpen) {
+          setState(() => _speedOpen = false);
+        } else if (_subtitleMenuOpen) {
+          setState(() => _subtitleMenuOpen = false);
         } else if (_commentsOpen) {
           _closeComments();
         } else if (_partsOpen) {
@@ -587,13 +686,20 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                           },
                           commentsEnabled: track != null && track.archive.aid > 0,
                           onOpenComments: () => _openComments(track),
+                          onOpenSpeedMenu: () {
+                            _autoHideTimer?.cancel();
+                            setState(() => _speedOpen = true);
+                          },
                           danmakuOn: _danmakuOn,
                           subtitleOn: _subtitleOn,
                           aspectFill: _aspectFill,
                           onToggleDanmaku: () => setState(() => _danmakuOn = !_danmakuOn),
-                          onToggleSubtitle: _subtitleTrack == null
+                          onOpenSubtitleMenu: _subtitleTracks.isEmpty
                               ? null
-                              : () => setState(() => _subtitleOn = !_subtitleOn),
+                              : () {
+                                  _autoHideTimer?.cancel();
+                                  setState(() => _subtitleMenuOpen = true);
+                                },
                           onToggleAspect: () => setState(() => _aspectFill = !_aspectFill),
                         ),
                       ),
@@ -648,6 +754,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                         scroll: _commentsScroll,
                         loading: _commentsLoading,
                         hasMore: _commentsHasMore,
+                        hot: _commentsHot,
+                        onSortChange: _switchCommentsSort,
                         onLoadMore: () => _loadComments(track.archive.aid),
                         onClose: _closeComments,
                       ),
@@ -670,6 +778,32 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                       right: 48.sp,
                       width: 320.ts(context),
                       child: VideoQualityMenu(onClose: () => setState(() => _qualityOpen = false)),
+                    ),
+
+                  // -------------------------------------------------- speed menu
+                  if (_speedOpen)
+                    Positioned(
+                      top: 100.sp,
+                      right: 48.sp,
+                      width: 320.ts(context),
+                      child: VideoSpeedMenu(onClose: () => setState(() => _speedOpen = false)),
+                    ),
+
+                  // --------------------------------------------- subtitle menu
+                  if (_subtitleMenuOpen && track != null)
+                    Positioned(
+                      top: 100.sp,
+                      right: 48.sp,
+                      width: 360.ts(context),
+                      child: VideoSubtitleMenu(
+                        tracks: _subtitleTracks,
+                        selected: _subtitleOn ? _subtitleTrack : null,
+                        onClose: () => setState(() => _subtitleMenuOpen = false),
+                        onPick: (picked) {
+                          setState(() => _subtitleMenuOpen = false);
+                          unawaited(_applySubtitleTrack(track, picked));
+                        },
+                      ),
                     ),
                 ],
               ),

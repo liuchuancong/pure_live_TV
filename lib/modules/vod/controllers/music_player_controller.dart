@@ -288,7 +288,7 @@ class MusicPlayerController extends _$MusicPlayerController {
   }
 
   /// The rate steps the player page cycles through.
-  static const List<double> speedSteps = [1.0, 1.25, 1.5, 2.0];
+  static const List<double> speedSteps = [0.5, 1.0, 1.25, 1.5, 2.0];
 
   /// Module-injected playurl hook. The media layer owns playback but not the
   /// module data around it, so the video module plugs its PGC resolver in

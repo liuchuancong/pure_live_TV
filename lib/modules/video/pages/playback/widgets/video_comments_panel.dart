@@ -12,6 +12,8 @@ class VideoCommentsPanel extends StatefulWidget {
     required this.scroll,
     required this.loading,
     required this.hasMore,
+    required this.hot,
+    required this.onSortChange,
     required this.onLoadMore,
     required this.onClose,
   });
@@ -21,6 +23,10 @@ class VideoCommentsPanel extends StatefulWidget {
   final ScrollController scroll;
   final bool loading;
   final bool hasMore;
+
+  /// Which sort is on screen — hot (mode 3) or newest (mode 2).
+  final bool hot;
+  final ValueChanged<bool> onSortChange;
   final VoidCallback onLoadMore;
   final VoidCallback onClose;
 
@@ -97,6 +103,21 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
                     style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                   ),
                 ),
+                // newBV's sort switch: 热门 / 最新.
+                _SortChip(
+                  label: i18n('video_comments_hot'),
+                  selected: widget.hot,
+                  autofocus: false,
+                  onTap: () => widget.onSortChange(true),
+                ),
+                SizedBox(width: 10.ts(context)),
+                _SortChip(
+                  label: i18n('video_comments_new'),
+                  selected: !widget.hot,
+                  autofocus: false,
+                  onTap: () => widget.onSortChange(false),
+                ),
+                SizedBox(width: 14.ts(context)),
                 TvIconButton(
                   icon: const Icon(Icons.close_rounded),
                   size: TvIconButtonSize.small,
@@ -155,6 +176,41 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// One sort label in the panel header — the live one wears the accent fill.
+class _SortChip extends StatelessWidget {
+  const _SortChip({required this.label, required this.selected, required this.autofocus, required this.onTap});
+
+  final String label;
+  final bool selected;
+  final bool autofocus;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.tvTheme.focusColor;
+    return TvFocusable(
+      autofocus: autofocus,
+      onTap: onTap,
+      builder: (context, focused, _) => AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 6.ts(context)),
+        decoration: BoxDecoration(
+          color: selected ? accent.withValues(alpha: 0.24) : Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(12.ts(context)),
+          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.t14.copyWith(
+            fontWeight: FontWeight.w600,
+            color: selected ? accent : Colors.white70,
+          ),
+        ),
       ),
     );
   }

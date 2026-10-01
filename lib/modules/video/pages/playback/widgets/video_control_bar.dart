@@ -26,11 +26,12 @@ class VideoPlayerControlBar extends ConsumerStatefulWidget {
     required this.onOpenDanmakuSettings,
     required this.commentsEnabled,
     required this.onOpenComments,
+    required this.onOpenSpeedMenu,
     required this.danmakuOn,
     required this.subtitleOn,
     required this.aspectFill,
     required this.onToggleDanmaku,
-    required this.onToggleSubtitle,
+    required this.onOpenSubtitleMenu,
     required this.onToggleAspect,
   });
 
@@ -51,11 +52,15 @@ class VideoPlayerControlBar extends ConsumerStatefulWidget {
   final VoidCallback onOpenDanmakuSettings;
   final bool commentsEnabled;
   final VoidCallback onOpenComments;
+  final VoidCallback onOpenSpeedMenu;
   final bool danmakuOn;
   final bool subtitleOn;
   final bool aspectFill;
   final VoidCallback onToggleDanmaku;
-  final VoidCallback? onToggleSubtitle;
+
+  /// Opens the subtitle track picker — null (pill inert) when the archive
+  /// carries no CC track.
+  final VoidCallback? onOpenSubtitleMenu;
   final VoidCallback onToggleAspect;
 
   @override
@@ -158,7 +163,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
       case 4:
         unawaited(controller.seekAccelerated(1));
       case 5:
-        unawaited(controller.cycleSpeed());
+        widget.onOpenSpeedMenu();
       case 6:
         widget.onOpenQuality();
       case 7:
@@ -170,7 +175,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
       case 10:
         widget.onOpenDanmakuSettings();
       case 11:
-        widget.onToggleSubtitle?.call();
+        widget.onOpenSubtitleMenu?.call();
       case 12:
         widget.onToggleAspect();
     }
@@ -246,7 +251,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
                 icon: Icon(Icons.speed_rounded, size: 22.ts(context)),
                 active: false,
                 secondary: true,
-                onTap: () => controller.cycleSpeed(),
+                onTap: widget.onOpenSpeedMenu,
               ),
               (
                 label: BilibiliMusicApi.qualityLabel(state.quality).isEmpty
@@ -290,7 +295,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
                 icon: Icon(Icons.closed_caption_outlined, size: 22.ts(context)),
                 active: widget.subtitleOn,
                 secondary: !widget.subtitleOn,
-                onTap: widget.onToggleSubtitle,
+                onTap: widget.onOpenSubtitleMenu,
               ),
               (
                 label: i18n(widget.aspectFill ? 'video_aspect_fill' : 'video_aspect_fit'),

@@ -13,6 +13,8 @@ import 'package:pure_live/modules/video/pages/playback/widgets/video_control_bar
 import 'package:pure_live/modules/video/pages/playback/widgets/video_parts_panel.dart';
 import 'package:pure_live/modules/video/pages/playback/widgets/video_idle_surface.dart';
 import 'package:pure_live/modules/video/pages/playback/widgets/video_quality_menu.dart';
+import 'package:pure_live/modules/video/pages/playback/widgets/video_speed_menu.dart';
+import 'package:pure_live/modules/video/pages/playback/widgets/video_subtitle_menu.dart';
 import 'package:pure_live/modules/video/pages/playback/widgets/video_comments_panel.dart';
 import 'package:pure_live/modules/video/pages/playback/widgets/video_subtitle_lines.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
