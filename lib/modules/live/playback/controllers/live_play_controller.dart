@@ -88,12 +88,12 @@ class LivePlayController extends _$LivePlayController {
     // of one throws, and that throw would surface inside a platform adapter.
     // Identity is compared normalized - a list may spell a platform id in any
     // case, and a raw comparison here silently disabled the recovery.
-    Sites.currentRoomLookup = (platform, roomId) {
+    Sites.currentRoomLookup = (requested) {
       if (!ref.mounted) return null;
 
       final room = state.room;
 
-      return room != null && room.hasIdentity(platform: platform, roomId: roomId) ? room : null;
+      return room != null && room.hasSameIdentity(requested) ? room : null;
     };
 
     // Microtask-deferred: build has no state yet while it runs, and reading

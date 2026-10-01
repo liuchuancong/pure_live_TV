@@ -413,11 +413,7 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
     }
   }
 
-  LiveRoom? _matchingCurrentRoom(LiveRoom room) {
-    final current = Sites.currentRoom(room.platform, room.roomId);
-    if (current?.hasIdentity(platform: room.platform, roomId: room.roomId) == true) return current;
-    return null;
-  }
+  LiveRoom? _matchingCurrentRoom(LiveRoom room) => Sites.currentRoom(room);
 
   @override
   Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async {

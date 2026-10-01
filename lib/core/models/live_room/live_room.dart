@@ -380,9 +380,6 @@ abstract class LiveRoom with _$LiveRoom {
   /// Stable platform plus room-id key, used to deduplicate favourites and history.
   String get identityKey => '$normalizedPlatformId:$normalizedRoomId';
 
-  bool hasIdentity({required String platform, required String roomId}) =>
-      normalizedPlatformId == platform.trim().toLowerCase() && normalizedRoomId == roomId.trim();
-
   bool hasSameIdentity(LiveRoom other) => identityKey == other.identityKey;
 
   @override

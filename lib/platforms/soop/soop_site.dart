@@ -341,18 +341,15 @@ class SoopSite extends LiveSite implements LiveSiteRoomRefresher, LiveSiteRecord
       final playerApi = await getPlayerLiveApiData(roomId: roomId);
       final danmakuArgs = geDanmakuArgs(playerApi, roomId);
       final fresh = await getLiveRoomByApi(playerApi, danmakuArgs, roomId);
-      final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
-      if (currentRoom?.hasIdentity(platform: Sites.soopSite, roomId: roomId) == true) {
-        return fresh.withAudienceFallbackFrom(currentRoom!);
+      final currentRoom = Sites.currentRoom(LiveRoom(roomId: roomId, platform: Sites.soopSite));
+      if (currentRoom != null) {
+        return fresh.withAudienceFallbackFrom(currentRoom);
       }
       return fresh;
     } catch (e) {
       CoreLog.error(e);
-      final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
-      if (currentRoom?.hasIdentity(platform: Sites.soopSite, roomId: roomId) == true) {
-        return currentRoom!.getLiveRoomWithError();
-      }
-      return LiveRoom(roomId: roomId, platform: Sites.soopSite).getLiveRoomWithError();
+      final identity = LiveRoom(roomId: roomId, platform: Sites.soopSite);
+      return Sites.currentRoom(identity)?.getLiveRoomWithError() ?? identity.getLiveRoomWithError();
     }
   }
 
@@ -421,13 +418,8 @@ class SoopSite extends LiveSite implements LiveSiteRoomRefresher, LiveSiteRecord
     // Business codes: 1 = ok, -6 = login required, 0 = offline, -2 = blocked.
     if (resultCode != 1) {
       CoreLog.w("soop channel result code=$resultCode");
-      {
-final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
-        if (currentRoom?.hasIdentity(platform: Sites.soopSite, roomId: roomId) == true) {
-          return currentRoom!.getLiveRoomWithError();
-        }
-      }
-      return LiveRoom(roomId: roomId, platform: Sites.soopSite).getLiveRoomWithError();
+      final identity = LiveRoom(roomId: roomId, platform: Sites.soopSite);
+      return Sites.currentRoom(identity)?.getLiveRoomWithError() ?? identity.getLiveRoomWithError();
     }
 
     var bno = jsonObj["BNO"].toString();

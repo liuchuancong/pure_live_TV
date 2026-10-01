@@ -625,9 +625,9 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
       return await _fetchRoomDetail(room);
     } catch (e) {
       CoreLog.error(e);
-      final currentRoom = Sites.currentRoom(platform, roomId);
-      if (currentRoom?.hasIdentity(platform: platform, roomId: roomId) == true) {
-        return currentRoom!.getLiveRoomWithError();
+      final currentRoom = Sites.currentRoom(room);
+      if (currentRoom != null) {
+        return currentRoom.getLiveRoomWithError();
       }
       return LiveRoom(roomId: roomId, platform: platform).getLiveRoomWithError();
     }

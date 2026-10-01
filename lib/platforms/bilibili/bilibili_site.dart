@@ -663,11 +663,9 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
       }
       return _buildRoom(roomInfo, roomId: roomId, danmakuData: danmakuArgs);
     } catch (e) {
-      {
-final currentRoom = Sites.currentRoom(platform, roomId);
-        if (currentRoom?.hasIdentity(platform: platform, roomId: roomId) == true) {
-          return currentRoom!.getLiveRoomWithError();
-        }
+      final currentRoom = Sites.currentRoom(room);
+      if (currentRoom != null) {
+        return currentRoom.getLiveRoomWithError();
       }
       return LiveRoom(roomId: roomId, platform: platform).getLiveRoomWithError();
     }

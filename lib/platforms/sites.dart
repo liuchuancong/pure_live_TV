@@ -10,7 +10,7 @@ class Sites {
   /// Hook for querying the room being played. The playback page registers it
   /// through its Riverpod controller and the site layer uses it to recover from
   /// errors.
-  static LiveRoom? Function(String platform, String roomId)? currentRoomLookup;
+  static LiveRoom? Function(LiveRoom room)? currentRoomLookup;
 
   /// Test seam: substitutes the adapter [of] returns for one platform id.
   ///
@@ -21,12 +21,11 @@ class Sites {
   @visibleForTesting
   static LiveSite? Function(String id)? siteLookupOverride;
 
-  static LiveRoom? currentRoom(String platform, String roomId) {
+  static LiveRoom? currentRoom(LiveRoom room) {
     final lookup = currentRoomLookup;
     if (lookup == null) return null;
-    final room = lookup(platform, roomId);
-    if (room == null) return null;
-    return room.hasIdentity(platform: platform, roomId: roomId) ? room : null;
+    final found = lookup(room);
+    return found != null && found.hasSameIdentity(room) ? found : null;
   }
 
   static const String weiboSite = 'weibo';

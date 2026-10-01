@@ -724,13 +724,8 @@ class HuyaSite
       // caller sees the error room, so it is logged here.
       CoreLog.error('Huya room snapshot unavailable: room=$roomId status=$statusCode');
 
-      {
-        final currentRoom = Sites.currentRoom(platform, roomId);
-        if (currentRoom?.hasIdentity(platform: platform, roomId: roomId) == true) {
-          return currentRoom!.getLiveRoomWithError();
-        }
-      }
-      return LiveRoom(roomId: roomId, platform: platform).getLiveRoomWithError();
+      final identity = LiveRoom(platform: platform, roomId: roomId);
+      return Sites.currentRoom(identity)?.getLiveRoomWithError() ?? identity.getLiveRoomWithError();
     }
   }
 
