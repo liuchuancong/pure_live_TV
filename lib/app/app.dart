@@ -9,6 +9,7 @@ import 'package:pure_live/services/font_settings/font_settings_model.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+import 'package:pure_live/features/settings/pages/widgets/account_lock.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -83,7 +84,14 @@ class App extends ConsumerWidget {
                   child: TvLocaleRebuilder(
                     child: Stack(
                       fit: StackFit.expand,
-                      children: [const TvAppBackground(), withDpad, const GlobalRoomPushOverlay()],
+                      children: [
+                        const TvAppBackground(),
+                        withDpad,
+                        const GlobalRoomPushOverlay(),
+                        // Blocks the app with the launch unlock screen while a
+                        // locked account has not been satisfied this session.
+                        const AccountStartupGate(),
+                      ],
                     ),
                   ),
                 ),

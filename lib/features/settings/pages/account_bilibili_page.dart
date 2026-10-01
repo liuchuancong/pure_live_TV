@@ -2,11 +2,18 @@ import 'dart:async';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_qr_login_service.dart';
+import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_roster.dart';
+import 'package:pure_live/features/settings/pages/widgets/account_lock.dart';
 
 /// Bilibili: the account page. QR sign-in only — the manual cookie paste was
 /// removed, because that flow invited broken logins; the device-QR sign-in
 /// writes the session the moment the phone confirms, and a signed-in account
 /// can log out here.
+///
+/// Multiple accounts are kept in [BilibiliAccountRoster]: the list shows every
+/// signed-in account, tapping one opens its actions (switch / lock / delete),
+/// and an account can be guarded by a D-Pad PIN that is required to launch into
+/// it. See [showUserLockSettings] and [StartupUnlockView].
 class AccountBilibiliPage extends ConsumerStatefulWidget {
   const AccountBilibiliPage({super.key});
 
@@ -14,131 +21,197 @@ class AccountBilibiliPage extends ConsumerStatefulWidget {
   ConsumerState<AccountBilibiliPage> createState() => _AccountBilibiliPageState();
 }
 
+enum _AccountAction { switchTo, lock, delete }
+
 class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
   String _message = '';
 
   @override
   Widget build(BuildContext context) {
     final CookieModel cookies = ref.watch(cookieControllerProvider);
-    // The nickname loads right after a cookie exists; until it lands the UID
-    // stays as the fallback label.
     final BilibiliAccountModel account = ref.watch(bilibiliAccountControllerProvider);
     final theme = context.tvTheme;
     final bool logined = cookies.bilibiliCookie.isNotEmpty;
-    final double contentHeight = MediaQuery.sizeOf(context).height - kToolbarHeight - MediaQuery.paddingOf(context).top;
-    // Routed through SettingsSectionScaffold (see settingsSection in app_router):
-    // it already owns the title bar and the scroll view, and a scaffold of our
-    // own inside it sits under unbounded height and crashes the layout.
-    //
-    // One centred column: the sign-in first (the QR is on screen the moment the
-    // page opens, no dialog to enter first), then who is signed in. Nothing is
-    // shown for "not signed in" — the QR above already says what to do, and a
-    // line announcing the absence of an account is noise.
+    final double contentHeight = MediaQuery.sizeOf(context).height -
+        kToolbarHeight -
+        MediaQuery.paddingOf(context).top;
+
     return SizedBox(
       height: contentHeight,
       child: Align(
         alignment: Alignment.center,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 660.ts(context)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (!logined) TvSettingsGroupTitle(title: i18n('qr_login')),
-              if (!logined)
-                TvSettingsCard(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(16.ts(context)),
-                      child: BilibiliQrLoginView(
-                        onLogined: () {
-                          if (mounted) setState(() => _message = i18n('logined'));
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-
-              if (logined) ...[
-                TvSettingsGroupTitle(title: i18n('site_bilibili')),
-                TvSettingsCard(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(18.ts(context)),
-                      child: Row(
-                        children: [
-                          Icon(Icons.account_circle_rounded, size: 52.ts(context), color: theme.focusColor),
-                          SizedBox(width: 16.ts(context)),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // The nickname is the answer to "who is signed in",
-                                // so it is the line that gets the size; the UID
-                                // only stands in until the account request lands.
-                                Text(
-                                  account.name.isNotEmpty
-                                      ? account.name
-                                      : (cookies.bilibiliUid > 0 ? 'UID ${cookies.bilibiliUid}' : i18n('logined')),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.t28.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.primaryTextColor,
-                                  ),
-                                ),
-                                if (account.name.isNotEmpty && cookies.bilibiliUid > 0) ...[
-                                  SizedBox(height: 4.ts(context)),
-                                  Text(
-                                    'UID ${cookies.bilibiliUid}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.t16.copyWith(
-                                      fontWeight: FontWeight.w300,
-                                      color: theme.secondaryTextColor,
-                                    ),
-                                  ),
-                                ],
-                              ],
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 660.ts(context)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Signed-in accounts: switch / lock / delete. The active cookie
+                // stays the source of truth for playback; the roster is the set
+                // of accounts that have signed in and can be returned to.
+                ListenableBuilder(
+                  listenable: BilibiliAccountRoster.instance,
+                  builder: (context, _) {
+                    final List<BilibiliRosterAccount> accounts = _displayAccounts(cookies, account);
+                    if (accounts.isEmpty) return const SizedBox.shrink();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TvSettingsGroupTitle(title: i18n('account_saved_accounts')),
+                        TvSettingsCard(
+                          children: [
+                            for (final BilibiliRosterAccount a in accounts)
+                              _AccountTile(
+                                account: a,
+                                isCurrent: cookies.bilibiliUid > 0 && a.uid == cookies.bilibiliUid,
+                                onSelected: () => _showActions(a, cookies),
+                              ),
+                            TvSettingsNavTile(
+                              title: i18n('account_add'),
+                              icon: Icons.add_rounded,
+                              onTap: () => showBilibiliQrLoginDialog(context, ref),
                             ),
-                          ),
-                          SizedBox(width: 16.ts(context)),
-                          TvButton(
-                            title: i18n('logout'),
-                            size: TvButtonSize.medium,
-                            isSecondary: true,
-                            icon: Icon(Icons.logout_rounded, size: 22.ts(context)),
-                            onTap: () {
-                              ref.read(cookieControllerProvider.notifier).setBilibiliCookie('');
-                              if (mounted) setState(() => _message = '');
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                          ],
+                        ),
+                      ],
+                    );
+                  },
                 ),
-              ],
 
-              if (_message.isNotEmpty) ...[
-                SizedBox(height: 16.ts(context)),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.check_circle_outline_rounded, size: 20.ts(context), color: theme.focusColor),
-                    SizedBox(width: 8.ts(context)),
-                    Text(
-                      _message,
-                      style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: theme.focusColor),
-                    ),
-                  ],
-                ),
+                // First sign-in: the QR is straight on screen, no dialog to enter.
+                if (!logined) ...[
+                  SizedBox(height: 12.ts(context)),
+                  TvSettingsGroupTitle(title: i18n('qr_login')),
+                  TvSettingsCard(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(16.ts(context)),
+                        child: BilibiliQrLoginView(
+                          onLogined: () {
+                            if (mounted) setState(() => _message = i18n('logined'));
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+
+                if (_message.isNotEmpty) ...[
+                  SizedBox(height: 16.ts(context)),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_outline_rounded, size: 20.ts(context), color: theme.focusColor),
+                      SizedBox(width: 8.ts(context)),
+                      Text(
+                        _message,
+                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: theme.focusColor),
+                      ),
+                    ],
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  /// The roster plus a virtual row for the active account when it has not synced
+  /// yet (a fresh sign-in, or a pre-roster upgrade), so it is always manageable.
+  List<BilibiliRosterAccount> _displayAccounts(CookieModel cookies, BilibiliAccountModel account) {
+    final List<BilibiliRosterAccount> list = BilibiliAccountRoster.instance.accounts;
+    if (cookies.bilibiliUid > 0 && list.every((a) => a.uid != cookies.bilibiliUid)) {
+      return <BilibiliRosterAccount>[
+        BilibiliRosterAccount(
+          uid: cookies.bilibiliUid,
+          username: account.name,
+          avatar: '',
+          cookie: cookies.bilibiliCookie,
+        ),
+        ...list,
+      ];
+    }
+    return list;
+  }
+
+  Future<void> _showActions(BilibiliRosterAccount a, CookieModel cookies) async {
+    final bool isCurrent = cookies.bilibiliUid > 0 && a.uid == cookies.bilibiliUid;
+    final List<TvSelectItem<_AccountAction>> items = <TvSelectItem<_AccountAction>>[
+      if (!isCurrent) TvSelectItem(title: i18n('account_switch_to'), value: _AccountAction.switchTo),
+      TvSelectItem(title: i18n('account_password_lock'), value: _AccountAction.lock),
+      TvSelectItem(title: i18n('account_delete'), value: _AccountAction.delete),
+    ];
+
+    final _AccountAction? action = await TvDialogUtils.showSelect<_AccountAction>(
+      context: context,
+      title: a.displayLabel,
+      items: items,
+    );
+    if (action == null || !mounted) return;
+
+    switch (action) {
+      case _AccountAction.switchTo:
+        BilibiliAccountRoster.instance.switchTo(a.uid);
+      case _AccountAction.lock:
+        await showUserLockSettings(context);
+      case _AccountAction.delete:
+        await _delete(a, isCurrent);
+    }
+  }
+
+  Future<void> _delete(BilibiliRosterAccount a, bool isCurrent) async {
+    final bool? confirmed = await TvDialogUtils.showConfirm(
+      context: context,
+      title: i18n('account_delete'),
+      message: a.displayLabel,
+      confirmText: i18n('delete'),
+      cancelText: i18n('cancel'),
+    );
+    if (confirmed != true) return;
+    final BilibiliAccountRoster roster = BilibiliAccountRoster.instance;
+    if (isCurrent) {
+      // Deleting the active account signs out: the roster entry would otherwise
+      // still hand back a cookie that no longer represents who is logged in.
+      ref.read(cookieControllerProvider.notifier).setBilibiliCookie('');
+      await BilibiliAccountService.instance.logout();
+    }
+    roster.remove(a.uid);
+  }
+}
+
+/// One saved account: avatar, name, a current/locked hint, and a lock glyph.
+class _AccountTile extends StatelessWidget {
+  const _AccountTile({required this.account, required this.isCurrent, required this.onSelected});
+
+  final BilibiliRosterAccount account;
+  final bool isCurrent;
+  final VoidCallback onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.tvTheme;
+    final String label = account.displayLabel;
+    final String subtitle = isCurrent ? i18n('account_current') : 'UID ${account.uid}';
+    final double size = 40.ts(context);
+    return TvSettingsNavTile(
+      title: label,
+      subtitle: subtitle,
+      leading: CircleAvatar(
+        radius: size / 2,
+        backgroundColor: theme.cardColor,
+        foregroundImage: account.avatar.isEmpty ? null : NetworkImage(account.avatar),
+        child: Text(
+          label.isEmpty ? '?' : label[0],
+          style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: theme.primaryTextColor),
+        ),
+      ),
+      trailing: account.lock.isEmpty
+          ? null
+          : Icon(Icons.lock_outline_rounded, size: 22.ts(context), color: theme.focusColor),
+      onTap: onSelected,
     );
   }
 }
@@ -290,7 +363,10 @@ class _BilibiliQrLoginViewState extends ConsumerState<BilibiliQrLoginView> {
           Text(
             _statusText,
             textAlign: TextAlign.center,
-            style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w500, color: context.tvTheme.secondaryTextColor),
+            style: AppTextStyles.t20.copyWith(
+              fontWeight: FontWeight.w500,
+              color: context.tvTheme.secondaryTextColor,
+            ),
           ),
         ],
       ],

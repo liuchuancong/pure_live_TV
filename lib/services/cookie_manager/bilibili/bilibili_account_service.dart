@@ -1,6 +1,7 @@
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_controller.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_model.dart';
+import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_roster.dart';
 import 'package:pure_live/services/cookie_manager/cookie_value.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
@@ -63,6 +64,9 @@ class BilibiliAccountService {
 
       _commitState(BilibiliAccountModel(isLogined: true, name: accountName, uid: info.mid ?? 0));
       SettingsService.to.cookieManager.setBilibiliUid(info.mid ?? 0);
+      // Record the freshly-loaded account in the multi-account roster so it can
+      // be switched back to (and optionally guarded by a PIN) later.
+      BilibiliAccountRoster.instance.recordActive(uid: info.mid ?? 0, username: accountName, cookie: cookie);
       return true;
     } catch (_) {
       return false;
