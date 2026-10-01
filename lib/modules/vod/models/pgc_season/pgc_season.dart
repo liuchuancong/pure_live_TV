@@ -59,13 +59,18 @@ Map<String, dynamic> _normalizePgcSeasonJson(Map<String, dynamic> json) => <Stri
     for (final s in (json['section'] as List?) ?? const <dynamic>[])
       if (s is Map && (s['episodes'] as List?)?.isNotEmpty == true) s,
   ],
+  // Keep these as plain maps: `_$PgcSeasonFromJson` re-parses every element
+  // through `PgcItem.fromJson`, so pre-building `PgcItem` objects here crashed
+  // any season carrying sibling `seasons[]` ("type '_PgcItem' is not a subtype
+  // of type 'Map<String, dynamic>' in type cast").
   'altSeasons': [
     for (final s in (json['seasons'] as List?) ?? const <dynamic>[])
-      if (s is Map) PgcItem.fromJson(Map<String, dynamic>.from(<String, dynamic>{
-        'season_id': s['season_id'],
-        'title': s['season_title'] ?? s['title'],
-        'cover': s['cover'],
-      })),
+      if (s is Map)
+        <String, dynamic>{
+          'season_id': s['season_id'],
+          'title': s['season_title'] ?? s['title'],
+          'cover': s['cover'],
+        },
   ],
   'styles': [
     // ship name objects. Indexing a *string* element with 'name' crashed the
