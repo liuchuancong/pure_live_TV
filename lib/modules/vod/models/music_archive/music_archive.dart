@@ -117,6 +117,24 @@ abstract class MusicArchive with _$MusicArchive {
     );
   }
 
+  /// A `region/feed/rcmd` archive (newBV's 分区 list): cover/author lead the
+  /// record (`cover` not `pic`, `author` not `owner`), the play/danmaku counts
+  /// nest under `stat`.
+  factory MusicArchive.fromRegionFeedJson(Map<dynamic, dynamic> json) {
+    return MusicArchive(
+      aid: int.tryParse(json['aid']?.toString() ?? '') ?? 0,
+      bvid: json['bvid']?.toString() ?? '',
+      title: stripHtml(json['title']?.toString() ?? ''),
+      cover: httpsUrl(json['cover']?.toString() ?? ''),
+      upName: json['author']?['name']?.toString() ?? '',
+      upMid: int.tryParse(json['author']?['mid']?.toString() ?? '') ?? 0,
+      duration: int.tryParse(json['duration']?.toString() ?? '') ?? 0,
+      playCount: int.tryParse(json['stat']?['view']?.toString() ?? '') ?? 0,
+      barrageCount: int.tryParse(json['stat']?['danmaku']?.toString() ?? '') ?? 0,
+      publishDate: formatTimestamp(int.tryParse(json['pubdate']?.toString() ?? '') ?? 0),
+    );
+  }
+
   /// One entry of `archive/related` — the daily-recommendation seed payload.
   factory MusicArchive.fromRelatedJson(Map<dynamic, dynamic> json) {
     return MusicArchive(

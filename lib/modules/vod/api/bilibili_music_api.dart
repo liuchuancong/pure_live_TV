@@ -56,6 +56,28 @@ class BilibiliMusicApi {
     return [for (final item in list) MusicArchive.fromRankingJson(item)];
   }
 
+  /// A region's recommended video feed (`region/feed/rcmd`) — newBV's 分区 list,
+  /// the plain (non-WBI) endpoint. Paged by `display_id` (starts at 1); an
+  /// empty `archives` answers the end of the feed.
+  Future<List<MusicArchive>> getRegionFeed({required int tid, required int page}) async {
+    final result = await HttpClient.instance.getJson(
+      'https://api.bilibili.com/x/web-interface/region/feed/rcmd',
+      queryParameters: {
+        'display_id': '$page',
+        'request_cnt': '15',
+        'from_region': '$tid',
+        'device': 'web',
+        'plat': '30',
+      },
+      header: await _client.headers(),
+    );
+    if (result['code'] != 0) {
+      throw Exception('region feed failed: ${result['code']} ${result['message']}');
+    }
+    final list = (result['data']?['archives'] as List?) ?? const [];
+    return [for (final item in list) MusicArchive.fromRegionFeedJson(item)];
+  }
+
   /// The general popular feed, paged. Guest-friendly.
   Future<List<MusicArchive>> getPopularVideos({required int page, int pageSize = 12}) async {
     final result = await HttpClient.instance.getJson(
