@@ -535,24 +535,14 @@ class HuyaSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) {
-    final roomId = room.roomId;
-    final platform = room.platform;
-    return _loadRoomDetail(platform: platform, roomId: roomId, allowUiFallback: true);
-  }
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _loadRoomDetail(room, allowUiFallback: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) {
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _loadRoomDetail(room, allowUiFallback: false);
+
+  Future<LiveRoom> _loadRoomDetail(LiveRoom room, {required bool allowUiFallback}) async {
     final roomId = room.roomId;
     final platform = room.platform;
-    return _loadRoomDetail(platform: platform, roomId: roomId, allowUiFallback: false);
-  }
-
-  Future<LiveRoom> _loadRoomDetail({
-    required String platform,
-    required String roomId,
-    required bool allowUiFallback,
-  }) async {
     var resultText = await HttpClient.instance.getText(
       'https://mp.huya.com/cache.php',
       queryParameters: <String, dynamic>{
@@ -593,7 +583,7 @@ class HuyaSite
     final bool notBroadcasting = isExplicitOfflineState(responseData?['liveStatus']) || responseData?['stream'] == null;
 
     if (statusCode == 200 && responseData != null && notBroadcasting) {
-      return _buildRoomFromSnapshot(responseData, platform: platform, roomId: roomId);
+      return _buildRoomFromSnapshot(responseData, room);
     }
 
     if (statusCode == 200 && responseData != null && responseData['stream'] != null) {
@@ -755,7 +745,9 @@ class HuyaSite
   ///
   /// The entry path and the refresh path share this builder. Reporting *every*
   /// snapshot as off-air — which is what an unconditional "no stream, no play"
-  LiveRoom _buildRoomFromSnapshot(Map<dynamic, dynamic> data, {required String platform, required String roomId}) {
+  LiveRoom _buildRoomFromSnapshot(Map<dynamic, dynamic> data, LiveRoom room) {
+    final platform = room.platform;
+    final roomId = room.roomId;
     final liveData = data['liveData'] is Map
         ? Map<String, dynamic>.from(data['liveData'] as Map)
         : const <String, dynamic>{};
@@ -807,7 +799,6 @@ class HuyaSite
   @override
   Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async {
     final roomId = room.roomId;
-    final platform = room.platform;
     final resultText = await HttpClient.instance.getText(
       'https://mp.huya.com/cache.php',
       queryParameters: <String, dynamic>{
@@ -839,7 +830,7 @@ class HuyaSite
     // The refresh path only needs the room description, so it accepts a snapshot
     // without a playable stream (an off-air or replay room) exactly as the entry
     // path does; one builder keeps the two from drifting apart.
-    return _buildRoomFromSnapshot(decoded['data'] as Map, platform: platform, roomId: roomId);
+    return _buildRoomFromSnapshot(decoded['data'] as Map, room);
   }
 
   String? findRoomId(List list, int targetUid, int targetYyid) {
