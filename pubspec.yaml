@@ -42,7 +42,7 @@ dependencies:
   json_annotation: ^4.12.0            # JSON序列化基础注解
   dart_sm: ^0.1.5 # 工具库
   pointycastle: ^4.0.0 # 克拉克拉官方分享链接 AES-CBC 读取
-  equatable: ^2.0.7
+  equatable: ^3.0.0
   html: ^0.15.4 # HTML解析
   drift: ^2.28.0 # iptv本地数据库
   file_picker: ^13.1.0 # iptv导入文件选择
@@ -108,42 +108,42 @@ dependencies:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core
-      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
+      ref: 4d74249add75193869384829e8ade640c5ae5dda
   media_core_media_kit:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_media_kit
-      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
+      ref: 4d74249add75193869384829e8ade640c5ae5dda
   media_core_fvp:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_fvp
-      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
+      ref: 4d74249add75193869384829e8ade640c5ae5dda
   media_core_live:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_live
-      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
+      ref: 4d74249add75193869384829e8ade640c5ae5dda
   media_core_native:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_native
-      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
+      ref: 4d74249add75193869384829e8ade640c5ae5dda
   media_core_logging:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_logging
-      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
+      ref: 4d74249add75193869384829e8ade640c5ae5dda
   media_core_better_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_better_player
-      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
+      ref: 4d74249add75193869384829e8ade640c5ae5dda
   media_core_ijk_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_ijk_player
-      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
+      ref: 4d74249add75193869384829e8ade640c5ae5dda
   # Imported directly by the wallpaper / background code (and available through
   # the media_core_media_kit adapter's re-export, which pins the same revision);
   # declared here because a direct import should come from a direct dependency.
@@ -166,6 +166,8 @@ dependency_overrides:
   android_tv_text_field:
     path: plugins/built_in_kotlin/android_tv_text_field # 本地 AGP 9 内建 Kotlin 补丁（原生 TV 输入框）
   wakelock_plus: ^1.4.0 # media_kit 声明的版本覆盖
+  mime: ^2.1.0 # media_core 需 mime ^2.1.0，与 alfred 的 ^1.0.0 冲突；alfred 仅用 MimeMultipartTransformer/MimeMultipart（2.x 未变），覆盖安全
+  equatable: ^3.0.0 # media_core 需 equatable ^3.0.0；app 与 flutter_screenutil_plus 均为 extends Equatable + props（3.x 兼容），覆盖安全
 
 dev_dependencies:
   flutter_test:

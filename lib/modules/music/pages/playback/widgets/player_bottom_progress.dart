@@ -17,7 +17,7 @@ class MusicBottomProgressLine extends ConsumerWidget {
       return const SizedBox.shrink();
     }
     final controller = ref.read(musicPlayerControllerProvider.notifier);
-    return StreamBuilder<PlaybackState>(
+    return StreamBuilder<PlayerTransportState>(
       stream: controller.playbackStream,
       builder: (context, snapshot) {
         final playback = snapshot.data;

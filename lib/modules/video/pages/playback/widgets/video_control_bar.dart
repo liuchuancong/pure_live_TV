@@ -195,7 +195,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
             width: _zone == VideoBarZone.seek ? 2.ts(context) : 1.ts(context),
           ),
         ),
-        child: StreamBuilder<PlaybackState>(
+        child: StreamBuilder<PlayerTransportState>(
           // One stream drives the whole bar: the times, the seek strip and the
           // play/pause glyph never go stale.
           stream: controller.playbackStream,

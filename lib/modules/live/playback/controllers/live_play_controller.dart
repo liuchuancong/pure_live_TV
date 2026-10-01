@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/painting.dart';
 import 'package:pure_live/player/index.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:media_core/core/player_state.dart';
+import 'package:media_core/core/player_core_state.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:media_core/error/player_failure.dart';
@@ -100,7 +100,7 @@ class LivePlayController extends _$LivePlayController {
     // it now throws "uninitialized provider".
     Future<void>.microtask(_bootstrap);
 
-    return LivePlayState(playerState: PlayerState());
+    return LivePlayState(playerState: PlayerCoreState());
   }
 
   // =========================
@@ -422,7 +422,7 @@ class LivePlayController extends _$LivePlayController {
   /// media_core is the single source of truth for playback state.
   ///
   /// No local LivePlayStatus is maintained here.
-  void _onPlayerStateChanged(PlayerState playerState) {
+  void _onPlayerStateChanged(PlayerCoreState playerState) {
     if (!ref.mounted) return;
 
     // Once a room has played, the loading overlay stays down for the rest of the

@@ -402,7 +402,7 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
             width: seekZone ? 2.ts(context) : 1.ts(context),
           ),
         ),
-        child: StreamBuilder<PlaybackState>(
+        child: StreamBuilder<PlayerTransportState>(
           // One stream drives the whole bar: the progress row and the play/pause
           // glyph, which otherwise went stale until the next controller state
           // change.

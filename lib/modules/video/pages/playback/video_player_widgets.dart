@@ -425,7 +425,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                     top: 0,
                     bottom: 0,
                     child: IgnorePointer(
-                      child: StreamBuilder<PlaybackState>(
+                      child: StreamBuilder<PlayerTransportState>(
                         stream: controller.playbackStream,
                         builder: (context, snapshot) {
                           final playback = snapshot.data;
@@ -607,7 +607,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      child: StreamBuilder<PlaybackState>(
+                      child: StreamBuilder<PlayerTransportState>(
                         stream: ref.read(musicPlayerControllerProvider.notifier).playbackStream,
                         builder: (context, snapshot) {
                           final playback = snapshot.data;

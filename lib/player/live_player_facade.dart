@@ -13,7 +13,7 @@ import '../app/consts/app_theme_consts.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:media_core_media_kit/media_core_media_kit.dart';
 import 'package:media_core_ijk_player/media_core_ijk_player.dart';
-import 'package:media_core_better_player/media_core_video_player.dart';
+import 'package:media_core_better_player/media_core_better_player.dart';
 
 /// App-facing facade over media_core's [LivePlaybackController].
 ///
@@ -21,7 +21,7 @@ import 'package:media_core_better_player/media_core_video_player.dart';
 /// state, videoKey bumps, engine switching, fit and volume — while
 /// the watchdog / line / engine recovery runs inside media_core.
 ///
-/// Playback state and errors are surfaced as-is: [PlayerState] and
+/// Playback state and errors are surfaced as-is: [PlayerCoreState] and
 /// [PlayerFailure]. No app-side wrapper types are introduced.
 ///
 /// ```text
@@ -278,7 +278,7 @@ final class LivePlayerFacade {
   // Rx state (the legacy surface)
   // ---------------------------------------------------------------------------
 
-  final _stateSubject = BehaviorSubject<PlayerState>.seeded(const PlayerState());
+  final _stateSubject = BehaviorSubject<PlayerCoreState>.seeded(const PlayerCoreState());
 
   final _playingSubject = BehaviorSubject<bool>.seeded(false);
 
@@ -324,7 +324,7 @@ final class LivePlayerFacade {
   Stream<bool> get onAudioOnlyChanged => _audioOnlySubject.stream;
 
   StreamSubscription<PlayerFailure>? _errorSub;
-  StreamSubscription<PlayerState>? _stateSub;
+  StreamSubscription<PlayerCoreState>? _stateSub;
   StreamSubscription<PlayerHandle>? _handleSub;
   StreamSubscription<PlayerAdapterEvent>? _adapterSub;
   StreamSubscription<PlayerBackendChange>? _backendChangeSub;
@@ -370,7 +370,7 @@ final class LivePlayerFacade {
   // Streams (the legacy surface)
   // ---------------------------------------------------------------------------
 
-  Stream<PlayerState> get onStateChanged => _stateSubject.stream;
+  Stream<PlayerCoreState> get onStateChanged => _stateSubject.stream;
 
   Stream<bool> get onPlaying => _playingSubject.stream;
 
@@ -500,7 +500,7 @@ final class LivePlayerFacade {
     }
   }
 
-  void _onLiveStateChanged(PlayerState state) {
+  void _onLiveStateChanged(PlayerCoreState state) {
     if (_disposed) return;
 
     // media_core raises buffering the moment open() returns, and for a live

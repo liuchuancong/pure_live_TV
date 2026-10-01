@@ -270,7 +270,7 @@ class MusicPlayerController extends _$MusicPlayerController {
   PlayerHandle? get handle => _handle;
 
   /// Live playback state for the progress bar; null while idle.
-  Stream<PlaybackState>? get playbackStream => _handle?.playbackStream;
+  Stream<PlayerTransportState>? get playbackStream => _handle?.playbackStream;
 
   // ------------------------------------------------------------- queue input
 

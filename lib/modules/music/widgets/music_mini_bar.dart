@@ -32,7 +32,7 @@ class MusicMiniBar extends ConsumerWidget {
           borderRadius: BorderRadius.circular(20.ts(context)),
           border: Border.all(color: accent.withValues(alpha: 0.35)),
         ),
-        child: StreamBuilder<PlaybackState>(
+        child: StreamBuilder<PlayerTransportState>(
           stream: controller.playbackStream,
           builder: (context, snapshot) {
             final playback = snapshot.data;

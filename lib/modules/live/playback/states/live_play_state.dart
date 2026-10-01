@@ -1,4 +1,4 @@
-import 'package:media_core/core/player_state.dart';
+import 'package:media_core/core/player_core_state.dart';
 import 'package:pure_live/exports/common_export.dart';
 
 /// Which side panel is currently shown.
@@ -40,7 +40,7 @@ class LivePlayState {
   ///
   /// The page should use this directly instead of maintaining another
   /// LivePlayStatus enum.
-  final PlayerState playerState;
+  final PlayerCoreState playerState;
 
   /// Business/UI error message.
   ///
@@ -115,7 +115,7 @@ class LivePlayState {
     int? qualityIndex,
     List<String>? playUrls,
     int? lineIndex,
-    PlayerState? playerState,
+    PlayerCoreState? playerState,
     String? errorMessage,
     bool clearErrorMessage = false,
     bool? showControls,
