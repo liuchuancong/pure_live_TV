@@ -338,14 +338,12 @@ class SoopSite extends LiveSite implements LiveSiteRoomRefresher, LiveSiteRecord
   Future<LiveRoom> getRoomDetail(LiveRoom room) async {
     final roomId = room.roomId;
     try {
-      Map<dynamic, dynamic> playerLiveApiFuture = await getPlayerLiveApiData(roomId: roomId);
-      var danmakuFuture = geDanmakuArgs(playerLiveApiFuture, roomId);
-      final fresh = await getLiveRoomByApi(playerLiveApiFuture, danmakuFuture, roomId);
-      {
-        final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
-        if (currentRoom?.hasIdentity(platform: Sites.soopSite, roomId: roomId) == true) {
-          return fresh.withAudienceFallbackFrom(currentRoom!);
-        }
+      final playerApi = await getPlayerLiveApiData(roomId: roomId);
+      final danmakuArgs = geDanmakuArgs(playerApi, roomId);
+      final fresh = await getLiveRoomByApi(playerApi, danmakuArgs, roomId);
+      final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
+      if (currentRoom?.hasIdentity(platform: Sites.soopSite, roomId: roomId) == true) {
+        return fresh.withAudienceFallbackFrom(currentRoom!);
       }
       return fresh;
     } catch (e) {

@@ -215,173 +215,73 @@ class Sites {
     return supportedSiteIds.contains(id.trim().toLowerCase());
   }
 
-  /// Create a single platform adapter.
+  /// One row per platform, in the order the home tabs list them.
   ///
-  /// Keeping construction in one switch prevents `supportSites`,
-  /// `availableSites` and `of` from drifting apart when a new platform
-  /// is added.
-  static Site _createSite(String id) {
-    final normalizedId = id.trim().toLowerCase();
+  /// This is the single source of truth for the adapter cache: both
+  /// [_supportedSites] and [_createSite] derive from it, so the display list
+  /// and the per-platform construction can never drift apart when a platform
+  /// is added. `name` is only a fallback label — [Site.name] re-resolves the
+  /// `site_*` string at paint, so an in-app language change is reflected
+  /// without rebuilding the cached adapters.
+  static final List<({String id, String name, LiveSite Function() create})> _platforms = [
+    (id: bilibiliSite, name: i18n('site_bilibili'), create: BiliBiliSite.new),
+    (id: douyuSite, name: i18n('site_douyu'), create: DouyuSite.new),
+    (id: huyaSite, name: i18n('site_huya'), create: HuyaSite.new),
+    (id: douyinSite, name: i18n('site_douyin'), create: DouyinSite.new),
+    (id: kuaishouSite, name: i18n('site_kuaishou'), create: KuaishouSite.new),
+    (id: ccSite, name: i18n('site_cc'), create: CCSite.new),
+    (id: twitchSite, name: i18n('site_twitch'), create: TwitchSite.new),
+    (id: soopSite, name: i18n('site_soop'), create: SoopSite.new),
+    (id: yySite, name: i18n('site_yy'), create: YYSite.new),
+    (id: acfunSite, name: i18n('site_acfun'), create: AcfunSite.new),
+    (id: picartoSite, name: 'Picarto', create: PicartoSite.new),
+    (id: twitcastingSite, name: 'TwitCasting', create: TwitcastingSite.new),
+    (id: missevanSite, name: i18n('site_missevan'), create: MissevanSite.new),
+    (id: inkeSite, name: i18n('site_inke'), create: InkeSite.new),
+    (id: kilakilaSite, name: i18n('site_kilakila'), create: KilakilaSite.new),
+    (id: xiaohongshuSite, name: i18n('site_xiaohongshu'), create: XiaohongshuSite.new),
+    (id: showroomSite, name: i18n('site_showroom'), create: ShowroomSite.new),
+    (id: chzzkSite, name: i18n('site_chzzk'), create: ChzzkSite.new),
+    (id: kickSite, name: i18n('site_kick'), create: KickSite.new),
+    (id: liveMeSite, name: i18n('site_liveme'), create: LiveMeSite.new),
+    (id: tiktokSite, name: i18n('site_tiktok'), create: TikTokSite.new),
+    (id: youtubeSite, name: i18n('site_youtube'), create: YouTubeSite.new),
+    (id: bigoSite, name: i18n('site_bigo'), create: BigoSite.new),
+    (id: pandaLiveSite, name: i18n('site_pandalive'), create: PandaLiveSite.new),
+    (id: fc2LiveSite, name: i18n('site_fc2live'), create: Fc2Site.new),
+    (id: steamBroadcastSite, name: i18n('site_steambroadcast'), create: SteamBroadcastSite.new),
+    (id: jdLiveSite, name: i18n('site_jdlive'), create: JdLiveSite.new),
+    (id: kugouLiveSite, name: i18n('site_kugoulive'), create: KugouLiveSite.new),
+    (id: baiduLiveSite, name: i18n('site_baidulive'), create: BaiduLiveSite.new),
+    (id: sixRoomSite, name: i18n('site_sixroom'), create: SixRoomSite.new),
+    (id: lookLiveSite, name: i18n('site_looklive'), create: LookLiveSite.new),
+    (id: seventeenLiveSite, name: i18n('site_17live'), create: SeventeenLiveSite.new),
+    (id: niconicoSite, name: 'niconico', create: NiconicoSite.new),
+    (id: weiboSite, name: i18n('site_weibo'), create: WeiboSite.new),
+    (id: iptvSite, name: i18n('site_iptv'), create: IptvSite.new),
+  ];
 
-    return switch (normalizedId) {
-      weiboSite => Site(id: weiboSite, name: i18n('site_weibo'), logo: logoOf(weiboSite), liveSite: WeiboSite()),
-      niconicoSite => Site(id: niconicoSite, name: 'niconico', logo: logoOf(niconicoSite), liveSite: NiconicoSite()),
-      bilibiliSite => Site(
-        id: bilibiliSite,
-        name: i18n('site_bilibili'),
-        logo: logoOf(bilibiliSite),
-        liveSite: BiliBiliSite(),
-      ),
-      douyuSite => Site(id: douyuSite, name: i18n('site_douyu'), logo: logoOf(douyuSite), liveSite: DouyuSite()),
-      huyaSite => Site(id: huyaSite, name: i18n('site_huya'), logo: logoOf(huyaSite), liveSite: HuyaSite()),
-      douyinSite => Site(id: douyinSite, name: i18n('site_douyin'), logo: logoOf(douyinSite), liveSite: DouyinSite()),
-      kuaishouSite => Site(
-        id: kuaishouSite,
-        name: i18n('site_kuaishou'),
-        logo: logoOf(kuaishouSite),
-        liveSite: KuaishouSite(),
-      ),
-      ccSite => Site(id: ccSite, name: i18n('site_cc'), logo: logoOf(ccSite), liveSite: CCSite()),
-      twitchSite => Site(id: twitchSite, name: i18n('site_twitch'), logo: logoOf(twitchSite), liveSite: TwitchSite()),
-      soopSite => Site(id: soopSite, name: i18n('site_soop'), logo: logoOf(soopSite), liveSite: SoopSite()),
-      yySite => Site(id: yySite, name: i18n('site_yy'), logo: logoOf(yySite), liveSite: YYSite()),
-      acfunSite => Site(id: acfunSite, name: i18n('site_acfun'), logo: logoOf(acfunSite), liveSite: AcfunSite()),
-      picartoSite => Site(id: picartoSite, name: 'Picarto', logo: logoOf(picartoSite), liveSite: PicartoSite()),
-      twitcastingSite => Site(
-        id: twitcastingSite,
-        name: 'TwitCasting',
-        logo: logoOf(twitcastingSite),
-        liveSite: TwitcastingSite(),
-      ),
-      missevanSite => Site(
-        id: missevanSite,
-        name: i18n('site_missevan'),
-        logo: logoOf(missevanSite),
-        liveSite: MissevanSite(),
-      ),
-      inkeSite => Site(id: inkeSite, name: i18n('site_inke'), logo: logoOf(inkeSite), liveSite: InkeSite()),
-      kilakilaSite => Site(
-        id: kilakilaSite,
-        name: i18n('site_kilakila'),
-        logo: logoOf(kilakilaSite),
-        liveSite: KilakilaSite(),
-      ),
-      xiaohongshuSite => Site(
-        id: xiaohongshuSite,
-        name: i18n('site_xiaohongshu'),
-        logo: logoOf(xiaohongshuSite),
-        liveSite: XiaohongshuSite(),
-      ),
-      showroomSite => Site(
-        id: showroomSite,
-        name: i18n('site_showroom'),
-        logo: logoOf(showroomSite),
-        liveSite: ShowroomSite(),
-      ),
-      chzzkSite => Site(id: chzzkSite, name: i18n('site_chzzk'), logo: logoOf(chzzkSite), liveSite: ChzzkSite()),
-      kickSite => Site(id: kickSite, name: i18n('site_kick'), logo: logoOf(kickSite), liveSite: KickSite()),
-      liveMeSite => Site(id: liveMeSite, name: i18n('site_liveme'), logo: logoOf(liveMeSite), liveSite: LiveMeSite()),
-      tiktokSite => Site(id: tiktokSite, name: i18n('site_tiktok'), logo: logoOf(tiktokSite), liveSite: TikTokSite()),
-      youtubeSite => Site(
-        id: youtubeSite,
-        name: i18n('site_youtube'),
-        logo: logoOf(youtubeSite),
-        liveSite: YouTubeSite(),
-      ),
-      bigoSite => Site(id: bigoSite, name: i18n('site_bigo'), logo: logoOf(bigoSite), liveSite: BigoSite()),
-      pandaLiveSite => Site(
-        id: pandaLiveSite,
-        name: i18n('site_pandalive'),
-        logo: logoOf(pandaLiveSite),
-        liveSite: PandaLiveSite(),
-      ),
-      fc2LiveSite => Site(id: fc2LiveSite, name: i18n('site_fc2live'), logo: logoOf(fc2LiveSite), liveSite: Fc2Site()),
-      steamBroadcastSite => Site(
-        id: steamBroadcastSite,
-        name: i18n('site_steambroadcast'),
-        logo: logoOf(steamBroadcastSite),
-        liveSite: SteamBroadcastSite(),
-      ),
-      jdLiveSite => Site(id: jdLiveSite, name: i18n('site_jdlive'), logo: logoOf(jdLiveSite), liveSite: JdLiveSite()),
-      kugouLiveSite => Site(
-        id: kugouLiveSite,
-        name: i18n('site_kugoulive'),
-        logo: logoOf(kugouLiveSite),
-        liveSite: KugouLiveSite(),
-      ),
-      baiduLiveSite => Site(
-        id: baiduLiveSite,
-        name: i18n('site_baidulive'),
-        logo: logoOf(baiduLiveSite),
-        liveSite: BaiduLiveSite(),
-      ),
-      lookLiveSite => Site(
-        id: lookLiveSite,
-        name: i18n('site_looklive'),
-        logo: logoOf(lookLiveSite),
-        liveSite: LookLiveSite(),
-      ),
-      seventeenLiveSite => Site(
-        id: seventeenLiveSite,
-        name: i18n('site_17live'),
-        logo: logoOf(seventeenLiveSite),
-        liveSite: SeventeenLiveSite(),
-      ),
-      sixRoomSite => Site(
-        id: sixRoomSite,
-        name: i18n('site_sixroom'),
-        logo: logoOf(sixRoomSite),
-        liveSite: SixRoomSite(),
-      ),
-      iptvSite => Site(id: iptvSite, name: i18n('site_iptv'), logo: logoOf(iptvSite), liveSite: IptvSite()),
-      _ => throw StateError('Unsupported live site: $normalizedId'),
-    };
+  /// Wrap a [_platforms] row in a freshly-constructed [Site].
+  static Site _buildSite(({String id, String name, LiveSite Function() create}) entry) {
+    return Site(id: entry.id, name: entry.name, logo: logoOf(entry.id), liveSite: entry.create());
   }
 
-  /// Build the complete supported-site list.
+  /// Create a single platform adapter by id.
+  static Site _createSite(String id) {
+    final normalizedId = id.trim().toLowerCase();
+    for (final entry in _platforms) {
+      if (entry.id == normalizedId) return _buildSite(entry);
+    }
+    throw StateError('Unsupported live site: $normalizedId');
+  }
+
+  /// Build the complete supported-site list, in [_platforms] order.
   ///
   /// The list is cached because platform adapters can contain session,
   /// authentication or request-related state. Recreating them every time
   /// `supportSites` is accessed would unnecessarily discard that state.
   static final List<Site> _supportedSites = List<Site>.unmodifiable([
-    for (final id in [
-      bilibiliSite,
-      douyuSite,
-      huyaSite,
-      douyinSite,
-      kuaishouSite,
-      ccSite,
-      twitchSite,
-      soopSite,
-      yySite,
-      acfunSite,
-      picartoSite,
-      twitcastingSite,
-      missevanSite,
-      inkeSite,
-      kilakilaSite,
-            xiaohongshuSite,
-      showroomSite,
-      chzzkSite,
-      kickSite,
-      liveMeSite,
-      tiktokSite,
-      youtubeSite,
-      bigoSite,
-      pandaLiveSite,
-                    fc2LiveSite,
-      steamBroadcastSite,
-      jdLiveSite,
-        kugouLiveSite,
-      baiduLiveSite,
-      sixRoomSite,
-      lookLiveSite,
-      seventeenLiveSite,
-      niconicoSite,
-      weiboSite,
-      iptvSite,
-    ])
-      _createSite(id),
+    for (final entry in _platforms) _buildSite(entry),
   ]);
 
   static List<Site> get supportSites => _supportedSites;
