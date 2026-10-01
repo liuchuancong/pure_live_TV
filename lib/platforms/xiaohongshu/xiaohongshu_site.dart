@@ -21,9 +21,9 @@ class XiaohongshuSite extends LiveSite
   @override
   LiveDanmaku getDanmaku() => EmptyDanmaku();
 
-  String _roomId(String roomId, String platform) {
-    if (platform != id) throw const XiaohongshuException(XiaohongshuFailure.identity);
-    return XiaohongshuShare.validateRoomId(roomId);
+  String _roomId(LiveRoom room) {
+    if (room.platform != id) throw const XiaohongshuException(XiaohongshuFailure.identity);
+    return XiaohongshuShare.validateRoomId(room.roomId);
   }
 
   @override
@@ -68,10 +68,10 @@ class XiaohongshuSite extends LiveSite
 
   @override
   Future<LiveRoom> getRoomDetail(LiveRoom room) async =>
-      _room(await _api.room(_roomId(room.roomId, room.platform)), includeMedia: true);
+      _room(await _api.room(_roomId(room)), includeMedia: true);
   @override
   Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) async =>
-      _room(await _api.room(_roomId(room.roomId, room.platform)), includeMedia: false);
+      _room(await _api.room(_roomId(room)), includeMedia: false);
   @override
   Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) async {
     final detail = await getRoomDetail(room);
@@ -107,7 +107,7 @@ class XiaohongshuSite extends LiveSite
   }
 
   XiaohongshuShare _snapshot(LiveRoom detail) {
-    final roomId = _roomId(detail.roomId, detail.platform);
+    final roomId = _roomId(detail);
     final data = detail.data;
     if (data is! XiaohongshuShare || data.requestedRoomId != roomId) {
       throw const XiaohongshuException(XiaohongshuFailure.identity);
@@ -127,7 +127,7 @@ class XiaohongshuSite extends LiveSite
   static String _qualityId(XiaohongshuStream stream) => '${stream.codec}:${stream.quality}';
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
-    _roomId(detail.roomId, detail.platform);
+    _roomId(detail);
     if (detail.isExplicitlyOfflineNow) return [];
     final data = _snapshot(detail);
     final qualities = <String, LivePlayQuality>{};

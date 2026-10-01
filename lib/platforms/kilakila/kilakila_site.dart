@@ -157,9 +157,9 @@ class KilakilaSite extends LiveSite
     }
   }
 
-  Future<LiveRoom> _detail(String uid, String platform, {required bool playback}) async {
-    if (platform != id) throw const KilakilaException(KilakilaFailure.schema);
-    final owner = await _api.owner(uid);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool playback}) async {
+    if (room.platform != id) throw const KilakilaException(KilakilaFailure.schema);
+    final owner = await _api.owner(room.roomId);
     final current = owner.currentRoom;
     if (current == null) {
       // No advertised broadcast is not an authoritative offline declaration.
@@ -179,11 +179,11 @@ class KilakilaSite extends LiveSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, playback: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, playback: true);
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, playback: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, playback: true);
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, playback: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, playback: false);
   @override
   Future<bool> getLiveStatus(LiveRoom room) async => (await getRoomDetailForRefresh(room)).isLiveNow;
   @override

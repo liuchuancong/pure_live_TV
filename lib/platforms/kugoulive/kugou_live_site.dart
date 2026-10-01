@@ -165,7 +165,7 @@ final class KugouLiveSite extends LiveSite
     if (roomId != null) {
       if (page != 1) return const [];
       try {
-        return [await _detail(roomId, id, includeMedia: false, cancel: cancel)];
+        return [await _detail(LiveRoom(roomId: roomId, platform: id), includeMedia: false, cancel: cancel)];
       } on KugouLiveException catch (error) {
         if (error.kind == KugouLiveFailure.missing) return const [];
         rethrow;
@@ -178,32 +178,32 @@ final class KugouLiveSite extends LiveSite
     return rooms.skip(start).take(pageSize).map((room) => _room(room, includeMedia: false)).toList(growable: false);
   }
 
-  String _roomId(String roomId, String platform) {
-    if (platform.trim().toLowerCase() != id) {
+  String _roomId(LiveRoom room) {
+    if (room.platform.trim().toLowerCase() != id) {
       throw const KugouLiveException(KugouLiveFailure.identity);
     }
-    final value = KugouLiveLink.parseRoomId(roomId);
+    final value = KugouLiveLink.parseRoomId(room.roomId);
     if (value == null) throw const KugouLiveException(KugouLiveFailure.identity);
     return value;
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool includeMedia, CancelToken? cancel}) async {
-    final normalized = _roomId(roomId, platform);
-    var room = await _api.room(normalized, includeMedia: includeMedia, cancel: cancel);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool includeMedia, CancelToken? cancel}) async {
+    final normalized = _roomId(room);
+    var fetched = await _api.room(normalized, includeMedia: includeMedia, cancel: cancel);
     final known = _known[normalized];
-    if (known != null) room = room.enrich(known);
-    _known[normalized] = room;
-    return _room(room, includeMedia: includeMedia);
+    if (known != null) fetched = fetched.enrich(known);
+    _known[normalized] = fetched;
+    return _room(fetched, includeMedia: includeMedia);
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, includeMedia: false);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
@@ -215,7 +215,7 @@ final class KugouLiveSite extends LiveSite
   }
 
   KugouLiveRoom _snapshot(LiveRoom detail) {
-    final roomId = _roomId(detail.roomId, detail.platform);
+    final roomId = _roomId(detail);
     final room = detail.data;
     if (room is! KugouLiveRoom || room.roomId != roomId) {
       throw const KugouLiveException(KugouLiveFailure.identity);
@@ -228,7 +228,7 @@ final class KugouLiveSite extends LiveSite
 
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
-    _roomId(detail.roomId, detail.platform);
+    _roomId(detail);
     if (detail.isExplicitlyOfflineNow) return const [];
     final room = _snapshot(detail);
     return List.unmodifiable(
@@ -247,7 +247,7 @@ final class KugouLiveSite extends LiveSite
 
   Future<LivePlayUrlResolution> _resolve(LiveRoom detail, LivePlayQuality quality, {required bool refresh}) async {
     var room = _snapshot(detail);
-    if (refresh) room = _snapshot(await _detail(room.roomId, id, includeMedia: true));
+    if (refresh) room = _snapshot(await _detail(LiveRoom(roomId: room.roomId, platform: id), includeMedia: true));
     final selectionId = quality.selectionId.toString();
     for (final variant in room.variants) {
       if (variant.id != selectionId) continue;

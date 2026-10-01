@@ -231,22 +231,19 @@ class ShowroomSite extends LiveSite
     );
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool playback}) async {
-    if (platform.trim().toLowerCase() != id) throw const ShowroomException(ShowroomFailure.identity);
-    return _detailCard(await _api.room(roomId, playback: playback));
+  Future<LiveRoom> _detail(LiveRoom room, {required bool playback}) async {
+    if (room.platform.trim().toLowerCase() != id) throw const ShowroomException(ShowroomFailure.identity);
+    return _detailCard(await _api.room(room.roomId, playback: playback));
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) =>
-      _detail(room.roomId, room.platform, playback: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, playback: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) =>
-      _detail(room.roomId, room.platform, playback: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, playback: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) =>
-      _detail(room.roomId, room.platform, playback: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, playback: false);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async => (await getRoomDetailForRefresh(room)).isLiveNow;

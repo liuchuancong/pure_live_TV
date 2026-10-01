@@ -103,15 +103,15 @@ class SeventeenLiveSite extends LiveSite
     data: includeMedia ? room : null,
   );
 
-  String _roomId(String roomId, String platform) {
-    if (platform.trim().toLowerCase() != id) throw const SeventeenLiveException(SeventeenLiveFailure.identity);
-    final normalized = SeventeenLiveLink.normalizeRoomId(roomId);
+  String _roomId(LiveRoom room) {
+    if (room.platform.trim().toLowerCase() != id) throw const SeventeenLiveException(SeventeenLiveFailure.identity);
+    final normalized = SeventeenLiveLink.normalizeRoomId(room.roomId);
     if (normalized == null) throw const SeventeenLiveException(SeventeenLiveFailure.identity);
     return normalized;
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool includeMedia}) async {
-    final data = await _api.room(_roomId(roomId, platform));
+  Future<LiveRoom> _detail(LiveRoom room, {required bool includeMedia}) async {
+    final data = await _api.room(_roomId(room));
     if (includeMedia && data.state == SeventeenLiveState.live && data.streams.isEmpty) {
       throw const SeventeenLiveException(SeventeenLiveFailure.mediaUnavailable);
     }
@@ -119,16 +119,13 @@ class SeventeenLiveSite extends LiveSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, includeMedia: false);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
@@ -167,7 +164,7 @@ class SeventeenLiveSite extends LiveSite
   }
 
   SeventeenLiveRoom _snapshot(LiveRoom detail) {
-    final roomId = _roomId(detail.roomId, detail.platform);
+    final roomId = _roomId(detail);
     final data = detail.data;
     if (data is! SeventeenLiveRoom || data.roomId != roomId || data.userId != detail.userId) {
       throw const SeventeenLiveException(SeventeenLiveFailure.identity);

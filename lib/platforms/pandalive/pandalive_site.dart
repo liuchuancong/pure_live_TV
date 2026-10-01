@@ -208,29 +208,26 @@ class PandaLiveSite extends LiveSite
     return List.unmodifiable(rooms);
   }
 
-  String _userId(String roomId, String platform) {
-    if (platform.trim().toLowerCase() != id) throw const PandaLiveException(PandaLiveFailure.identity);
-    final userId = PandaLiveLink.normalizeUserId(roomId);
+  String _userId(LiveRoom room) {
+    if (room.platform.trim().toLowerCase() != id) throw const PandaLiveException(PandaLiveFailure.identity);
+    final userId = PandaLiveLink.normalizeUserId(room.roomId);
     if (userId == null) throw const PandaLiveException(PandaLiveFailure.identity);
     return userId;
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool includeMedia}) async {
-    final data = await _api.room(_userId(roomId, platform), resolveMedia: includeMedia);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool includeMedia}) async {
+    final data = await _api.room(_userId(room), resolveMedia: includeMedia);
     return _room(data, includeMedia: includeMedia);
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, includeMedia: false);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
@@ -242,7 +239,7 @@ class PandaLiveSite extends LiveSite
   }
 
   PandaLiveRoom _snapshot(LiveRoom detail) {
-    final userId = _userId(detail.roomId, detail.platform);
+    final userId = _userId(detail);
     final data = detail.data;
     if (data is! PandaLiveRoom || data.userId.toLowerCase() != userId.toLowerCase()) {
       throw const PandaLiveException(PandaLiveFailure.identity);

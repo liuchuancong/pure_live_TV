@@ -111,10 +111,10 @@ class InkeSite extends LiveSite
     }
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool playback}) async {
-    if (platform != id) throw const InkeException(InkeFailure.schema);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool playback}) async {
+    if (room.platform != id) throw const InkeException(InkeFailure.schema);
     try {
-      return await _api.detail(roomId, playback: playback);
+      return await _api.detail(room.roomId, playback: playback);
     } on InkeException catch (error) {
       if (error.kind == InkeFailure.mediaUnavailable) {
         throw InkeException(error.kind, message: i18n('inke_media_unavailable'));
@@ -124,11 +124,11 @@ class InkeSite extends LiveSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, playback: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, playback: true);
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, playback: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, playback: true);
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, playback: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, playback: false);
   @override
   Future<bool> getLiveStatus(LiveRoom room) async => (await getRoomDetailForRefresh(room)).isLiveNow;
   @override

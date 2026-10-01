@@ -37,9 +37,9 @@ class WeiboSite extends LiveSite
     if (cancel?.isCancelled == true) throw const WeiboException(WeiboFailure.cancelled);
   }
 
-  String _id(String roomId, String platform) {
-    if (platform != id) throw const WeiboException(WeiboFailure.identity);
-    return WeiboApi.validateLiveId(roomId);
+  String _id(LiveRoom room) {
+    if (room.platform != id) throw const WeiboException(WeiboFailure.identity);
+    return WeiboApi.validateLiveId(room.roomId);
   }
 
   @override
@@ -129,7 +129,7 @@ class WeiboSite extends LiveSite
     data: detail,
   );
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) async => _room(await _api.detail(_id(room.roomId, room.platform)));
+  Future<LiveRoom> getRoomDetail(LiveRoom room) async => _room(await _api.detail(_id(room)));
   @override
   Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => getRoomDetail(room);
   @override
@@ -176,7 +176,7 @@ class WeiboSite extends LiveSite
   }
 
   WeiboLiveDetail _detail(LiveRoom room) {
-    _id(room.roomId, room.platform);
+    _id(room);
     final detail = room.data;
     if (detail is! WeiboLiveDetail || detail.liveId != room.roomId || '${detail.ownerId}' != room.userId) {
       throw const WeiboException(WeiboFailure.identity);

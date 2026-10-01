@@ -168,24 +168,24 @@ class KickSite extends LiveSite
     return qualities;
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool playback}) async {
-    if (platform.trim().toLowerCase() != id) throw const KickException(KickFailure.identity);
-    final room = await _api.room(roomId);
-    final live = room.live;
-    if (live == null) return _channelCard(room.channel);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool playback}) async {
+    if (room.platform.trim().toLowerCase() != id) throw const KickException(KickFailure.identity);
+    final result = await _api.room(room.roomId);
+    final live = result.live;
+    if (live == null) return _channelCard(result.channel);
     if (!playback) return _liveCard(live);
     final qualities = await _qualities(live);
-    return _liveCard(live).copyWith(data: _KickPlayback(room.channel.slug, qualities));
+    return _liveCard(live).copyWith(data: _KickPlayback(result.channel.slug, qualities));
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, playback: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, playback: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, playback: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, playback: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, playback: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, playback: false);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async => (await getRoomDetailForRefresh(room)).isLiveNow;

@@ -107,13 +107,13 @@ class NiconicoSite extends LiveSite
     return (await _directory.search(keyword, page: page, cancel: cancel)).rooms;
   }
 
-  String _identity(String roomId, String platform) {
-    if (platform != id) throw const NiconicoException(NiconicoFailure.identity);
-    return NiconicoWatch.validateProgramId(roomId);
+  String _identity(LiveRoom room) {
+    if (room.platform != id) throw const NiconicoException(NiconicoFailure.identity);
+    return NiconicoWatch.validateProgramId(room.roomId);
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform) async {
-    final programId = _identity(roomId, platform);
+  Future<LiveRoom> _detail(LiveRoom room) async {
+    final programId = _identity(room);
     final watch = await _api.room(programId);
     final notice = switch (watch.access) {
       NiconicoAccess.loginRequired => i18n('niconico_login_required'),
@@ -141,16 +141,13 @@ class NiconicoSite extends LiveSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room);
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) =>
-      _detail(room.roomId, room.platform);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room);
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) =>
-      _detail(room.roomId, room.platform);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room);
   @override
-  Future<bool> getLiveStatus(LiveRoom room) async =>
-      (await _detail(room.roomId, room.platform)).isLiveNow;
+  Future<bool> getLiveStatus(LiveRoom room) async => (await _detail(room)).isLiveNow;
 
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) => discoverPlayQualitiesRaw(detail: detail);
@@ -158,7 +155,7 @@ class NiconicoSite extends LiveSite
   @override
   Future<List<LivePlayQuality>> discoverPlayQualitiesRaw({required LiveRoom detail, CancelToken? cancel}) async {
     if (cancel?.isCancelled == true) throw cancel!.cancelError!;
-    final programId = _identity(detail.roomId, detail.platform);
+    final programId = _identity(detail);
     if (detail.isExplicitlyOfflineNow) return const [];
     final choices = await _catalog.load(programId, cancel: cancel);
     return List.unmodifiable([
@@ -169,7 +166,7 @@ class NiconicoSite extends LiveSite
 
   @override
   Future<LivePlayUrlResolution> resolvePlayUrlsRaw({required LiveRoom detail, required LivePlayQuality quality}) async {
-    final programId = _identity(detail.roomId, detail.platform);
+    final programId = _identity(detail);
     if (detail.isExplicitlyOfflineNow) throw const NiconicoException(NiconicoFailure.notLive);
     final choice = quality.data;
     if (choice is! _Choice || choice.programId != programId || quality.selectionId != choice.quality.id) {

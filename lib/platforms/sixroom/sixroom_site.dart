@@ -163,7 +163,9 @@ final class SixRoomSite extends LiveSite
     if (roomId != null) {
       if (page != 1) return const [];
       try {
-        return [await _detail(roomId, id, includeMedia: false, cancel: cancel)];
+        return [
+          await _detail(LiveRoom(roomId: roomId, platform: id), includeMedia: false, cancel: cancel),
+        ];
       } on SixRoomException catch (error) {
         if (error.kind == SixRoomFailure.missing) return const [];
         rethrow;
@@ -175,33 +177,30 @@ final class SixRoomSite extends LiveSite
     return rooms.take(pageSize).map((room) => _room(_known[room.roomId]!, includeMedia: false)).toList(growable: false);
   }
 
-  String _roomId(String roomId, String platform) {
-    if (platform.trim().toLowerCase() != id) throw const SixRoomException(SixRoomFailure.identity);
-    final value = SixRoomLink.parseRoomId(roomId);
+  String _roomId(LiveRoom room) {
+    if (room.platform.trim().toLowerCase() != id) throw const SixRoomException(SixRoomFailure.identity);
+    final value = SixRoomLink.parseRoomId(room.roomId);
     if (value == null) throw const SixRoomException(SixRoomFailure.identity);
     return value;
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool includeMedia, CancelToken? cancel}) async {
-    final normalized = _roomId(roomId, platform);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool includeMedia, CancelToken? cancel}) async {
+    final normalized = _roomId(room);
     final known = _known[normalized];
-    var room = await _api.room(normalized, knownUserId: known?.userId, includeMedia: includeMedia, cancel: cancel);
-    if (known != null) room = room.enrich(known);
-    _known[normalized] = room;
-    return _room(room, includeMedia: includeMedia);
+    var media = await _api.room(normalized, knownUserId: known?.userId, includeMedia: includeMedia, cancel: cancel);
+    if (known != null) media = media.enrich(known);
+    _known[normalized] = media;
+    return _room(media, includeMedia: includeMedia);
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, includeMedia: false);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
@@ -211,7 +210,7 @@ final class SixRoomSite extends LiveSite
   }
 
   SixRoomRoom _snapshot(LiveRoom detail) {
-    final roomId = _roomId(detail.roomId, detail.platform);
+    final roomId = _roomId(detail);
     final room = detail.data;
     if (room is! SixRoomRoom || room.roomId != roomId) throw const SixRoomException(SixRoomFailure.identity);
     if (room.state != SixRoomState.live || room.variants.isEmpty) {
@@ -222,7 +221,7 @@ final class SixRoomSite extends LiveSite
 
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
-    _roomId(detail.roomId, detail.platform);
+    _roomId(detail);
     if (detail.isExplicitlyOfflineNow) return const [];
     final room = _snapshot(detail);
     return List.unmodifiable(
@@ -244,7 +243,7 @@ final class SixRoomSite extends LiveSite
 
   Future<LivePlayUrlResolution> _resolve(LiveRoom detail, LivePlayQuality quality, {required bool refresh}) async {
     var room = _snapshot(detail);
-    if (refresh) room = _snapshot(await _detail(room.roomId, id, includeMedia: true));
+    if (refresh) room = _snapshot(await _detail(LiveRoom(roomId: room.roomId, platform: id), includeMedia: true));
     final selectionId = quality.selectionId.toString();
     for (final variant in room.variants) {
       if (variant.id != selectionId) continue;

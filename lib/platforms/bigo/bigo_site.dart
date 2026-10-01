@@ -171,22 +171,22 @@ final class BigoSite extends LiveSite
     );
   }
 
-  String _identity(String roomId, String platform) {
-    if (platform.trim().toLowerCase() != id) throw const BigoException(BigoFailure.identity);
-    return BigoApi.validateSiteId(roomId);
+  String _identity(LiveRoom room) {
+    if (room.platform.trim().toLowerCase() != id) throw const BigoException(BigoFailure.identity);
+    return BigoApi.validateSiteId(room.roomId);
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool includeMedia}) async =>
-      _room(await _api.studioRoom(siteId: _identity(roomId, platform)), includeMedia: includeMedia);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool includeMedia}) async =>
+      _room(await _api.studioRoom(siteId: _identity(room)), includeMedia: includeMedia);
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, includeMedia: false);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
@@ -253,7 +253,7 @@ final class BigoSite extends LiveSite
 
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
-    final siteId = _identity(detail.roomId, detail.platform);
+    final siteId = _identity(detail);
     if (detail.isExplicitlyOfflineNow) return const [];
     final room = detail.data;
     if (detail.effectiveLiveStatus != LiveStatus.live ||
@@ -266,7 +266,7 @@ final class BigoSite extends LiveSite
 
   @override
   Future<LivePlayUrlResolution> resolvePlayUrlsRaw({required LiveRoom detail, required LivePlayQuality quality}) async {
-    final siteId = _identity(detail.roomId, detail.platform);
+    final siteId = _identity(detail);
     if (detail.isExplicitlyOfflineNow) throw const BigoException(BigoFailure.notLive);
     if (quality.selectionId != 'live' || (await getPlayQualites(detail: detail)).isEmpty) {
       throw const BigoException(BigoFailure.mediaUnavailable);

@@ -78,15 +78,15 @@ class YouTubeSite extends LiveSite
     );
   }
 
-  String _videoId(String roomId, String platform) {
-    if (platform.trim().toLowerCase() != id) throw const YouTubeException(YouTubeFailure.identity);
-    final normalized = YouTubeLink.normalizeVideoId(roomId);
+  String _videoId(LiveRoom room) {
+    if (room.platform.trim().toLowerCase() != id) throw const YouTubeException(YouTubeFailure.identity);
+    final normalized = YouTubeLink.normalizeVideoId(room.roomId);
     if (normalized == null) throw const YouTubeException(YouTubeFailure.identity);
     return normalized;
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool includeMedia}) async {
-    final data = await _api.room(_videoId(roomId, platform), includeMedia: includeMedia);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool includeMedia}) async {
+    final data = await _api.room(_videoId(room), includeMedia: includeMedia);
     if (includeMedia && data.state == YouTubeState.live && data.streams.isEmpty) {
       throw const YouTubeException(YouTubeFailure.mediaUnavailable);
     }
@@ -94,14 +94,13 @@ class YouTubeSite extends LiveSite
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, includeMedia: false);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
@@ -136,7 +135,7 @@ class YouTubeSite extends LiveSite
   }
 
   YouTubeRoom _snapshot(LiveRoom detail) {
-    final roomId = _videoId(detail.roomId, detail.platform);
+    final roomId = _videoId(detail);
     final data = detail.data;
     if (data is! YouTubeRoom || data.videoId != roomId || data.channelId != detail.userId) {
       throw const YouTubeException(YouTubeFailure.identity);

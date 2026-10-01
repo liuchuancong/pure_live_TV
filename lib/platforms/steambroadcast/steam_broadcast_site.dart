@@ -147,7 +147,9 @@ final class SteamBroadcastSite extends LiveSite
     if (steamId != null) {
       if (page != 1) return [];
       try {
-        return [await _detail(steamId, id, includeMedia: false, cancel: cancel)];
+        return [
+          await _detail(LiveRoom(roomId: steamId, platform: id), includeMedia: false, cancel: cancel),
+        ];
       } on SteamBroadcastException catch (error) {
         if (error.kind == SteamBroadcastFailure.missing) return [];
         rethrow;
@@ -169,33 +171,30 @@ final class SteamBroadcastSite extends LiveSite
         .toList(growable: false);
   }
 
-  String _steamId(String roomId, String platform) {
-    if (platform.trim().toLowerCase() != id) throw const SteamBroadcastException(SteamBroadcastFailure.identity);
-    final value = SteamBroadcastLink.parseSteamId(roomId);
+  String _steamId(LiveRoom room) {
+    if (room.platform.trim().toLowerCase() != id) throw const SteamBroadcastException(SteamBroadcastFailure.identity);
+    final value = SteamBroadcastLink.parseSteamId(room.roomId);
     if (value == null) throw const SteamBroadcastException(SteamBroadcastFailure.identity);
     return value;
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool includeMedia, CancelToken? cancel}) async {
-    final steamId = _steamId(roomId, platform);
-    var room = await _api.room(steamId, includeMedia: includeMedia, cancel: cancel);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool includeMedia, CancelToken? cancel}) async {
+    final steamId = _steamId(room);
+    var media = await _api.room(steamId, includeMedia: includeMedia, cancel: cancel);
     final known = _known[steamId];
-    if (known != null) room = room.enrich(known);
-    _known[steamId] = room;
-    return _room(room, includeMedia: includeMedia);
+    if (known != null) media = media.enrich(known);
+    _known[steamId] = media;
+    return _room(media, includeMedia: includeMedia);
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) =>
-      _detail(room.roomId, room.platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, includeMedia: false);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
@@ -207,7 +206,7 @@ final class SteamBroadcastSite extends LiveSite
   }
 
   SteamBroadcastRoom _snapshot(LiveRoom detail) {
-    final steamId = _steamId(detail.roomId, detail.platform);
+    final steamId = _steamId(detail);
     final room = detail.data;
     if (room is! SteamBroadcastRoom || room.steamId != steamId || room.state != SteamBroadcastState.live) {
       throw const SteamBroadcastException(SteamBroadcastFailure.mediaUnavailable);
@@ -227,7 +226,7 @@ final class SteamBroadcastSite extends LiveSite
     var room = _snapshot(detail);
     if (quality.selectionId != 'auto') throw const SteamBroadcastException(SteamBroadcastFailure.schema);
     if (refresh) {
-      room = _snapshot(await _detail(room.steamId, id, includeMedia: true));
+      room = _snapshot(await _detail(LiveRoom(roomId: room.steamId, platform: id), includeMedia: true));
     }
     return LivePlayUrlResolution(urls: [room.master!.toString()], appliedQualityData: 'auto');
   }

@@ -162,7 +162,7 @@ final class JdLiveSite extends LiveSite
     if (liveId != null) {
       if (page != 1) return [];
       try {
-        return [await _detail(liveId, id, includeMedia: false, cancel: cancel)];
+        return [await _detail(LiveRoom(roomId: liveId, platform: id), includeMedia: false, cancel: cancel)];
       } on JdLiveException catch (error) {
         if (error.kind == JdLiveFailure.missing) return [];
         rethrow;
@@ -183,30 +183,30 @@ final class JdLiveSite extends LiveSite
         .toList(growable: false);
   }
 
-  String _liveId(String roomId, String platform) {
-    if (platform.trim().toLowerCase() != id) throw const JdLiveException(JdLiveFailure.identity);
-    final value = JdLiveLink.parseLiveId(roomId);
+  String _liveId(LiveRoom room) {
+    if (room.platform.trim().toLowerCase() != id) throw const JdLiveException(JdLiveFailure.identity);
+    final value = JdLiveLink.parseLiveId(room.roomId);
     if (value == null) throw const JdLiveException(JdLiveFailure.identity);
     return value;
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool includeMedia, CancelToken? cancel}) async {
-    final liveId = _liveId(roomId, platform);
-    var room = await _api.room(liveId, includeMedia: includeMedia, cancel: cancel);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool includeMedia, CancelToken? cancel}) async {
+    final liveId = _liveId(room);
+    var fetched = await _api.room(liveId, includeMedia: includeMedia, cancel: cancel);
     final known = _known[liveId];
-    if (known != null) room = room.enrich(known);
-    _known[liveId] = room;
-    return _room(room, includeMedia: includeMedia);
+    if (known != null) fetched = fetched.enrich(known);
+    _known[liveId] = fetched;
+    return _room(fetched, includeMedia: includeMedia);
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, includeMedia: false);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
@@ -218,7 +218,7 @@ final class JdLiveSite extends LiveSite
   }
 
   JdLiveRoom _snapshot(LiveRoom detail) {
-    final liveId = _liveId(detail.roomId, detail.platform);
+    final liveId = _liveId(detail);
     final room = detail.data;
     if (room is! JdLiveRoom || room.liveId != liveId || room.state != JdLiveState.live || room.hls == null) {
       throw const JdLiveException(JdLiveFailure.mediaUnavailable);
@@ -238,7 +238,7 @@ final class JdLiveSite extends LiveSite
 
   Future<LivePlayUrlResolution> _resolve(LiveRoom detail, LivePlayQuality quality, {required bool refresh}) async {
     var room = _snapshot(detail);
-    if (refresh) room = _snapshot(await _detail(room.liveId, id, includeMedia: true));
+    if (refresh) room = _snapshot(await _detail(LiveRoom(roomId: room.liveId, platform: id), includeMedia: true));
     return switch (quality.selectionId) {
       'hls' => LivePlayUrlResolution(urls: [room.hls!.toString()], appliedQualityData: 'hls'),
       'flv' when room.flv != null => LivePlayUrlResolution(urls: [room.flv!.toString()], appliedQualityData: 'flv'),

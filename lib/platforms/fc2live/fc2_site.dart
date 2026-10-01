@@ -203,24 +203,24 @@ final class Fc2Site extends LiveSite
     return _page(matches, page, pageSize).map((room) => _room(room, includeMedia: false)).toList(growable: false);
   }
 
-  String _identity(String roomId, String platform) {
-    if (platform.trim().toLowerCase() != id) throw const Fc2Exception(Fc2Failure.identity);
-    final channelId = Fc2Link.parseChannelId(roomId);
+  String _identity(LiveRoom room) {
+    if (room.platform.trim().toLowerCase() != id) throw const Fc2Exception(Fc2Failure.identity);
+    final channelId = Fc2Link.parseChannelId(room.roomId);
     if (channelId == null) throw const Fc2Exception(Fc2Failure.identity);
     return channelId;
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool includeMedia}) async =>
-      _room(await _api.room(_identity(roomId, platform)), includeMedia: includeMedia);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool includeMedia}) async =>
+      _room(await _api.room(_identity(room)), includeMedia: includeMedia);
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, includeMedia: false);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
@@ -230,7 +230,7 @@ final class Fc2Site extends LiveSite
   }
 
   Fc2Room _snapshot(LiveRoom detail) {
-    final channelId = _identity(detail.roomId, detail.platform);
+    final channelId = _identity(detail);
     final room = detail.data;
     if (detail.effectiveLiveStatus != LiveStatus.live || room is! Fc2Room || room.channelId != channelId) {
       throw const Fc2Exception(Fc2Failure.schema);

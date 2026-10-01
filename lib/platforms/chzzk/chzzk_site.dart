@@ -227,11 +227,11 @@ class ChzzkSite extends LiveSite
     return qualities;
   }
 
-  Future<LiveRoom> _detail(String channelId, String platform, {required bool playback}) async {
-    if (platform.trim().toLowerCase() != id) throw const ChzzkException(ChzzkFailure.identity);
-    final room = await _api.room(channelId);
-    final live = room.live;
-    if (live == null || !live.isLive) return _channelCard(room.channel);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool playback}) async {
+    if (room.platform.trim().toLowerCase() != id) throw const ChzzkException(ChzzkFailure.identity);
+    final data = await _api.room(room.roomId);
+    final live = data.live;
+    if (live == null || !live.isLive) return _channelCard(data.channel);
     final qualities = playback && live.media.isNotEmpty ? await _qualities(live) : <LivePlayQuality>[];
     final card = _liveCard(live);
     // Mirror the reference cascade: keep the _liveCard notice when no branch matches.
@@ -243,21 +243,21 @@ class ChzzkSite extends LiveSite
         ? i18n('chzzk_time_machine_notice')
         : card.notice;
     return card.copyWith(
-      followers: room.channel.followers?.toString() ?? '',
-      introduction: room.channel.description,
+      followers: data.channel.followers?.toString() ?? '',
+      introduction: data.channel.description,
       notice: notice,
-      data: qualities.isNotEmpty ? _ChzzkPlayback(room.channel.id, qualities) : null,
+      data: qualities.isNotEmpty ? _ChzzkPlayback(data.channel.id, qualities) : null,
     );
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, playback: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, playback: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, playback: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, playback: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, playback: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, playback: false);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async => (await getRoomDetailForRefresh(room)).isLiveNow;

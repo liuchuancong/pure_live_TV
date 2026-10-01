@@ -176,7 +176,7 @@ final class LookLiveSite extends LiveSite
     final roomId = LookLiveLink.parseRoomId(raw);
     if (roomId != null) {
       try {
-        return [await _detail(roomId, id, includeMedia: false, cancel: cancel)];
+        return [await _detail(LiveRoom(roomId: roomId, platform: id), includeMedia: false, cancel: cancel)];
       } on LookLiveException catch (error) {
         if (error.kind == LookLiveFailure.missing) return const [];
         rethrow;
@@ -197,30 +197,30 @@ final class LookLiveSite extends LiveSite
         .toList(growable: false);
   }
 
-  String _roomId(String roomId, String platform) {
-    if (platform.trim().toLowerCase() != id) throw const LookLiveException(LookLiveFailure.identity);
-    final value = LookLiveLink.parseRoomId(roomId);
+  String _roomId(LiveRoom room) {
+    if (room.platform.trim().toLowerCase() != id) throw const LookLiveException(LookLiveFailure.identity);
+    final value = LookLiveLink.parseRoomId(room.roomId);
     if (value == null) throw const LookLiveException(LookLiveFailure.identity);
     return value;
   }
 
-  Future<LiveRoom> _detail(String roomId, String platform, {required bool includeMedia, CancelToken? cancel}) async {
-    final normalized = _roomId(roomId, platform);
-    var room = await _api.room(normalized, includeMedia: includeMedia, cancel: cancel);
+  Future<LiveRoom> _detail(LiveRoom room, {required bool includeMedia, CancelToken? cancel}) async {
+    final normalized = _roomId(room);
+    var liveRoom = await _api.room(normalized, includeMedia: includeMedia, cancel: cancel);
     final known = _known[normalized];
-    if (known != null) room = room.enrich(known);
-    _known[normalized] = room;
-    return _room(room, includeMedia: includeMedia);
+    if (known != null) liveRoom = liveRoom.enrich(known);
+    _known[normalized] = liveRoom;
+    return _room(liveRoom, includeMedia: includeMedia);
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetail(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: true);
+  Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) => _detail(room, includeMedia: true);
 
   @override
-  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room.roomId, room.platform, includeMedia: false);
+  Future<LiveRoom> getRoomDetailForRefresh(LiveRoom room) => _detail(room, includeMedia: false);
 
   @override
   Future<bool> getLiveStatus(LiveRoom room) async {
@@ -230,7 +230,7 @@ final class LookLiveSite extends LiveSite
   }
 
   LookLiveRoom _snapshot(LiveRoom detail) {
-    final roomId = _roomId(detail.roomId, detail.platform);
+    final roomId = _roomId(detail);
     final room = detail.data;
     if (room is! LookLiveRoom || room.roomId != roomId) {
       throw const LookLiveException(LookLiveFailure.identity);
@@ -258,7 +258,7 @@ final class LookLiveSite extends LiveSite
 
   Future<LivePlayUrlResolution> _resolve(LiveRoom detail, LivePlayQuality quality, {required bool refresh}) async {
     var room = _snapshot(detail);
-    if (refresh) room = _snapshot(await _detail(room.roomId, id, includeMedia: true));
+    if (refresh) room = _snapshot(await _detail(LiveRoom(roomId: room.roomId, platform: id), includeMedia: true));
     final selectionId = quality.selectionId.toString();
     for (final variant in room.variants) {
       if (variant.id != selectionId) continue;
