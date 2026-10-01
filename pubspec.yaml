@@ -105,45 +105,21 @@ dependencies:
       path: flutter_inappwebview
       ref: 3e6c4c4a25340cd363af9d38891d88498b90be26
   media_core:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: ./packages/media_core
-      ref: 355a50831bb7bdcc098f00752b8b8fa4661c135f
+    path: F:/media_core/packages/media_core
   media_core_media_kit:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: ./packages/media_core_media_kit
-      ref: 355a50831bb7bdcc098f00752b8b8fa4661c135f
+    path: F:/media_core/packages/media_core_media_kit
   media_core_fvp:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: ./packages/media_core_fvp
-      ref: 355a50831bb7bdcc098f00752b8b8fa4661c135f
+    path: F:/media_core/packages/media_core_fvp
   media_core_live:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: ./packages/media_core_live
-      ref: 355a50831bb7bdcc098f00752b8b8fa4661c135f
+    path: F:/media_core/packages/media_core_live
   media_core_native:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: ./packages/media_core_native
-      ref: 355a50831bb7bdcc098f00752b8b8fa4661c135f
+    path: F:/media_core/packages/media_core_native
   media_core_logging:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: ./packages/media_core_logging
-      ref: 355a50831bb7bdcc098f00752b8b8fa4661c135f
+    path: F:/media_core/packages/media_core_logging
   media_core_better_player:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: ./packages/media_core_better_player
-      ref: 355a50831bb7bdcc098f00752b8b8fa4661c135f
+    path: F:/media_core/packages/media_core_better_player
   media_core_ijk_player:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: ./packages/media_core_ijk_player
-      ref: 355a50831bb7bdcc098f00752b8b8fa4661c135f
+    path: F:/media_core/packages/media_core_ijk_player
   # Imported directly by the wallpaper / background code (and available through
   # the media_core_media_kit adapter's re-export, which pins the same revision);
   # declared here because a direct import should come from a direct dependency.
