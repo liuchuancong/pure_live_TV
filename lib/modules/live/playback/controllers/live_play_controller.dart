@@ -283,7 +283,7 @@ class LivePlayController extends _$LivePlayController {
       return hint;
     }
 
-    final LiveRoom seed = LiveRoomHintCache.lookup(hint.normalizedPlatformId, hint.normalizedRoomId) ?? hint;
+    final LiveRoom seed = LiveRoomHintCache.lookup(hint) ?? hint;
 
     LiveRoomHintCache.remember(seed);
 
@@ -357,7 +357,7 @@ class LivePlayController extends _$LivePlayController {
     // The card's own state is logged, not this room's: "the list looks unchanged"
     // and "the stored entry is stale" are the difference between a repaint problem
     // and a write-back one, and only the stored card tells them apart.
-    final LiveRoom? card = favorites.getRoomById(rebound.normalizedRoomId, rebound.normalizedPlatformId);
+    final LiveRoom? card = favorites.getRoomById(rebound);
 
     log(
       'followed room write-back applied: ${rebound.identityKey} '

@@ -212,10 +212,9 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   bool isFavorite(LiveRoom room) => state.favoriteRooms.any((e) => e.hasSameIdentity(room));
   bool isFavoriteArea(LiveArea area) => state.favoriteAreas.any((e) => _areaKey(e) == _areaKey(area));
 
-  LiveRoom? getRoomById(String roomId, String platform) {
-    final identity = '${platform.trim().toLowerCase()}:${roomId.trim()}';
+  LiveRoom? getRoomById(LiveRoom target) {
     for (final room in state.favoriteRooms) {
-      if (room.identityKey == identity) return room;
+      if (room.identityKey == target.identityKey) return room;
     }
     return null;
   }

@@ -401,21 +401,21 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
       // The public recommendation feed includes replay cards.
       // Their room page reports offline but the selected card carries signed
       // replay URLs. Preserve that matching card as an explicit recording.
-      final current = _matchingCurrentRoom(platform: platform, roomId: roomId);
+      final current = _matchingCurrentRoom(room);
       if (current != null && parsePlayQualities(current.data).isNotEmpty) {
         return current.copyWith(status: true, liveStatus: LiveStatus.live, isRecord: true);
       }
       return loaded;
     } catch (e) {
-      final currentRoom = _matchingCurrentRoom(platform: platform, roomId: roomId);
+      final currentRoom = _matchingCurrentRoom(room);
       if (currentRoom != null) return currentRoom.getLiveRoomWithError();
       return LiveRoom(roomId: roomId, platform: platform).getLiveRoomWithError();
     }
   }
 
-  LiveRoom? _matchingCurrentRoom({required String platform, required String roomId}) {
-    final current = Sites.currentRoom(platform, roomId);
-    if (current?.hasIdentity(platform: platform, roomId: roomId) == true) return current;
+  LiveRoom? _matchingCurrentRoom(LiveRoom room) {
+    final current = Sites.currentRoom(room.platform, room.roomId);
+    if (current?.hasIdentity(platform: room.platform, roomId: room.roomId) == true) return current;
     return null;
   }
 
@@ -435,7 +435,6 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
   @override
   Future<LiveRoom> getRoomDetailForRecording(LiveRoom room) async {
     final roomId = room.roomId;
-    final platform = room.platform;
     final loaded = await _loadRoom(roomId, includePlaybackData: true, ensureSession: true);
     if (loaded.isLiveNow) return loaded;
 
@@ -443,7 +442,7 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
     // offline. Preserve only a matching card with an actual playable stream;
     // transport/shape failures above still propagate to the recorder retry
     // policy instead of masquerading as offline.
-    final current = _matchingCurrentRoom(platform: platform, roomId: roomId);
+    final current = _matchingCurrentRoom(room);
     if (current != null && parsePlayQualities(current.data).isNotEmpty) {
       return current.copyWith(status: true, liveStatus: LiveStatus.live, isRecord: true);
     }

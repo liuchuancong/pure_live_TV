@@ -21,18 +21,16 @@ class LiveRoomHintCache {
   /// Insertion order doubles as recency, so the oldest entry is dropped first.
   static final LinkedHashMap<String, LiveRoom> _rooms = LinkedHashMap<String, LiveRoom>();
 
-  static String _keyOf(String platform, String roomId) => '${platform.trim().toLowerCase()}:${roomId.trim()}';
-
-  /// Last metadata seen for a room, or null when nothing is known about it.
-  static LiveRoom? lookup(String platform, String roomId) {
-    final key = _keyOf(platform, roomId);
-    final room = _rooms.remove(key);
+  /// Last metadata seen for [room], or null when nothing is known about it.
+  static LiveRoom? lookup(LiveRoom room) {
+    final key = room.identityKey;
+    final cached = _rooms.remove(key);
 
     // Re-insert so a room the viewer keeps coming back to is not evicted by
     // rooms that were only passed through.
-    if (room != null) _rooms[key] = room;
+    if (cached != null) _rooms[key] = cached;
 
-    return room;
+    return cached;
   }
 
   /// Remembers [room].
