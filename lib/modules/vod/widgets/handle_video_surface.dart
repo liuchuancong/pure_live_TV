@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:media_core/media_core.dart';
-import 'package:media_core_media_kit/media_core_media_kit.dart';
 
 /// Full-bleed video surface for a [PlayerHandle], the live-play pattern (see
 /// `TvVideoSurface` / `LivePlayerFacade.getVideoWidget`): the adapter's own
-/// widget fills the parent, the viewport fit is applied through the media_kit
-/// adapter, and an engine swap rebuilds the subtree under a fresh key so the
-/// retired `Video` unmounts before the handle destroys its controller.
+/// widget fills the parent, the viewport fit is applied through the
+/// PlayerVideo contract, and an engine swap rebuilds the subtree under a
+/// fresh key so the retired `Video` unmounts before the handle destroys its
+/// controller.
 ///
 /// This replaces media_core's MediaPlayerView on the music/VOD pages: its
 /// AspectRatio + LayoutBuilder + capture-boundary wrapper blows up the layout
@@ -20,7 +20,7 @@ class HandleVideoSurface extends StatefulWidget {
 
   final PlayerHandle handle;
 
-  /// Viewport fit, applied through [MediaKitPlayerAdapter.setVideoFit] — the
+  /// Viewport fit, applied through [PlayerVideo.setVideoFit] — the
   /// same notifier the adapter's own `build()` listens to. Null leaves the
   /// adapter's current fit alone.
   final BoxFit? fit;
@@ -81,8 +81,8 @@ class _HandleVideoSurfaceState extends State<HandleVideoSurface> {
   void _applyFit() {
     final BoxFit? fit = widget.fit;
     if (fit == null) return;
-    final adapter = widget.handle.adapter;
-    if (adapter is MediaKitPlayerAdapter) adapter.setVideoFit(fit);
+    // PlayerVideo owns the fit contract now — no adapter downcast needed.
+    if (widget.handle.adapter case final PlayerVideo video) video.setVideoFit(fit);
   }
 
   @override

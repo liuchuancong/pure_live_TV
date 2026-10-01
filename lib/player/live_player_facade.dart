@@ -1,19 +1,19 @@
 import 'dart:async';
+import 'dart:io';
 import 'models/player_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart' hide Rx;
 import 'package:media_core/media_core.dart';
 import 'package:media_core_live/media_core_live.dart';
+import 'package:media_core_media_kit/media_core_media_kit.dart' show kMediaKitCustomInputKey;
 import '../services/settings/settings.dart';
 import 'core/playback_header_resolver.dart';
 import 'core/flv_legacy_hevc_relay.dart';
 import 'core/flv_splice_relay.dart';
+import 'core/owned_input_opener.dart';
 import 'core/playback_proxy_policy.dart';
 import '../app/consts/app_theme_consts.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
-import 'package:media_core_media_kit/media_core_media_kit.dart';
-import 'package:media_core_ijk_player/media_core_ijk_player.dart';
-import 'package:media_core_better_player/media_core_better_player.dart';
 
 /// App-facing facade over media_core's [LivePlaybackController].
 ///
@@ -104,6 +104,29 @@ final class LivePlayerFacade {
   /// lifetime rule as [_sourceRelays], for the same reason.
   final List<FlvSpliceRelay> _spliceRelays = <FlvSpliceRelay>[];
 
+  /// Whether this request routes its loopback lines through the owned
+  /// custom-input channel.
+  ///
+  /// Android + media_kit starts only: the opener is the media_kit adapter's
+  /// contract, and every other engine still needs the plain loopback HTTP
+  /// url it can open by itself.
+  bool _ownsLoopbackInputs(String backend) => Platform.isAndroid && backend == BackendIds.mediaKit;
+
+  /// Wraps [source] as a custom-input source carrying [recipe].
+  ///
+  /// The real (loopback or fallback) URL never enters the kernel's books:
+  /// `owned://<host>` is all the logs and the quality surface see, and the
+  /// recipe re-acquires the relay on every open instead of reusing a
+  /// bootstrap URL.
+  PlayerSource _ownedSource(PlayerSource source, OwnedInputRecipe recipe) {
+    return source.copyWith(
+      uri: Uri(scheme: 'owned', path: '/${source.uri.host}'),
+      protocol: SourceProtocol.custom,
+      headers: null,
+      metadata: <String, Object?>{...source.metadata, kMediaKitCustomInputKey: recipe},
+    );
+  }
+
   /// Routes one source through the relay it needs, if any.
   ///
   /// A source whose URL lease ends mid-playback is spliced first: the relay
@@ -114,10 +137,11 @@ final class LivePlayerFacade {
   ///
   /// A relay that cannot start is not fatal: the source keeps its direct URL
   /// and behaves exactly as it would without this interception.
-  Future<PlayerSource> _interceptSource(PlayerSource source, List<String> lines) async {
+  Future<PlayerSource> _interceptSource(PlayerSource source, List<String> lines, {required String backend}) async {
     final url = source.uri.toString();
+    final owns = _ownsLoopbackInputs(backend);
 
-    final spliced = await _interceptLeasedSource(source, lines);
+    final spliced = await _interceptLeasedSource(source, lines, owns: owns);
 
     if (spliced != null) return spliced;
 
@@ -125,20 +149,41 @@ final class LivePlayerFacade {
       return source;
     }
 
+    // The relay holds the source headers and carries them upstream itself;
+    // handing them to a loopback request would only leak them into the
+    // native player's logs.
+    final headers = source.hasHeaders ? Map<String, String>.of(source.headers!.values) : const <String, String>{};
+
+    if (owns) {
+      return _ownedSource(source, () async {
+        try {
+          final relay = await FlvLegacyHevcRelay.start(
+            url,
+            headers,
+            findProxy: (_) => PlaybackProxyPolicy.currentDirective(),
+            hostSuffixes: _legacyHevcFlvHosts,
+          );
+          _sourceRelays.add(relay);
+          return OwnedInputLease(relay.inputUri, onClose: relay.close);
+        } catch (error) {
+          debugPrint('FlvLegacyHevcRelay start failed: $error');
+          // The same escape the direct interception has: keep the line and
+          // its headers, play it without the relay.
+          return OwnedInputLease(source.uri, headers: headers.isEmpty ? null : headers, onClose: () async {});
+        }
+      });
+    }
+
     try {
       final relay = await FlvLegacyHevcRelay.start(
         url,
-        source.hasHeaders ? source.headers!.values : const <String, String>{},
+        headers,
         findProxy: (_) => PlaybackProxyPolicy.currentDirective(),
         hostSuffixes: _legacyHevcFlvHosts,
       );
 
       _sourceRelays.add(relay);
 
-      // The relay holds the source headers and carries them upstream itself;
-      // handing them to a loopback request would only leak them into the
-      // native player's logs. media_core treats the loopback URI as a private
-      // input, so the native proxy never sees it either.
       return source.copyWith(uri: relay.inputUri, headers: null);
     } catch (error) {
       debugPrint('FlvLegacyHevcRelay start failed: $error');
@@ -154,7 +199,7 @@ final class LivePlayerFacade {
   /// caller then decides whether the rewrite relay applies. The lease comes
   /// from the live page, which alone can resolve a replacement for the same
   /// room and quality.
-  Future<PlayerSource?> _interceptLeasedSource(PlayerSource source, List<String> lines) async {
+  Future<PlayerSource?> _interceptLeasedSource(PlayerSource source, List<String> lines, {required bool owns}) async {
     final refreshAtFor = onLeaseRefreshAt;
     final renewUrls = onLeaseRenewalUrls;
 
@@ -170,43 +215,63 @@ final class LivePlayerFacade {
     // carries the same content.
     final lineIndex = lines.indexOf(url);
 
-    try {
-      final relay = await FlvSpliceRelay.start(
-        FlvLeasedSource(source.uri, refreshAt: refreshAt),
-        renew: (current) async {
-          final available = (await renewUrls()).where((value) => value.trim().isNotEmpty).toList(growable: false);
+    final headers = source.hasHeaders ? Map<String, String>.of(source.headers!.values) : const <String, String>{};
 
-          if (available.isEmpty) {
-            throw StateError('No renewed FLV source');
-          }
+    Future<FlvSpliceRelay?> start() async {
+      try {
+        final relay = await FlvSpliceRelay.start(
+          FlvLeasedSource(source.uri, refreshAt: refreshAt),
+          renew: (current) async {
+            final available = (await renewUrls()).where((value) => value.trim().isNotEmpty).toList(growable: false);
 
-          final next = lineIndex >= 0 && lineIndex < available.length ? available[lineIndex] : available.first;
+            if (available.isEmpty) {
+              throw StateError('No renewed FLV source');
+            }
 
-          return FlvLeasedSource(Uri.parse(next), refreshAt: refreshAtFor(next));
-        },
-        headers: source.hasHeaders ? source.headers!.values : const <String, String>{},
-        findProxy: (_) => PlaybackProxyPolicy.currentDirective(),
-      );
+            final next = lineIndex >= 0 && lineIndex < available.length ? available[lineIndex] : available.first;
 
-      _spliceRelays.add(relay);
+            return FlvLeasedSource(Uri.parse(next), refreshAt: refreshAtFor(next));
+          },
+          headers: headers,
+          findProxy: (_) => PlaybackProxyPolicy.currentDirective(),
+        );
 
-      // The relay holds the source headers and carries them upstream itself;
-      // handing them to a loopback request would only leak them into the
-      // native player's logs.
-      return source.copyWith(uri: relay.inputUri, headers: null);
-    } catch (error) {
-      debugPrint('FlvSpliceRelay start failed: $error');
+        _spliceRelays.add(relay);
 
-      return null;
+        return relay;
+      } catch (error) {
+        debugPrint('FlvSpliceRelay start failed: $error');
+
+        return null;
+      }
     }
+
+    // The relay holds the source headers and carries them upstream itself;
+    // handing them to a loopback request would only leak them into the
+    // native player's logs.
+
+    if (owns) {
+      return _ownedSource(source, () async {
+        final relay = await start();
+        if (relay == null) {
+          return OwnedInputLease(source.uri, headers: headers.isEmpty ? null : headers, onClose: () async {});
+        }
+        return OwnedInputLease(relay.inputUri, onClose: relay.close);
+      });
+    }
+
+    final relay = await start();
+    if (relay == null) return null;
+
+    return source.copyWith(uri: relay.inputUri, headers: null);
   }
 
-  Future<List<PlayerSource>> _interceptSources(List<PlayerSource> sources) async {
+  Future<List<PlayerSource>> _interceptSources(List<PlayerSource> sources, {required String backend}) async {
     final lines = sources.map((source) => source.uri.toString()).toList(growable: false);
     final intercepted = <PlayerSource>[];
 
     for (final source in sources) {
-      intercepted.add(await _interceptSource(source, lines));
+      intercepted.add(await _interceptSource(source, lines, backend: backend));
     }
 
     return List<PlayerSource>.unmodifiable(intercepted);
@@ -263,7 +328,7 @@ final class LivePlayerFacade {
       return const <PlayerSource>[];
     }
 
-    return _interceptSources(LiveSourceRequest.fromUrls(urls, headers: _lastHeaders).sources);
+    return _interceptSources(LiveSourceRequest.fromUrls(urls, headers: _lastHeaders).sources, backend: nextEngine);
   }
 
   late final LivePlaybackController _controller;
@@ -579,9 +644,14 @@ final class LivePlayerFacade {
     // retired first; the sources of this request get their own.
     await _closeSourceRelays();
 
+    // Pin the engine the user chose: the explicit preference cannot lose a
+    // tie-break. Close/play ordering is the controller queue's job now.
+    final startBackend = _startBackendFor(urls);
+
     final request = LiveSourceRequest(
       sources: await _interceptSources(
         LiveSourceRequest.fromUrls(urls, headers: effectiveHeaders, title: room?.title).sources,
+        backend: startBackend,
       ),
       title: room?.title,
     );
@@ -592,9 +662,7 @@ final class LivePlayerFacade {
     // replay path must have the exact same source information available.
     _lastRequest = request;
 
-    // Pin the engine the user chose: the explicit preference cannot lose a
-    // tie-break. Close/play ordering is the controller queue's job now.
-    await _controller.play(request, preferredBackend: _startBackendFor(urls));
+    await _controller.play(request, preferredBackend: startBackend);
 
     // The controller creates the handle during open(). Bind whatever is
     // current after the queued task settled.
@@ -745,6 +813,7 @@ final class LivePlayerFacade {
           request = LiveSourceRequest(
             sources: await _interceptSources(
               LiveSourceRequest.fromUrls(fresh, headers: _lastHeaders, title: request.title).sources,
+              backend: _backendIdOf(engine),
             ),
             title: request.title,
           );
@@ -819,21 +888,9 @@ final class LivePlayerFacade {
   }
 
   void _applyVideoFit(BoxFit fit) {
-    final adapter = _controller.handle?.adapter;
-
-    if (adapter is MediaKitPlayerAdapter) {
-      adapter.setVideoFit(fit);
-      return;
-    }
-
-    if (adapter is FlvLzcPlayerAdapter) {
-      adapter.setVideoFit(fit);
-      return;
-    }
-
-    if (adapter is BetterPlayerAdapter) {
-      adapter.setVideoFit(fit);
-    }
+    // The fit lives on the PlayerVideo contract itself — every video-capable
+    // adapter owns its fit notifier, so no per-adapter downcast is needed.
+    if (_controller.handle?.adapter case final PlayerVideo video) video.setVideoFit(fit);
   }
 
   // ---------------------------------------------------------------------------

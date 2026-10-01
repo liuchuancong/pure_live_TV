@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'live_player_facade.dart';
 import 'models/player_engine.dart';
 import 'core/playback_proxy_policy.dart';
+import 'core/owned_input_opener.dart';
 import '../services/settings/settings.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:media_core/media_core.dart';
@@ -204,6 +205,10 @@ final class MediaKitHostConfig {
       // created the player without a native player configuration.
       playerConfiguration: null,
       videoControllerConfiguration: buildVideoControllerConfiguration(),
+      // Loopback relay lines open through the app-owned input channel:
+      // the recipe starts the relay per open and the proxy is cleared
+      // there, not from this creation-time snapshot.
+      customInputOpener: openOwnedInputOnKernelPlayer,
     );
 
     adapter.applyEngineOptions(buildEngineOptions());
