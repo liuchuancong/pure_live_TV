@@ -68,6 +68,36 @@ class VideoFollowPaneState extends ConsumerState<VideoFollowPane> {
     }
   }
 
+  /// Long-press opens an explicit confirm first, so an accidental OK-hold on a
+  /// card never silently drops the follow.
+  Future<void> _confirmUnfollow(int index) async {
+    final follow = _follows?[index];
+    if (follow == null) return;
+    await TvDialogUtils.show<void>(
+      context: context,
+      builder: (_) => TvDialog(
+        title: follow.name,
+        cancelText: i18n('cancel'),
+        width: 560.ts(context),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TvDialogOptionTile(
+              title: i18n('video_unfollow'),
+              icon: Icon(Icons.person_remove_outlined, size: 26.ts(context)),
+              showCheck: false,
+              autofocus: true,
+              onTap: () {
+                Navigator.of(context).pop();
+                unawaited(_unfollow(index));
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
@@ -113,7 +143,7 @@ class VideoFollowPaneState extends ConsumerState<VideoFollowPane> {
         final follow = follows[index];
         return TvFocusable(
           onTap: () => UgcUserSpaceRoute(follow.mid, follow.name).push(context),
-          onLongPress: () => unawaited(_unfollow(index)),
+          onLongPress: () => _confirmUnfollow(index),
           builder: (context, focused, child) => Container(
             padding: EdgeInsets.all(16.ts(context)),
             decoration: BoxDecoration(
