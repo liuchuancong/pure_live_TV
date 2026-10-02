@@ -17,7 +17,7 @@ import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/domains/device/models/server_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/core/dialog/backup_import_dialog.dart';
+import 'package:pure_live/features/settings/pages/backup_module_page.dart';
 
 part 'tv_remote_receiver.g.dart';
 
@@ -588,8 +588,10 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       );
     });
 
-    _app!.get('/api/remote-sync/settings', (req, res) {
-      return _ok(res, data: ref.read(backupControllerProvider.notifier).exportAllSettings());
+    _app!.get('/api/remote-sync/settings', (req, res) async {
+      final settings = await _askExportModules();
+      if (settings == null) return _fail(res, msg: i18n('cancel'));
+      return _ok(res, data: settings);
     });
 
     _app!.post('/api/remote-sync/settings', (req, res) async {
@@ -749,13 +751,17 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       }
     });
 
-    _app!.get('/api/backup/export', (req, res) {
+    _app!.get('/api/backup/export', (req, res) async {
       // The document the device sync and the local backups use: the sectioned
       // backup with its `platformIsTv` marker, written under the backup file name.
       // It used to be wrapped in an envelope of its own, which only this page's
       // import knew how to open — a file exported here could not be restored from
       // the backup list, and re-importing it here classified it as a foreign one.
-      final settings = ref.read(backupControllerProvider.notifier).exportAllSettings();
+      //
+      // Which modules it carries is chosen on the same page as every other
+      // export; leaving that page exports nothing and the phone is told so.
+      final settings = await _askExportModules();
+      if (settings == null) return _fail(res, msg: i18n('cancel'));
       final fileName = BackupController.backupFileName(DateTime.now());
       res.headers.set('Content-Disposition', 'attachment; filename=$fileName');
       res.headers.contentType = ContentType('text', 'plain', charset: 'utf-8');
@@ -861,9 +867,21 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     }
   }
 
+  /// Asks the viewer which modules an outbound document should carry.
+  ///
+  /// Null when the page was left — the caller then exports nothing. With no UI to
+  /// ask (a request arriving before the first frame) every module is exported,
+  /// which is what an export used to do unconditionally.
+  Future<Map<String, dynamic>?> _askExportModules() async {
+    final BuildContext? context = appNavigatorContext;
+    final Set<String>? sections = context == null ? null : await showBackupExportPicker(context);
+    if (context != null && sections == null) return null;
+    return ref.read(backupControllerProvider.notifier).exportAllSettings(sections: sections);
+  }
+
   /// Asks the viewer which modules an inbound document should apply.
   ///
-  /// Null when the dialog was cancelled — the caller then imports nothing. With
+  /// Null when the page was left — the caller then imports nothing. With
   /// no UI to ask (a request arriving before the first frame) the document's own
   /// defaults decide: a TV document restores everything it carries, anything else
   /// only the user-data modules.

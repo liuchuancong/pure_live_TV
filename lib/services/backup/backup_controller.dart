@@ -144,8 +144,17 @@ class BackupController extends _$BackupController {
     return AppPathManager().backupDir;
   }
 
-  Map<String, dynamic> exportAllSettings({bool includeSensitiveData = true}) {
+  /// Builds the settings document.
+  ///
+  /// [sections] limits what the document carries; null keeps every module, which
+  /// is what the LAN pull and the in-app preview read. An export the user drives
+  /// always passes a set — the picker page is what decides it — so a backup file
+  /// can be narrowed to favourites and history alone instead of always shipping
+  /// the player, theme and proxy configuration too.
+  Map<String, dynamic> exportAllSettings({bool includeSensitiveData = true, Set<String>? sections}) {
     final s = SettingsService.to;
+    bool want(String name) => sections == null || sections.contains(name);
+
     final data = <String, dynamic>{
       'backupVersion': backupVersion,
       // Lets the receiver of this document tell a TV from a phone: a TV-to-TV
@@ -153,25 +162,25 @@ class BackupController extends _$BackupController {
       'platform': Platform.operatingSystem,
       'platformIsTv': true,
       'sensitiveDataIncluded': includeSensitiveData,
-      'app': s.app.toJson(),
-      'theme': s.theme.toJson(),
-      'font': s.font.toJson(),
-      'player': s.player.toJson(),
-      'danmaku': s.danmaku.toJson(),
-      'volume': s.volume.toJson(),
-      'favorite': s.fav.toJson(),
-      'history': s.history.toJson(),
-      'iptv': s.iptv.toJson(),
-      'proxy': s.proxy.toJson(),
-      'exit': s.exit.toJson(),
-      'startup': s.startup.toJson(),
-      'tags': s.tag.toJson(),
-      'refresh': s.refresh.toJson(),
-      'page': s.page.toJson(),
-      'log': s.log.toJson(),
+      if (want('app')) 'app': s.app.toJson(),
+      if (want('theme')) 'theme': s.theme.toJson(),
+      if (want('font')) 'font': s.font.toJson(),
+      if (want('player')) 'player': s.player.toJson(),
+      if (want('danmaku')) 'danmaku': s.danmaku.toJson(),
+      if (want('volume')) 'volume': s.volume.toJson(),
+      if (want('favorite')) 'favorite': s.fav.toJson(),
+      if (want('history')) 'history': s.history.toJson(),
+      if (want('iptv')) 'iptv': s.iptv.toJson(),
+      if (want('proxy')) 'proxy': s.proxy.toJson(),
+      if (want('exit')) 'exit': s.exit.toJson(),
+      if (want('startup')) 'startup': s.startup.toJson(),
+      if (want('tags')) 'tags': s.tag.toJson(),
+      if (want('refresh')) 'refresh': s.refresh.toJson(),
+      if (want('page')) 'page': s.page.toJson(),
+      if (want('log')) 'log': s.log.toJson(),
     };
 
-    if (includeSensitiveData) {
+    if (includeSensitiveData && want('cookie')) {
       data['cookie'] = s.cookieManager.toJson();
     }
     return data;
@@ -290,9 +299,12 @@ class BackupController extends _$BackupController {
   /// The file is the `.txt` the mobile app writes: same name shape, same indented JSON
   /// inside — a `.txt` filled with JSON is what "backup" means on both apps, so a phone
   /// backup opens here and a TV backup opens there.
-  bool backup(File file) {
+  ///
+  /// [sections] is the module selection the export page returned; null writes
+  /// every module.
+  bool backup(File file, {Set<String>? sections}) {
     try {
-      final data = exportAllSettings();
+      final data = exportAllSettings(sections: sections);
       file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(data));
       return true;
     } catch (_) {

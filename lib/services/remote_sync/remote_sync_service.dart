@@ -10,7 +10,7 @@ import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
-import 'package:pure_live/core/dialog/backup_import_dialog.dart';
+import 'package:pure_live/features/settings/pages/backup_module_page.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_device.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_protocol.dart';
 import 'package:pure_live/core/platform/local_network_access.dart';
@@ -416,9 +416,13 @@ class RemoteSyncController extends _$RemoteSyncController {
     switch (request.method) {
       case 'GET':
         try {
-          final settings = ref
-              .read(backupControllerProvider.notifier)
-              .exportAllSettings(includeSensitiveData: _includeAccounts);
+          final settings = await _exportForTransfer();
+          if (settings == null) {
+            // The viewer left the module page: the peer gets a refusal rather
+            // than a document it was not allowed to read.
+            await _write(request.response, {'code': 403, 'msg': 'Export cancelled', 'data': false});
+            return;
+          }
           await _write(request.response, {'code': 200, 'msg': 'ok', 'data': settings});
           // The paired app imports this TV's settings: nothing changes here, so
           // the toast is the only sign that the sync happened at all.
@@ -686,13 +690,29 @@ class RemoteSyncController extends _$RemoteSyncController {
   Future<bool> syncToDevice(RemoteSyncDevice device, {String? code}) =>
       syncToAddress(device.ip, device.port, code: code);
 
+  /// Exports this device's settings, asking first which modules go.
+  ///
+  /// The same page as every other export. With no UI to ask — a request arriving
+  /// before the first frame — the whole document is sent, which is what the pull
+  /// used to do unconditionally.
+  Future<Map<String, dynamic>?> _exportForTransfer() async {
+    final BuildContext? context = appNavigatorContext;
+    final Set<String>? sections = context == null ? null : await showBackupExportPicker(context);
+    if (context != null && sections == null) {
+      debugPrint('[sync] export cancelled');
+      return null;
+    }
+    return ref
+        .read(backupControllerProvider.notifier)
+        .exportAllSettings(includeSensitiveData: _includeAccounts, sections: sections);
+  }
+
   Future<bool> syncToAddress(String ip, int port, {String? code}) async {
     if (_disposed || _syncing) return false;
     _syncing = true;
     try {
-      final settings = ref
-          .read(backupControllerProvider.notifier)
-          .exportAllSettings(includeSensitiveData: _includeAccounts);
+      final settings = await _exportForTransfer();
+      if (settings == null) return false;
       final client = HttpClient();
       try {
         final request = await client.postUrl(Uri.parse('http://$ip:$port${RemoteSyncProtocol.apiSettings}'));

@@ -1,13 +1,15 @@
 import 'dart:io';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/core/dialog/backup_import_dialog.dart';
-
-/// The menu one backup row opens.
-enum BackupAction { restore, delete }
+import 'package:pure_live/features/settings/pages/backup_module_page.dart';
+import 'package:pure_live/features/settings/pages/backup_file_actions_page.dart';
 
 /// Local backup management: create timestamped backups in the app documents
 /// directory and restore or delete any of them.
+///
+/// Every step that used to raise a dialog is a page now: creating a backup opens
+/// the module picker, and picking a file opens its restore/delete page, whose
+/// restore opens the module picker again. Nothing here is modal.
 class BackupManageSectionPage extends ConsumerStatefulWidget {
   const BackupManageSectionPage({super.key});
 
@@ -65,41 +67,32 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
   }
 
   Future<void> _createBackup() async {
+    // Which modules go into the file is the user's call, on a page rather than a
+    // dialog; leaving it creates nothing.
+    final sections = await showBackupExportPicker(context);
+    if (sections == null || !mounted) return;
+
     await _run(() async {
       final dir = await _directory();
       final file = File('${dir.path}${Platform.pathSeparator}${_buildName(DateTime.now())}');
-      final ok = ref.read(backupControllerProvider.notifier).backup(file);
+      final ok = ref.read(backupControllerProvider.notifier).backup(file, sections: sections);
       await _refresh();
       if (mounted) setState(() => _result = ok ? i18n('save_success') : i18n('ui_export_failed'));
     });
   }
 
-  /// The menu one backup row opens: restore, delete, or close.
+  /// The page one backup row opens: restore, delete, or leave.
   Future<void> _openBackupMenu(File file) async {
-    final BackupAction? action = await TvDialogUtils.showMenu<BackupAction>(
-      context: context,
-      title: file.uri.pathSegments.last,
-      selectedValue: BackupAction.restore,
-      items: [
-        TvMenuItem(
-          title: i18n('recover_backup'),
-          subtitle: i18n('recover_backup_subtitle'),
-          value: BackupAction.restore,
-          leading: Icon(Remix.file_upload_line, size: 26.ts(context)),
-        ),
-        TvMenuItem(
-          title: i18n('delete'),
-          subtitle: i18nOr('delete_backup_subtitle', 'Pick a local backup file and delete it'),
-          value: BackupAction.delete,
-          leading: Icon(Remix.delete_bin_line, size: 26.ts(context)),
-        ),
-      ],
+    final BackupFileAction? action = await showBackupFileActions(
+      context,
+      fileName: file.uri.pathSegments.last,
+      description: _describe(file),
     );
-    if (!mounted || action == null) return; // closed
+    if (!mounted || action == null) return; // left the page
     switch (action) {
-      case BackupAction.restore:
+      case BackupFileAction.restore:
         await _restore(file);
-      case BackupAction.delete:
+      case BackupFileAction.delete:
         await _delete(file);
     }
   }
@@ -122,7 +115,7 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
         defaults: BackupController.defaultSections(data),
         sourceIsTv: BackupController.sourceIsTv(data),
       );
-      if (sections == null) return; // cancelled: nothing is imported
+      if (sections == null || !mounted) return; // left the page: nothing is imported
 
       final ok = await backup.recover(file, sections: sections);
       if (mounted) setState(() => _result = ok ? i18n('ui_imported') : i18n('ui_import_failed_or_file_not_found'));

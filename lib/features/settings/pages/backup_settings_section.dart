@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/app/router/app/app_router.dart';
+import 'package:pure_live/features/settings/pages/backup_module_page.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/log_settings/log_settings_controller.dart';
 
@@ -40,9 +41,13 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
   /// Writes a timestamped backup into the resolved directory (the configured
   /// backup directory, or the app documents directory when none was chosen).
   ///
-  /// `.txt`, named `purelive_<date>.txt` — the mobile app's own backup file.
+  /// `.txt`, named `purelive_<date>.txt` — the mobile app's own backup file. The
+  /// module page decides what goes in it; leaving that page writes nothing.
   Future<void> _createBackup() async {
     if (_busy) return;
+    final sections = await showBackupExportPicker(context);
+    if (sections == null || !mounted) return;
+
     setState(() {
       _busy = true;
       _result = i18n('ui_loading');
@@ -50,7 +55,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
     final notifier = ref.read(backupControllerProvider.notifier);
     final directory = await notifier.resolveBackupDirectory();
     final file = File('${directory.path}${Platform.pathSeparator}${BackupController.backupFileName(DateTime.now())}');
-    final ok = notifier.backup(file);
+    final ok = notifier.backup(file, sections: sections);
     if (!mounted) return;
     setState(() {
       _busy = false;
