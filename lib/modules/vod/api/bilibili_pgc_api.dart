@@ -187,27 +187,23 @@ class BilibiliPgcApi {
 
   /// Playback URLs for one episode, converted into the shared playurl model.
   ///
-  /// The muxed mp4 route only (`fnval=0`): bilibili merges video and audio
-  /// server-side into a single `durl` mp4 — the same policy the UGC endpoint
-  /// rides since the DASH route was removed (its COS/edge-cloud CDN dispatch
-  /// answers ffmpeg-based players with HTTP 400). A paid episode answers with
-  /// a preview range as a guest; the single-segment durl covers it the same
-  /// way UGC does.
+  /// Requests the DASH ladder (`fnval=4048` + `qn=127` + `fourk=1`) so the
+  /// quality menu and per-tier rendition list are complete, matching the UGC
+  /// endpoint via [MusicPlayUrls.fromDashAnswer]. A paid episode without
+  /// entitlement, or any answer that carries no `dash`, falls back to the
+  /// single muxed `durl` mp4 (no ladder) exactly as before.
   Future<MusicPlayUrls> getPlayUrls({required int epId, required int cid}) async {
     final result = await HttpClient.instance.getJson(
       'https://api.bilibili.com/pgc/player/web/playurl',
       queryParameters: {
         'ep_id': '$epId',
         'cid': '$cid',
-        'qn': '80',
-        'fnval': '0',
+        'qn': '127',
+        'fnval': '4048',
         'fnver': '0',
         'fourk': '1',
-        'platform': 'html5',
-        'format': 'mp4',
-        'type': 'video',
+        'platform': 'pc',
         'otype': 'json',
-        'high_quality': '1',
         'try_look': '1',
       },
       header: await _client.headers(),
@@ -217,13 +213,18 @@ class BilibiliPgcApi {
       throw Exception('pgc playurl failed: $message');
     }
     final data = result['data'] as Map<dynamic, dynamic>? ?? {};
+    final servedQuality = int.tryParse(data['quality']?.toString() ?? '') ?? 0;
+
+    final dashUrls = MusicPlayUrls.fromDashAnswer(data, servedQuality: servedQuality);
+    if (dashUrls != null) return dashUrls;
+
     final durl = data['durl'] as List?;
     if (durl != null && durl.isNotEmpty) {
       final order = (durl.first['order'] ?? 1) as int;
       if (durl.length == 1 || order > 1) {
         return MusicPlayUrls(
           videoUrl: durl.first['url']?.toString() ?? '',
-          quality: int.tryParse(data['quality']?.toString() ?? '') ?? 0,
+          quality: servedQuality,
           isDash: false,
         );
       }

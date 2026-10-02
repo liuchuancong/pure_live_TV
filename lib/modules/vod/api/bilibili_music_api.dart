@@ -213,11 +213,8 @@ class BilibiliMusicApi {
     final data = result['data'] as Map<dynamic, dynamic>? ?? {};
     final servedQuality = int.tryParse(data['quality']?.toString() ?? '') ?? 0;
 
-    final dash = data['dash'] as Map<dynamic, dynamic>?;
-    if (dash != null) {
-      final urls = _pickDashStreams(dash, servedQuality: servedQuality);
-      if (urls != null) return urls;
-    }
+    final dashUrls = MusicPlayUrls.fromDashAnswer(data, servedQuality: servedQuality);
+    if (dashUrls != null) return dashUrls;
 
     final durl = data['durl'] as List?;
     if (durl != null && durl.isNotEmpty) {
@@ -234,73 +231,6 @@ class BilibiliMusicApi {
       }
     }
     throw Exception('music playurl: no playable stream');
-  }
-
-  /// Builds the primary video+audio pair and the per-tier menu from a DASH
-  /// answer, AVC-preferred within each quality (widest TV-box decoder
-  /// coverage), highest entitled tier first.
-  MusicPlayUrls? _pickDashStreams(Map<dynamic, dynamic> dash, {required int servedQuality}) {
-    final videos = (dash['video'] as List?) ?? const [];
-    final audios = (dash['audio'] as List?) ?? const [];
-    if (videos.isEmpty) return null;
-
-    String urlOf(Object? node) => (node as Map)['base_url']?.toString() ?? '';
-    List<String> backupsOf(Object? node) => [
-      for (final u in ((node as Map)['backup_url'] as List?) ?? (node['backupUrl'] as List?) ?? const <dynamic>[])
-        if (u.toString().isNotEmpty) u.toString(),
-    ];
-
-    // One candidate per quality tier, preferring the AVC rendition.
-    final Map<int, Map<dynamic, dynamic>> byQuality = {};
-    for (final v in videos.whereType<Map<dynamic, dynamic>>()) {
-      final id = int.tryParse(v['id']?.toString() ?? '') ?? 0;
-      if (id <= 0) continue;
-      if (servedQuality > 0 && id > servedQuality) continue;
-      final existing = byQuality[id];
-      final isAvc = v['codecs']?.toString().startsWith('avc') == true;
-      if (existing == null || (isAvc && existing['codecs']?.toString().startsWith('avc') != true)) {
-        byQuality[id] = v;
-      }
-    }
-    final tiers = byQuality.keys.toList()..sort((a, b) => b.compareTo(a));
-    if (tiers.isEmpty) return null;
-
-    final picked = byQuality[tiers.first]!;
-    final videoUrl = urlOf(picked);
-    if (videoUrl.isEmpty) return null;
-
-    final options = [
-      for (final id in tiers)
-        MusicStreamOption(
-          quality: id,
-          url: urlOf(byQuality[id]!),
-          codecs: byQuality[id]!['codecs']?.toString() ?? '',
-          backupUrls: backupsOf(byQuality[id]!),
-        ),
-    ];
-
-    // 30280 = 192k, 30232 = 132k, 30216 = 64k; the lossy tiers come first so
-    // Dolby / Hi-Res codec support gaps on some boxes don't drop the audio.
-    Map<dynamic, dynamic>? audio;
-    for (final id in const [30280, 30232, 30216]) {
-      for (final a in audios.whereType<Map<dynamic, dynamic>>()) {
-        if (int.tryParse(a['id']?.toString() ?? '') == id) {
-          audio = a;
-          break;
-        }
-      }
-      if (audio != null) break;
-    }
-    audio ??= (audios.whereType<Map<dynamic, dynamic>>()).lastOrNull;
-
-    return MusicPlayUrls(
-      videoUrl: videoUrl,
-      audioUrl: audio == null ? null : urlOf(audio),
-      videoBackupUrls: backupsOf(picked),
-      quality: tiers.first,
-      isDash: true,
-      videoOptions: options,
-    );
   }
 
   /// Human label for a bilibili quality id.

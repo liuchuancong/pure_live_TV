@@ -949,7 +949,6 @@ class MusicPlayerController extends _$MusicPlayerController {
     // The VOD branch of the playback header resolver: the live bilibili
     // policy with the video-page Referer.
     final headers = await PlaybackHeaderResolver.resolveVod(bvid: bvid);
-    String openUrl = urls.videoUrl;
     var openProtocol = SourceProtocol.https;
 
     final PlayerHandle handle =
@@ -965,37 +964,55 @@ class MusicPlayerController extends _$MusicPlayerController {
     // `audio-files` side channel, so it opens as a composite source.
     final trackHeaders = SourceHeaders(headers);
     final sourceId = SourceId('music_${track.id}_${DateTime.now().millisecondsSinceEpoch}');
-    try {
-      final audioUrl = urls.audioUrl;
-      if (urls.isDash && audioUrl != null && audioUrl.isNotEmpty) {
-        await handle.openMedia(
-          CompositeMediaSource(
-            videoTracks: [
-              MediaTrack(uri: Uri.parse(urls.videoUrl), kind: MediaTrackType.video, headers: trackHeaders),
-            ],
-            audioTracks: [
-              MediaTrack(uri: Uri.parse(audioUrl), kind: MediaTrackType.audio, headers: trackHeaders),
-            ],
-          ),
-          autoPlay: true,
-        );
-      } else {
-        await handle.open(
-          PlayerSource(
-            id: sourceId,
-            uri: Uri.parse(openUrl),
-            protocol: openProtocol,
-            headers: trackHeaders,
-            title: track.title,
-          ),
-          autoPlay: true,
-        );
+    final audioUrl = urls.audioUrl;
+    final dashPair = urls.isDash && audioUrl != null && audioUrl.isNotEmpty;
+    // Primary CDN first, then the answer's backup hosts: a synchronous open()
+    // failure (bad node, dead edge cache) rolls to the next candidate before
+    // the handle is retired. newBV ranks these by a live speed test; we take
+    // them in the order bilibili advertised them.
+    final videoCandidates = <String>[
+      urls.videoUrl,
+      ...urls.videoBackupUrls.where((u) => u.isNotEmpty),
+    ];
+    Object? lastError;
+    var opened = false;
+    for (final videoUrl in videoCandidates) {
+      try {
+        if (dashPair) {
+          await handle.openMedia(
+            CompositeMediaSource(
+              videoTracks: [
+                MediaTrack(uri: Uri.parse(videoUrl), kind: MediaTrackType.video, headers: trackHeaders),
+              ],
+              audioTracks: [
+                MediaTrack(uri: Uri.parse(audioUrl), kind: MediaTrackType.audio, headers: trackHeaders),
+              ],
+            ),
+            autoPlay: true,
+          );
+        } else {
+          await handle.open(
+            PlayerSource(
+              id: sourceId,
+              uri: Uri.parse(videoUrl),
+              protocol: openProtocol,
+              headers: trackHeaders,
+              title: track.title,
+            ),
+            autoPlay: true,
+          );
+        }
+        opened = true;
+        break;
+      } catch (error) {
+        lastError = error;
       }
-    } catch (_) {
-      // An open that failed mid-flight can leave the adapter in a state the
-      // next open cannot trust: retire it, and the next track builds fresh.
+    }
+    if (!opened) {
+      // Every candidate failed: an open that died mid-flight can leave the
+      // adapter in a state the next open cannot trust — retire it.
       await _releaseHandle();
-      rethrow;
+      throw lastError ?? Exception('playurl open failed');
     }
 
     try {
