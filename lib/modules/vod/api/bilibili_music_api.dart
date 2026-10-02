@@ -182,29 +182,24 @@ class BilibiliMusicApi {
 
   /// Playback URLs for one part.
   ///
-  /// The muxed mp4 route only (`fnval=0` + `format=mp4` + `platform=html5`):
-  /// bilibili merges video and audio server-side into a single `durl` mp4 that
-  /// every backend plays with no attachment machinery. The DASH route (separate
-  /// video/audio m4s streams) was removed on 2026-09-29 — its CDN dispatch
-  /// increasingly hands out COS/edge-cloud nodes that answer ffmpeg-based
-  /// players with HTTP 400 (measured: `os=bcache` demuxed in 250ms while
-  /// `os=cosbv`/`estgcos`/`estgoss` refused every header combination), and no
-  /// client-side selection could route around that reliably. The trade is the
-  /// rendition ceiling — no 4K / high-bitrate tiers and no per-tier rendition
-  /// list — the same shape every ExoPlayer-based bilibili client gets.
+  /// Requests the DASH ladder (`fnval=4048` + `qn=127` + `fourk=1`) so a single
+  /// answer carries every entitled `dash.video` rendition + `dash.audio` — the
+  /// quality menu is built from `videoOptions` and a switch re-opens a sibling
+  /// rendition without another round-trip, exactly like the reference client.
+  /// The video/audio m4s pair is handed to the kernel as a composite source;
+  /// the media_kit adapter attaches the audio through MPV's `audio-files`
+  /// side channel. A paid-but-unpurchased answer has no `dash`, only a trial
+  /// `durl`, which still resolves to the single muxed mp4 (no ladder).
   Future<MusicPlayUrls> getPlayUrls({required String bvid, required int cid}) async {
     final params = <String, String>{
       'bvid': bvid,
       'cid': cid.toString(),
-      'qn': '80',
-      'fnval': '0',
+      'qn': '127',
+      'fnval': '4048',
       'fnver': '0',
       'fourk': '1',
-      'platform': 'html5',
-      'format': 'mp4',
-      'type': 'video',
+      'platform': 'oc',
       'otype': 'json',
-      'high_quality': '1',
       if (!_client.loggedIn) ..._guestParams(),
     };
     final result = await HttpClient.instance.getJson(
@@ -216,6 +211,13 @@ class BilibiliMusicApi {
       throw Exception('music playurl failed: ${result['code']} ${result['message']}');
     }
     final data = result['data'] as Map<dynamic, dynamic>? ?? {};
+    final servedQuality = int.tryParse(data['quality']?.toString() ?? '') ?? 0;
+
+    final dash = data['dash'] as Map<dynamic, dynamic>?;
+    if (dash != null) {
+      final urls = _pickDashStreams(dash, servedQuality: servedQuality);
+      if (urls != null) return urls;
+    }
 
     final durl = data['durl'] as List?;
     if (durl != null && durl.isNotEmpty) {
@@ -226,12 +228,79 @@ class BilibiliMusicApi {
       if (durl.length == 1 || order > 1) {
         return MusicPlayUrls(
           videoUrl: durl.first['url']?.toString() ?? '',
-          quality: int.tryParse(data['quality']?.toString() ?? '') ?? 0,
+          quality: servedQuality,
           isDash: false,
         );
       }
     }
     throw Exception('music playurl: no playable stream');
+  }
+
+  /// Builds the primary video+audio pair and the per-tier menu from a DASH
+  /// answer, AVC-preferred within each quality (widest TV-box decoder
+  /// coverage), highest entitled tier first.
+  MusicPlayUrls? _pickDashStreams(Map<dynamic, dynamic> dash, {required int servedQuality}) {
+    final videos = (dash['video'] as List?) ?? const [];
+    final audios = (dash['audio'] as List?) ?? const [];
+    if (videos.isEmpty) return null;
+
+    String urlOf(Object? node) => (node as Map)['base_url']?.toString() ?? '';
+    List<String> backupsOf(Object? node) => [
+      for (final u in ((node as Map)['backup_url'] as List?) ?? (node['backupUrl'] as List?) ?? const <dynamic>[])
+        if (u.toString().isNotEmpty) u.toString(),
+    ];
+
+    // One candidate per quality tier, preferring the AVC rendition.
+    final Map<int, Map<dynamic, dynamic>> byQuality = {};
+    for (final v in videos.whereType<Map<dynamic, dynamic>>()) {
+      final id = int.tryParse(v['id']?.toString() ?? '') ?? 0;
+      if (id <= 0) continue;
+      if (servedQuality > 0 && id > servedQuality) continue;
+      final existing = byQuality[id];
+      final isAvc = v['codecs']?.toString().startsWith('avc') == true;
+      if (existing == null || (isAvc && existing['codecs']?.toString().startsWith('avc') != true)) {
+        byQuality[id] = v;
+      }
+    }
+    final tiers = byQuality.keys.toList()..sort((a, b) => b.compareTo(a));
+    if (tiers.isEmpty) return null;
+
+    final picked = byQuality[tiers.first]!;
+    final videoUrl = urlOf(picked);
+    if (videoUrl.isEmpty) return null;
+
+    final options = [
+      for (final id in tiers)
+        MusicStreamOption(
+          quality: id,
+          url: urlOf(byQuality[id]!),
+          codecs: byQuality[id]!['codecs']?.toString() ?? '',
+          backupUrls: backupsOf(byQuality[id]!),
+        ),
+    ];
+
+    // 30280 = 192k, 30232 = 132k, 30216 = 64k; the lossy tiers come first so
+    // Dolby / Hi-Res codec support gaps on some boxes don't drop the audio.
+    Map<dynamic, dynamic>? audio;
+    for (final id in const [30280, 30232, 30216]) {
+      for (final a in audios.whereType<Map<dynamic, dynamic>>()) {
+        if (int.tryParse(a['id']?.toString() ?? '') == id) {
+          audio = a;
+          break;
+        }
+      }
+      if (audio != null) break;
+    }
+    audio ??= (audios.whereType<Map<dynamic, dynamic>>()).lastOrNull;
+
+    return MusicPlayUrls(
+      videoUrl: videoUrl,
+      audioUrl: audio == null ? null : urlOf(audio),
+      videoBackupUrls: backupsOf(picked),
+      quality: tiers.first,
+      isDash: true,
+      videoOptions: options,
+    );
   }
 
   /// Human label for a bilibili quality id.

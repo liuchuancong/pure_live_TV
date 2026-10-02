@@ -960,17 +960,37 @@ class MusicPlayerController extends _$MusicPlayerController {
         );
     _handle = handle;
 
-    // The muxed mp4 carries both tracks: no external audio attachment, no
-    // player-wide header surgery — the durl nodes serve plain clients. The
-    final source = PlayerSource(
-      id: SourceId('music_${track.id}_${DateTime.now().millisecondsSinceEpoch}'),
-      uri: Uri.parse(openUrl),
-      protocol: openProtocol,
-      headers: SourceHeaders(headers),
-      title: track.title,
-    );
+    // The muxed mp4 carries both tracks in one URI; a DASH answer is a video
+    // m4s + an audio m4s that the media_kit adapter combines through MPV's
+    // `audio-files` side channel, so it opens as a composite source.
+    final trackHeaders = SourceHeaders(headers);
+    final sourceId = SourceId('music_${track.id}_${DateTime.now().millisecondsSinceEpoch}');
     try {
-      await handle.open(source, autoPlay: true);
+      final audioUrl = urls.audioUrl;
+      if (urls.isDash && audioUrl != null && audioUrl.isNotEmpty) {
+        await handle.openMedia(
+          CompositeMediaSource(
+            videoTracks: [
+              MediaTrack(uri: Uri.parse(urls.videoUrl), kind: MediaTrackType.video, headers: trackHeaders),
+            ],
+            audioTracks: [
+              MediaTrack(uri: Uri.parse(audioUrl), kind: MediaTrackType.audio, headers: trackHeaders),
+            ],
+          ),
+          autoPlay: true,
+        );
+      } else {
+        await handle.open(
+          PlayerSource(
+            id: sourceId,
+            uri: Uri.parse(openUrl),
+            protocol: openProtocol,
+            headers: trackHeaders,
+            title: track.title,
+          ),
+          autoPlay: true,
+        );
+      }
     } catch (_) {
       // An open that failed mid-flight can leave the adapter in a state the
       // next open cannot trust: retire it, and the next track builds fresh.
