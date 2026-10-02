@@ -138,6 +138,6 @@ class MusicRecentsPageState extends ConsumerState<MusicRecentsPage> {
     await const MusicPlayerRoute().push(context);
     // Back from the player: the list meets the viewer at the playing row.
     if (!mounted) return;
-    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).current);
+    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).currentMusic);
   }
 }

@@ -149,7 +149,7 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
 
     final String name = _isLiked ? i18n('music_liked_playlist') : playlist!.name;
     final List<MusicTrack> tracks = _isLiked ? library.likedSongs : playlist!.tracks;
-    final playingId = playerState.current?.id ?? '';
+    final playingId = playerState.currentMusic?.id ?? '';
     if (!_steeredFocus && playingId.isNotEmpty && tracks.any((t) => t.id == playingId)) {
       _steerToPlaying(tracks, playingId);
     }

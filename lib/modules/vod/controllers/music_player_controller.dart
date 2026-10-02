@@ -77,6 +77,10 @@ class MusicPlayerState {
 
   MusicTrack? get current => index >= 0 && index < queue.length ? queue[index] : null;
 
+  /// The current track ONLY when a music session owns the controller — the
+  /// music list/menu highlight must not light up on a video left open here.
+  MusicTrack? get currentMusic => isMusicSession ? current : null;
+
   bool get hasQueue => queue.isNotEmpty;
 
   MusicPlayerState copyWith({

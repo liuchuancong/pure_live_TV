@@ -40,7 +40,7 @@ class _MusicNowPlayingQueuePageState extends ConsumerState<MusicNowPlayingQueueP
   void _revealCurrent() {
     if (!mounted) return;
     final tracks = ref.read(musicPlayerControllerProvider).queue;
-    _reveal.reveal(context, tracks, ref.read(musicPlayerControllerProvider).current);
+    _reveal.reveal(context, tracks, ref.read(musicPlayerControllerProvider).currentMusic);
   }
 
   @override
