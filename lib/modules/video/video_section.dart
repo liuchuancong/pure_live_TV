@@ -17,7 +17,9 @@ void openVideoArchive(BuildContext context, WidgetRef ref, MusicArchive archive)
     VideoDetailRoute(archive).push(context);
     return;
   }
-  ref.read(musicPlayerControllerProvider.notifier).playQueue(archive.tracks, startIndex: 0, audioOnly: false);
+  ref
+      .read(musicPlayerControllerProvider.notifier)
+      .playQueue(archive.tracks, startIndex: 0, audioOnly: false, owner: VodSessionOwner.video);
   const VideoPlayerRoute().push(context);
 }
 

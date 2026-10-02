@@ -50,7 +50,7 @@ class _MusicNowPlayingQueuePageState extends ConsumerState<MusicNowPlayingQueueP
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
 
-    final queue = state.queue;
+    final queue = state.isMusicSession ? state.queue : const <MusicTrack>[];
     if (queue.isEmpty) {
       return Center(
         child: Column(

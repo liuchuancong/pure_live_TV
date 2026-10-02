@@ -205,7 +205,9 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
 
   void _play(List<MusicTrack> tracks, int startIndex) {
     // Video mode keeps the picture on.
-    ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex, audioOnly: false);
+    ref
+        .read(musicPlayerControllerProvider.notifier)
+        .playQueue(tracks, startIndex: startIndex, audioOnly: false, owner: VodSessionOwner.video);
     const VideoPlayerRoute().push(context);
   }
 

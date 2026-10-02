@@ -15,6 +15,12 @@ import 'package:pure_live/modules/music/controllers/library/music_library_contro
 
 part 'music_player_controller.g.dart';
 
+/// Which module opened the current VOD session. Music and video share this one
+/// VOD controller + handle (only one archive session is ever active), but the
+/// music UI must only surface a *music* session as "now playing" — otherwise a
+/// video left open reads back as the current song. See [MusicPlayerState.owner].
+enum VodSessionOwner { music, video }
+
 /// What the queue UI reads. Playback position and buffering live on the
 /// [PlayerHandle] streams instead — they change many times a second and must
 /// not rebuild every queue tile.
@@ -33,6 +39,7 @@ class MusicPlayerState {
     this.error = '',
     this.tempQueue = const [],
     this.sleepMinutes = 0,
+    this.owner = VodSessionOwner.music,
   });
 
   final List<MusicTrack> queue;
@@ -61,6 +68,13 @@ class MusicPlayerState {
   /// subtitle only.
   final int sleepMinutes;
 
+  /// The module that opened the current session; music UI only surfaces a
+  /// [VodSessionOwner.music] session.
+  final VodSessionOwner owner;
+
+  /// Whether the music UI should treat this session as "now playing".
+  bool get isMusicSession => owner == VodSessionOwner.music;
+
   MusicTrack? get current => index >= 0 && index < queue.length ? queue[index] : null;
 
   bool get hasQueue => queue.isNotEmpty;
@@ -77,6 +91,7 @@ class MusicPlayerState {
     String? error,
     List<MusicTrack>? tempQueue,
     int? sleepMinutes,
+    VodSessionOwner? owner,
   }) {
     return MusicPlayerState(
       queue: queue ?? this.queue,
@@ -90,6 +105,7 @@ class MusicPlayerState {
       error: error ?? this.error,
       tempQueue: tempQueue ?? this.tempQueue,
       sleepMinutes: sleepMinutes ?? this.sleepMinutes,
+      owner: owner ?? this.owner,
     );
   }
 }
@@ -326,7 +342,12 @@ class MusicPlayerController extends _$MusicPlayerController {
   /// Replaces the queue and starts at [startIndex]. [audioOnly] seeds the
   /// listening style: music pages keep the default (cover-art listening),
   /// video pages pass false so the picture shows.
-  Future<void> playQueue(List<MusicTrack> tracks, {int startIndex = 0, bool? audioOnly}) async {
+  Future<void> playQueue(
+    List<MusicTrack> tracks, {
+    int startIndex = 0,
+    bool? audioOnly,
+    VodSessionOwner owner = VodSessionOwner.music,
+  }) async {
     if (tracks.isEmpty) return;
     final index = startIndex.clamp(0, tracks.length - 1);
     _randomHistory.clear();
@@ -337,6 +358,7 @@ class MusicPlayerController extends _$MusicPlayerController {
       audioOnly: audioOnly,
       qualityOptions: const [],
       tempQueue: const [],
+      owner: owner,
     );
     await _openCurrent();
   }

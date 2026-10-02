@@ -92,7 +92,9 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
           ),
         ),
     ];
-    ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: index, audioOnly: false);
+    ref
+        .read(musicPlayerControllerProvider.notifier)
+        .playQueue(tracks, startIndex: index, audioOnly: false, owner: VodSessionOwner.video);
     const VideoPlayerRoute().push(context);
   }
 
