@@ -9,6 +9,7 @@ class VideoActionChip extends StatelessWidget {
     required this.label,
     this.active = false,
     this.autofocus = false,
+    this.focusNode,
     this.onTap,
   });
 
@@ -18,6 +19,10 @@ class VideoActionChip extends StatelessWidget {
 
   /// Only the leading chip across a panel grabs the keyboard on open.
   final bool autofocus;
+
+  /// External node, so a caller can pull focus back to this chip after a dialog
+  /// it opened (the fav-folder picker) pops away.
+  final FocusNode? focusNode;
   final VoidCallback? onTap;
 
   @override
@@ -27,6 +32,7 @@ class VideoActionChip extends StatelessWidget {
 
     return TvFocusable(
       autofocus: autofocus,
+      focusNode: focusNode,
       onTap: onTap,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),

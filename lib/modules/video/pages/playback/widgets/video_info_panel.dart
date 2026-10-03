@@ -26,6 +26,9 @@ class _VideoInfoPanelState extends State<VideoInfoPanel> {
   bool _busy = false;
   List<MusicArchive> _related = const [];
 
+  /// Pulls focus back to the 收藏 chip after the fav-folder picker pops.
+  final FocusNode _favNode = FocusNode();
+
   int get _aid => widget.archive.aid;
 
   @override
@@ -33,6 +36,18 @@ class _VideoInfoPanelState extends State<VideoInfoPanel> {
     super.initState();
     _loadStates();
     _loadRelated();
+  }
+
+  @override
+  void dispose() {
+    _favNode.dispose();
+    super.dispose();
+  }
+
+  void _restoreFavFocus() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_favNode.hasFocus) _favNode.requestFocus();
+    });
   }
 
   Future<void> _loadRelated() async {
@@ -94,16 +109,24 @@ class _VideoInfoPanelState extends State<VideoInfoPanel> {
     final folders = await BilibiliUgcApi.instance.getFavFoldersForVideo(_aid);
     if (!mounted || folders.isEmpty) return;
     final selected = await showFavFolderPicker(context, folders);
-    if (selected == null || !mounted) return;
+    if (!mounted) return;
+    if (selected == null) {
+      _restoreFavFocus();
+      return;
+    }
     final current = {for (final folder in folders) if (folder.contained) folder.id};
     final add = selected.difference(current).toList();
     final del = current.difference(selected).toList();
-    if (add.isEmpty && del.isEmpty) return;
+    if (add.isEmpty && del.isEmpty) {
+      _restoreFavFocus();
+      return;
+    }
     await _run(
       () => BilibiliUgcApi.instance.favDeal(aid: _aid, addFolderIds: add, delFolderIds: del),
       'video_action_faved',
     );
     if (mounted) setState(() => _favoured = selected.isNotEmpty);
+    _restoreFavFocus();
   }
 
   String _count(int value) => readableCount(value.toString());
@@ -264,6 +287,7 @@ class _VideoInfoPanelState extends State<VideoInfoPanel> {
                         icon: _favoured ? Icons.star_rounded : Icons.star_outline_rounded,
                         label: i18n('video_action_fav'),
                         active: _favoured,
+                        focusNode: _favNode,
                         onTap: _busy ? null : _onFavTap,
                       ),
                       VideoActionChip(
