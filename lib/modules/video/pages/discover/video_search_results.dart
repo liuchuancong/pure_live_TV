@@ -14,6 +14,10 @@ class VideoSearchSection extends ConsumerStatefulWidget {
 class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
   final TextEditingController _controller = TextEditingController();
   final Map<String, PagingParam<MusicArchive>> _videoParams = {};
+
+  /// Survives the idle→results swap; focus is parked here after a submit so the
+  /// remote isn't dead while the (async) result grid builds.
+  final FocusNode _searchButtonNode = FocusNode(debugLabel: 'video_search/button');
   String _keyword = '';
   int _typeIndex = 0;
   String _order = 'totalrank';
@@ -41,6 +45,7 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
   void dispose() {
     _suggestTimer?.cancel();
     _controller.dispose();
+    _searchButtonNode.dispose();
     super.dispose();
   }
 
@@ -82,6 +87,11 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
       _keyword = trimmed;
       _suggestions = [];
     });
+    // The chip/field that triggered this unmounts with the idle view; park
+    // focus on the surviving search button so the remote stays live.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_searchButtonNode.hasFocus) _searchButtonNode.requestFocus();
+    });
   }
 
   Future<void> _openFilter() async {
@@ -119,6 +129,7 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
                 title: i18n('search_live'),
                 icon: Icon(Icons.search_rounded, size: 28.ts(context)),
                 size: TvButtonSize.mini,
+                focusNode: _searchButtonNode,
                 onTap: () => _submit(_controller.text),
               ),
               if (_keyword.isNotEmpty && _typeIndex == 0) ...[

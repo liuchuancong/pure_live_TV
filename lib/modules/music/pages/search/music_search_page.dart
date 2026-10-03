@@ -21,6 +21,10 @@ class MusicSearchPage extends ConsumerStatefulWidget {
 class MusicSearchPageState extends ConsumerState<MusicSearchPage> {
   final TextEditingController _controller = TextEditingController();
   final Map<String, PagingParam<MusicArchive>> _params = {};
+
+  /// Survives the idle→results swap; focus parks here after a submit so the
+  /// remote stays live while the async result grid builds.
+  final FocusNode _searchButtonNode = FocusNode(debugLabel: 'music_search/button');
   String _submittedKeyword = '';
   List<Hotword> _hotwords = [];
 
@@ -33,6 +37,7 @@ class MusicSearchPageState extends ConsumerState<MusicSearchPage> {
   @override
   void dispose() {
     _controller.dispose();
+    _searchButtonNode.dispose();
     super.dispose();
   }
 
@@ -48,6 +53,9 @@ class MusicSearchPageState extends ConsumerState<MusicSearchPage> {
     final trimmed = keyword.trim();
     if (trimmed.isEmpty) return;
     setState(() => _submittedKeyword = trimmed);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_searchButtonNode.hasFocus) _searchButtonNode.requestFocus();
+    });
   }
 
   @override
@@ -78,6 +86,7 @@ class MusicSearchPageState extends ConsumerState<MusicSearchPage> {
                 title: i18n('music_tab_search'),
                 icon: Icon(Icons.search_rounded, size: 28.ts(context)),
                 size: TvButtonSize.mini,
+                focusNode: _searchButtonNode,
                 onTap: () => _submit(_controller.text),
               ),
             ],
