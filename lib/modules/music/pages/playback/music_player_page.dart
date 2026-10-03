@@ -224,15 +224,26 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
   /// and loads it.
   int _lyricRevision = 0;
 
-  /// Lists every lyric the chain can find for the current track and lets the
-  /// viewer pick one; the pick is remembered and used for every later play.
+  /// Two-step lyric picker: first pick a source (B站BGM / LRC / 网易云), then
+  /// pick one candidate from that source. The pick is remembered and used for
+  /// every later play of this track.
   Future<void> _showLyricPicker() async {
     final track = ref.read(musicPlayerControllerProvider).current;
     if (track == null || !mounted) return;
 
+    // Step 1: pick a source. The dialog returns the candidates that belong to
+    // the chosen source; null means the viewer backed out.
+    final List<MusicLyricCandidate>? sourceCandidates = await TvDialogUtils.show<List<MusicLyricCandidate>>(
+      context: context,
+      builder: (_) => MusicLyricSourcePickerDialog(track: track),
+    );
+
+    if (sourceCandidates == null || sourceCandidates.isEmpty || !mounted) return;
+
+    // Step 2: pick one lyric from that source.
     final MusicLyricCandidate? picked = await TvDialogUtils.show<MusicLyricCandidate>(
       context: context,
-      builder: (_) => MusicLyricPickerDialog(track: track),
+      builder: (_) => MusicLyricCandidatePickerDialog(track: track, candidates: sourceCandidates),
     );
 
     if (picked == null || !mounted) return;

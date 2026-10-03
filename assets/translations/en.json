@@ -3008,6 +3008,7 @@
   "music_lyric_none": "No usable lyrics found",
   "music_lyric_picked": "Lyrics saved as the default for this track",
   "music_lyric_manual_source": "Hand-picked",
+  "music_lyric_source_title": "Pick lyric source",
   "music_core_title": "Player engine",
   "music_core_dash_hint": "Only mpv can attach B站 split-stream audio",
   "music_core_switched": "Player engine switched",

@@ -693,6 +693,11 @@ class MusicPlayerController extends _$MusicPlayerController {
 
     try {
       await handle?.setAudioOnly(audioOnly);
+      // Audio → video: the surface re-mounts while mpv's video output was
+      // torn down, so the freshly mounted texture shows black until the
+      // output is rebuilt. The same vid-no → vid-y cycle the open path
+      // runs re-creates it.
+      if (!audioOnly) await reattachVideoSurface();
     } catch (_) {
       state = state.copyWith(audioOnly: !audioOnly);
     }
