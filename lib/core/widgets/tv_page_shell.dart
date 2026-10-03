@@ -50,6 +50,7 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
+    FocusManager.instance.addListener(_handleFocusChange);
   }
 
   @override
@@ -61,8 +62,42 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
 
   @override
   void dispose() {
+    FocusManager.instance.removeListener(_handleFocusChange);
     tvRouteObserver.unsubscribe(this);
     super.dispose();
+  }
+
+  bool _reclaimScheduled = false;
+
+  /// Re-claims the opening focus when the content's focus *dies* rather than
+  /// moves — the empty-state trap: removing a list's last row (clearing
+  /// recents, unfollowing the last UP, emptying a queue) flips the pane to an
+  /// [AppStatusView] with zero focusables, the focused node is disposed, and
+  /// nothing re-runs [_claimFocus] because no route changed. The remote then
+  /// appears dead on a page that still has a back button.
+  ///
+  /// [TvFocusRestorer] already answers a focus death by re-asserting the last
+  /// in-route node, and [_focusHeldInsidePage] sees that node through
+  /// [_restoreTarget]; so when the restorer has a usable target this stands
+  /// down and only steps in once that node is genuinely gone. The check is
+  /// deferred one frame because a focus that *moves* (including across a scope
+  /// boundary during traversal) reports a bare [FocusScopeNode] for an instant.
+  void _handleFocusChange() {
+    if (!mounted || _reclaimScheduled) return;
+    final ModalRoute<void>? route = ModalRoute.of(context);
+    if (route == null || !route.isCurrent || !_onStage) return;
+
+    _reclaimScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _reclaimScheduled = false;
+      if (!mounted) return;
+      final FocusNode? primary = FocusManager.instance.primaryFocus;
+      // Something real holds the keyboard: it moved, it did not die.
+      if (primary != null && primary is! FocusScopeNode && _usable(primary)) return;
+      // The restorer still has a live in-page target; leave the return to it.
+      if (_focusHeldInsidePage()) return;
+      _reclaim();
+    });
   }
 
   @override
