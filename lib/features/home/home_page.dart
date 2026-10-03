@@ -222,21 +222,25 @@ class _HomePageState extends ConsumerState<HomePage> {
       });
       final sectionIndex = ref.watch(musicSectionIndexProvider);
       return BilibiliLoginGate(
-        child: Column(
-          children: [
-            Expanded(
-              child: MusicSectionView(
-                section: MusicSection.values[sectionIndex.clamp(0, MusicSection.values.length - 1)],
+        child: TvFocusRestorer(
+          child: Column(
+            children: [
+              Expanded(
+                child: MusicSectionView(
+                  section: MusicSection.values[sectionIndex.clamp(0, MusicSection.values.length - 1)],
+                ),
               ),
-            ),
-            const MusicMiniBar(),
-          ],
+              const MusicMiniBar(),
+            ],
+          ),
         ),
       );
     }
     final sectionIndex = ref.watch(videoSectionIndexProvider);
     return BilibiliLoginGate(
-      child: VideoSectionView(section: VideoSection.values[sectionIndex.clamp(0, VideoSection.values.length - 1)]),
+      child: TvFocusRestorer(
+        child: VideoSectionView(section: VideoSection.values[sectionIndex.clamp(0, VideoSection.values.length - 1)]),
+      ),
     );
   }
 
