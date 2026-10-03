@@ -467,18 +467,22 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
             ),
           ),
           Expanded(
-            child: queue.isEmpty
-                ? Center(
-                    child: Text(
-                      i18n('music_queue_empty'),
-                      style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white54),
-                    ),
-                  )
-                : Focus(
-                    focusNode: _focusNode,
-                    autofocus: true,
-                    onKeyEvent: _onKeyEvent,
-                    child: ListView.builder(
+            child: Focus(
+              focusNode: _focusNode,
+              autofocus: true,
+              onKeyEvent: _onKeyEvent,
+              // The Focus stays mounted across the empty transition: clearing
+              // the queue (or removing its last row) otherwise unmounts the
+              // node that owns every key, killing focus *and* the count==0
+              // Left/escape-to-close handler with it.
+              child: queue.isEmpty
+                  ? Center(
+                      child: Text(
+                        i18n('music_queue_empty'),
+                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white54),
+                      ),
+                    )
+                  : ListView.builder(
                       controller: _scroll,
                       padding: EdgeInsets.only(left: 12.sp, right: 12.sp, top: 4.sp, bottom: 16.sp),
                       itemCount: queue.length,
@@ -503,7 +507,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                         );
                       },
                     ),
-                  ),
+            ),
           ),
           Padding(
             padding: EdgeInsets.fromLTRB(20.ts(context), 0, 20.ts(context), 12.ts(context)),
