@@ -143,6 +143,9 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
               icon: Icon(Icons.arrow_back_rounded, size: 22.ts(context)),
               size: TvButtonSize.mini,
               isSecondary: true,
+              // The folder view mounts with the focused folder card already
+              // gone; claim focus here so the remote isn't dead on arrival.
+              autofocus: true,
               onTap: () => setState(() => _openFolderId = null),
             ),
           ),
