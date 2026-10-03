@@ -7,7 +7,7 @@ import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/api/bilibili_pgc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 
 /// One season's page, newBV's PGC detail: cover, rating, 更新至 line,
 /// synopsis, the 追番 toggle, series switcher chips, the 正片 episode grid and
@@ -70,9 +70,9 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
   }
 
   /// Wires the PGC resolver once — the video module owns the PGC endpoints,
-  /// the shared engine just asks for urls.
+  /// the video player just asks for urls.
   void _ensureResolver() {
-    MusicPlayerController.modulePlayUrlResolver ??= (track) async {
+    VideoPlayerController.modulePlayUrlResolver ??= (track) async {
       if (track.part.epId <= 0) return null;
       return BilibiliPgcApi.instance.getPlayUrls(epId: track.part.epId, cid: track.part.cid);
     };
@@ -102,9 +102,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
           ),
         ),
     ];
-    ref
-        .read(musicPlayerControllerProvider.notifier)
-        .playQueue(tracks, startIndex: index, audioOnly: false, owner: VodSessionOwner.video);
+    ref.read(videoPlayerControllerProvider.notifier).playQueue(tracks, startIndex: index);
     const VideoPlayerRoute().push(context);
   }
 

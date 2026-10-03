@@ -3,7 +3,7 @@ import 'package:pure_live/services/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/app/router/app/app_router.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 
 /// Video mode sections. The section rail lives in the home sidebar; this file
 /// names them, so the mode swaps the whole navigation.
@@ -17,9 +17,7 @@ void openVideoArchive(BuildContext context, WidgetRef ref, MusicArchive archive)
     VideoDetailRoute(archive).push(context);
     return;
   }
-  ref
-      .read(musicPlayerControllerProvider.notifier)
-      .playQueue(archive.tracks, startIndex: 0, audioOnly: false, owner: VodSessionOwner.video);
+  ref.read(videoPlayerControllerProvider.notifier).playQueue(archive.tracks, startIndex: 0);
   const VideoPlayerRoute().push(context);
 }
 

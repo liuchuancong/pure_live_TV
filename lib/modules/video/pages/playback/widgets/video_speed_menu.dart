@@ -1,5 +1,5 @@
 import 'package:pure_live/exports/exports.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 
 /// newBV's 倍速 tab: one entry per preset rate, the live one checked.
 class VideoSpeedMenu extends ConsumerWidget {
@@ -12,8 +12,8 @@ class VideoSpeedMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(musicPlayerControllerProvider);
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
+    final state = ref.watch(videoPlayerControllerProvider);
+    final controller = ref.read(videoPlayerControllerProvider.notifier);
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
 
@@ -47,7 +47,7 @@ class VideoSpeedMenu extends ConsumerWidget {
               ],
             ),
           ),
-          for (final speed in MusicPlayerController.speedSteps)
+          for (final speed in VideoPlayerController.speedSteps)
             Padding(
               padding: EdgeInsets.only(left: 12.sp, right: 12.sp, bottom: 8.sp),
               child: TvFocusable(

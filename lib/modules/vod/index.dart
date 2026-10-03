@@ -20,6 +20,8 @@ export 'api/bilibili_music_api.dart';
 export 'api/bilibili_pgc_api.dart';
 export 'api/bilibili_ugc_api.dart';
 export 'controllers/music_player_controller.dart';
+export 'controllers/video_player_controller.dart';
+export 'controllers/vod_playback_core.dart';
 export 'models/models.dart';
 export 'pages/ugc_comments_page.dart';
 export 'pages/ugc_dynamics_page.dart';

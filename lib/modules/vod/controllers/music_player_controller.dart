@@ -847,13 +847,13 @@ class MusicPlayerController extends _$MusicPlayerController {
     ToastUtil.show(i18n('music_sleep_stopped'));
   }
 
-  /// Live playback takes the speakers: the open stream is dropped but the
-  /// queue and the track pointer survive, so returning to the music tab can
-  /// resume from the queue. Cheaper than [stop] and repeatable — every live
-  /// channel switch calls it.
-  Future<void> pauseForLive() async {
+  /// Another session (live or video) takes the speakers: the open stream is
+  /// dropped but the queue and the track pointer survive, so returning to the
+  /// music tab can resume from the queue. Cheaper than [stop] and repeatable —
+  /// every live channel switch and every video open calls it.
+  Future<void> suspend() async {
     if (_handle == null && !state.hasQueue) return;
-    // Snapshot before the handle goes away: live playback then owns the
+    // Snapshot before the handle goes away: the other session then owns the
     // speakers with the last music position still on record.
     _persistSession();
     _generation++;

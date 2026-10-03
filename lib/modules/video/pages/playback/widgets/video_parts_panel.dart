@@ -4,7 +4,7 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 
 class VideoPartsPanel extends ConsumerStatefulWidget {
   const VideoPartsPanel({super.key, required this.onClose});
@@ -48,8 +48,8 @@ class VideoPartsPanelState extends ConsumerState<VideoPartsPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(musicPlayerControllerProvider);
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
+    final state = ref.watch(videoPlayerControllerProvider);
+    final controller = ref.read(videoPlayerControllerProvider.notifier);
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
 

@@ -129,9 +129,10 @@ class _HomePageState extends ConsumerState<HomePage> {
       },
     );
     if (selected == null || selected == current) return;
-    // Switching modules closes the previous one's playback entirely: music
-    // stops (queue dropped), live rooms were never playing on this screen.
+    // Switching modules closes the previous one's playback entirely: both VOD
+    // sessions stop (queues dropped), live rooms were never playing here.
     await ref.read(musicPlayerControllerProvider.notifier).stop();
+    await ref.read(videoPlayerControllerProvider.notifier).stop();
     ref.read(appModeControllerProvider.notifier).setMode(selected);
   }
 

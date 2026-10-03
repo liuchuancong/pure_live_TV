@@ -6,6 +6,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:media_core/core/player_core_state.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 import 'package:media_core/error/player_failure.dart';
 import 'package:media_core/error/error_formatter.dart';
 import 'package:pure_live/services/settings/settings.dart';
@@ -110,10 +111,12 @@ class LivePlayController extends _$LivePlayController {
   Future<void> _bootstrap() async {
     final generation = ++_generation;
 
-    // The speakers pass to the live room: music mode must not keep playing
-    // under a stream that just opened. The queue itself survives so the music
-    // tab can resume it after the live session ends.
-    unawaited(ref.read(musicPlayerControllerProvider.notifier).pauseForLive());
+    // The speakers pass to the live room: neither a music queue nor a video
+    // left open may keep playing under a stream that just opened. Both keep
+    // their state (the music queue survives so the music tab can resume it
+    // after the live session ends); only the handles are dropped.
+    unawaited(ref.read(musicPlayerControllerProvider.notifier).suspend());
+    unawaited(ref.read(videoPlayerControllerProvider.notifier).suspend());
 
     _armStallReport(restart: true);
 

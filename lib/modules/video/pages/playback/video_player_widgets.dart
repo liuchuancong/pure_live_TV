@@ -16,8 +16,9 @@ part of 'video_player_page.dart';
 /// toggle, the live viewer count, and the watch-progress recorder that feeds
 /// both the local resume store and the bilibili heartbeat.
 ///
-/// Playback lives in the shared VOD controller, so leaving the page does not
-/// stop it — and opening a live room pauses it, same as music.
+/// Playback lives in the video controller (its own handle, separate from the
+/// music queue), so opening a live room or a music track suspends it rather
+/// than sharing one session; leaving the page tears the video session down.
 class VideoPlayerPage extends ConsumerStatefulWidget {
   const VideoPlayerPage({super.key});
 
@@ -72,36 +73,29 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   /// stepping back to an already-resumed part does not seek it twice.
   String? _resumeAppliedTrackId;
 
-  /// The mode the music player held before this page is restored on exit.
-  MusicPlayMode? _modeBeforeVideo;
-
   @override
   void initState() {
     super.initState();
     WakelockPlus.enable().catchError((Object _) {});
     EmojiManager().preload('bilibili');
-    final player = ref.read(musicPlayerControllerProvider.notifier);
-    _modeBeforeVideo = ref.read(musicPlayerControllerProvider).mode;
-    player.wrapAtQueueEnd = false;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       // The bar starts hidden (live_play's entry): the root owns the keyboard
       // until OK raises the bar.
       _rootNode.requestFocus();
-      // rendition rides the next resolve, the default rate applies once on
-      // entry — a rate the user set (or a restored session carried) stands.
-      final controller = ref.read(musicPlayerControllerProvider.notifier);
-      controller.setPlayMode(MusicPlayMode.sequence);
+      // The preferred rendition rides the next resolve; the default rate applies
+      // once on entry — a rate the user already set stands.
+      final controller = ref.read(videoPlayerControllerProvider.notifier);
       if (SettingsService.to.isInitialized) {
         final video = SettingsService.to.videoState;
         controller.setPreferredQuality(video.preferredQuality);
-        if (ref.read(musicPlayerControllerProvider).speed == 1.0 && video.defaultSpeed != 1.0) {
+        if (ref.read(videoPlayerControllerProvider).speed == 1.0 && video.defaultSpeed != 1.0) {
           unawaited(controller.setSpeed(video.defaultSpeed));
         }
       }
     });
     _progressTimer = Timer.periodic(const Duration(seconds: 10), (_) => _recordProgress());
-    ref.listenManual(musicPlayerControllerProvider, (previous, next) {
+    ref.listenManual(videoPlayerControllerProvider, (previous, next) {
       final track = next.current;
       if (track?.id == _lastTrackId) return;
       _lastTrackId = track?.id;
@@ -121,11 +115,9 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     _commentsScroll.dispose();
     WakelockPlus.disable().catchError((Object _) {});
     // Video is not a resident session: back closes the video and tears the
-    // player down — unlike music, whose queue keeps playing behind the UI.
-    final player = ref.read(musicPlayerControllerProvider.notifier);
-    player.wrapAtQueueEnd = true;
-    unawaited(player.stop());
-    if (_modeBeforeVideo != null) player.setPlayMode(_modeBeforeVideo!);
+    // player down. The music queue lives on its own controller and was only
+    // suspended (never replaced), so it survives and resumes from the music tab.
+    unawaited(ref.read(videoPlayerControllerProvider.notifier).stop());
     _rootNode.dispose();
     _playNode.dispose();
     super.dispose();
@@ -134,7 +126,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   /// Video part stepping: sequential, no wrap. The ends answer with a toast —
   /// unlike the music queue, whose next() cycles to the other end.
   Future<void> _gotoPart(int delta) async {
-    final state = ref.read(musicPlayerControllerProvider);
+    final state = ref.read(videoPlayerControllerProvider);
     final target = state.index + delta;
     if (target < 0) {
       ToastUtil.show(i18n('video_part_first'));
@@ -144,7 +136,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       ToastUtil.show(i18n('video_part_last'));
       return;
     }
-    await ref.read(musicPlayerControllerProvider.notifier).jumpTo(target);
+    await ref.read(videoPlayerControllerProvider.notifier).jumpTo(target);
   }
 
   /// Subtitles, the viewer count and the heartbeat are per part.
@@ -226,15 +218,15 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     _resumeAppliedTrackId = track.id;
     final entry = ref.read(videoProgressControllerProvider.notifier).entryFor(track.archive.bvid);
     if (entry == null || entry.cid != track.part.cid || entry.position < 10) return;
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
+    final controller = ref.read(videoPlayerControllerProvider.notifier);
     for (var i = 0; i < 40; i++) {
-      if (!mounted || ref.read(musicPlayerControllerProvider).current?.id != track.id) return;
+      if (!mounted || ref.read(videoPlayerControllerProvider).current?.id != track.id) return;
       final handle = controller.handle;
       if (handle != null && (handle.duration > Duration.zero || handle.isPlaying)) {
         final duration = handle.duration;
         if (duration == Duration.zero || duration > Duration(seconds: entry.position + 10)) {
           await controller.seekTo(Duration(seconds: entry.position));
-          if (mounted && ref.read(musicPlayerControllerProvider).current?.id == track.id) {
+          if (mounted && ref.read(videoPlayerControllerProvider).current?.id == track.id) {
             ToastUtil.show(i18n('video_resumed_from', args: {'time': _formatClock(entry.position)}));
           }
         }
@@ -254,8 +246,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   /// The local resume store tick — every 10s the position lands in
   /// `videoWatchProgress`, which the cards' progress bars read.
   void _recordProgress() {
-    final handle = ref.read(musicPlayerControllerProvider.notifier).handle;
-    final track = ref.read(musicPlayerControllerProvider).current;
+    final handle = ref.read(videoPlayerControllerProvider.notifier).handle;
+    final track = ref.read(videoPlayerControllerProvider).current;
     if (handle == null || track == null || track.part.epId > 0) return;
     final position = handle.position.inSeconds;
     final duration = handle.duration.inSeconds;
@@ -312,7 +304,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   KeyEventResult _onRootKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
 
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
+    final controller = ref.read(videoPlayerControllerProvider.notifier);
 
     // Media keys work in every layer, like newBV's remote handling.
     if (event.logicalKey == LogicalKeyboardKey.mediaPlayPause ||
@@ -460,7 +452,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       _commentsPage = 0;
       _commentsHasMore = true;
     });
-    final oid = ref.read(musicPlayerControllerProvider).current?.archive.aid ?? 0;
+    final oid = ref.read(videoPlayerControllerProvider).current?.archive.aid ?? 0;
     unawaited(_loadComments(oid));
   }
 
@@ -524,8 +516,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(musicPlayerControllerProvider);
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
+    final state = ref.watch(videoPlayerControllerProvider);
+    final controller = ref.read(videoPlayerControllerProvider.notifier);
     final tvTheme = context.tvTheme;
     final track = state.current;
     final aspectMode = ref.watch(videoSettingsControllerProvider.select((m) => m.aspectRatioMode));
@@ -784,7 +776,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                       right: 0,
                       bottom: 0,
                       child: StreamBuilder<PlayerTransportState>(
-                        stream: ref.read(musicPlayerControllerProvider.notifier).playbackStream,
+                        stream: ref.read(videoPlayerControllerProvider.notifier).playbackStream,
                         builder: (context, snapshot) {
                           final playback = snapshot.data;
                           final position = playback?.position ?? Duration.zero;

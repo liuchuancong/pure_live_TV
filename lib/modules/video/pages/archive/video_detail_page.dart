@@ -7,7 +7,7 @@ import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
 import 'package:pure_live/modules/video/widgets/video_action_chip.dart';
 import 'package:pure_live/modules/vod/domain/providers/vod_providers.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 import 'package:pure_live/modules/video/pages/archive/video_detail_dialogs.dart';
 
@@ -204,10 +204,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
   }
 
   void _play(List<MusicTrack> tracks, int startIndex) {
-    // Video mode keeps the picture on.
-    ref
-        .read(musicPlayerControllerProvider.notifier)
-        .playQueue(tracks, startIndex: startIndex, audioOnly: false, owner: VodSessionOwner.video);
+    ref.read(videoPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex);
     const VideoPlayerRoute().push(context);
   }
 

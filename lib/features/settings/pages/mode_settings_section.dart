@@ -43,6 +43,7 @@ class ModeSettingsSectionPage extends ConsumerWidget {
     final current = ref.read(appModeControllerProvider);
     if (mode == current) return;
     await ref.read(musicPlayerControllerProvider.notifier).stop();
+    await ref.read(videoPlayerControllerProvider.notifier).stop();
     ref.read(appModeControllerProvider.notifier).setMode(mode);
   }
 }

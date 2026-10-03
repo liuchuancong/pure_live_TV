@@ -5,7 +5,7 @@ import 'package:media_core/media_core.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 
 /// Bottom controls, live_play's index-driven model: the bar holds ONE focus
 /// node and owns every key while visible — left/right walk the buttons (with
@@ -107,7 +107,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
     if (!mounted) return KeyEventResult.ignored;
 
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
+    final controller = ref.read(videoPlayerControllerProvider.notifier);
     final key = event.logicalKey;
 
     if (_isConfirm(key)) {
@@ -158,7 +158,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
   /// Runs the action behind [index]. Taps report the button they hit, the
   /// remote reports the highlighted one, so both paths share one list.
   void _activateIndex(int index) {
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
+    final controller = ref.read(videoPlayerControllerProvider.notifier);
     switch (index) {
       case 0:
         widget.onPrevPart();
@@ -193,8 +193,8 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
-    final state = ref.watch(musicPlayerControllerProvider);
+    final controller = ref.read(videoPlayerControllerProvider.notifier);
+    final state = ref.watch(videoPlayerControllerProvider);
     final tvTheme = context.tvTheme;
 
     return Focus(

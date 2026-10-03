@@ -8,7 +8,7 @@ import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/vod/widgets/handle_video_surface.dart';
 import 'package:pure_live/modules/video/widgets/vod_danmaku_overlay.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 import 'package:pure_live/modules/video/pages/playback/widgets/video_control_bar.dart';
 import 'package:pure_live/modules/video/pages/playback/widgets/video_parts_panel.dart';
 import 'package:pure_live/modules/video/pages/playback/widgets/video_idle_surface.dart';

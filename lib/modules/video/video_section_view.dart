@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/api/bilibili_pgc_api.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 import 'package:pure_live/modules/video/pages/discover/video_pgc_page.dart';
 import 'package:pure_live/modules/video/pages/discover/video_region_page.dart';
 import 'package:pure_live/modules/video/pages/discover/video_search_page.dart';
@@ -34,10 +34,10 @@ class _VideoSectionViewState extends ConsumerState<VideoSectionView> {
   /// data across rail switches.
   final Map<VideoSection, Widget> _children = {};
 
-  /// The video module owns the PGC endpoints; the shared VOD engine asks this
-  /// hook for episode urls. Idempotent.
+  /// The video module owns the PGC endpoints; the video player asks this hook
+  /// for episode urls. Idempotent.
   void _ensurePgcResolver() {
-    MusicPlayerController.modulePlayUrlResolver ??= (track) async {
+    VideoPlayerController.modulePlayUrlResolver ??= (track) async {
       if (track.part.epId <= 0) return null;
       return BilibiliPgcApi.instance.getPlayUrls(epId: track.part.epId, cid: track.part.cid);
     };

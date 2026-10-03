@@ -1,7 +1,7 @@
 import 'package:media_core/media_core.dart';
 import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 
 /// The quality menu, one entry per rendition the current stream answer ships.
 class VideoQualityMenu extends ConsumerWidget {
@@ -11,8 +11,8 @@ class VideoQualityMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(musicPlayerControllerProvider);
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
+    final state = ref.watch(videoPlayerControllerProvider);
+    final controller = ref.read(videoPlayerControllerProvider.notifier);
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
     final aspectMode = ref.watch(videoSettingsControllerProvider.select((m) => m.aspectRatioMode));
