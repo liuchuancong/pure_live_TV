@@ -112,7 +112,9 @@ class VideoQualityMenu extends ConsumerWidget {
             Padding(
               padding: EdgeInsets.only(left: 12.sp, right: 12.sp, bottom: 8.sp),
               child: TvFocusable(
-                autofocus: mode == aspectMode,
+                // Only autofocus when there is no quality row above to claim it —
+                // two autofocus nodes in one menu fight over the opening highlight.
+                autofocus: mode == aspectMode && state.qualityOptions.isEmpty,
                 onTap: () => setAspect(mode),
                 builder: (context, focused, child) {
                   final isCurrent = mode == aspectMode;
