@@ -214,25 +214,31 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                             ),
                           ),
                         // Long-press action row, replacing the cover (newBV's
+                        // overlay). Excluded from focus: these are pointer-only
+                        // IconButtons, and letting the remote land on them both
+                        // made them unreachable (OK still fires the card) and
+                        // tripped the card's blur→close, killing focus mid-move.
                         if (_actionsOpen)
-                          ColoredBox(
-                            color: Colors.black.withValues(alpha: 0.82),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                IconButton(
-                                  tooltip: i18n('video_action_toview'),
-                                  onPressed: _watchLater,
-                                  icon: Icon(Icons.watch_later_outlined, size: 30.ts(context), color: Colors.white),
-                                ),
-                                IconButton(
-                                  tooltip: i18n('video_action_up_page'),
-                                  onPressed: archive.upMid > 0
-                                      ? () => UgcUserSpaceRoute(archive.upMid, archive.upName).push(context)
-                                      : null,
-                                  icon: Icon(Icons.person_outline_rounded, size: 30.ts(context), color: Colors.white),
-                                ),
-                              ],
+                          ExcludeFocus(
+                            child: ColoredBox(
+                              color: Colors.black.withValues(alpha: 0.82),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  IconButton(
+                                    tooltip: i18n('video_action_toview'),
+                                    onPressed: _watchLater,
+                                    icon: Icon(Icons.watch_later_outlined, size: 30.ts(context), color: Colors.white),
+                                  ),
+                                  IconButton(
+                                    tooltip: i18n('video_action_up_page'),
+                                    onPressed: archive.upMid > 0
+                                        ? () => UgcUserSpaceRoute(archive.upMid, archive.upName).push(context)
+                                        : null,
+                                    icon: Icon(Icons.person_outline_rounded, size: 30.ts(context), color: Colors.white),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                       ],
