@@ -143,11 +143,13 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
                     style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                   ),
                 ),
-                // newBV's sort switch: 热门 / 最新.
+                // newBV's sort switch: 热门 / 最新. The first chip is always
+                // mounted (unlike the async comment rows), so it is the
+                // deterministic focus claim when the panel opens.
                 _SortChip(
                   label: i18n('video_comments_hot'),
                   selected: widget.hot,
-                  autofocus: false,
+                  autofocus: true,
                   onTap: () => widget.onSortChange(true),
                 ),
                 SizedBox(width: 10.ts(context)),

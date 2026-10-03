@@ -818,16 +818,20 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                       bottom: 100.sp,
                       right: 48.sp,
                       width: 620.ts(context),
-                      child: VideoCommentsPanel(
-                        oid: track.archive.aid,
-                        comments: _comments,
-                        scroll: _commentsScroll,
-                        loading: _commentsLoading,
-                        hasMore: _commentsHasMore,
-                        hot: _commentsHot,
-                        onSortChange: _switchCommentsSort,
-                        onLoadMore: () => _loadComments(track.archive.aid),
-                        onClose: _closeComments,
+                      child: DpadRegion(
+                        verticalEdge: DpadEdgeBehavior.stop,
+                        horizontalEdge: DpadEdgeBehavior.stop,
+                        child: VideoCommentsPanel(
+                          oid: track.archive.aid,
+                          comments: _comments,
+                          scroll: _commentsScroll,
+                          loading: _commentsLoading,
+                          hasMore: _commentsHasMore,
+                          hot: _commentsHot,
+                          onSortChange: _switchCommentsSort,
+                          onLoadMore: () => _loadComments(track.archive.aid),
+                          onClose: _closeComments,
+                        ),
                       ),
                     ),
 
@@ -838,7 +842,11 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                       bottom: 100.sp,
                       right: 48.sp,
                       width: 640.ts(context),
-                      child: VideoInfoPanel(archive: track.archive, onClose: _closeInfo),
+                      child: DpadRegion(
+                        verticalEdge: DpadEdgeBehavior.stop,
+                        horizontalEdge: DpadEdgeBehavior.stop,
+                        child: VideoInfoPanel(archive: track.archive, onClose: _closeInfo),
+                      ),
                     ),
 
                   // -------------------------------------------------- parts panel
