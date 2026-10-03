@@ -40,7 +40,7 @@ class _MusicNowPlayingQueuePageState extends ConsumerState<MusicNowPlayingQueueP
   void _revealCurrent() {
     if (!mounted) return;
     final tracks = ref.read(musicPlayerControllerProvider).queue;
-    _reveal.reveal(context, tracks, ref.read(musicPlayerControllerProvider).currentMusic);
+    _reveal.reveal(context, tracks, ref.read(musicPlayerControllerProvider).current);
   }
 
   @override
@@ -50,7 +50,7 @@ class _MusicNowPlayingQueuePageState extends ConsumerState<MusicNowPlayingQueueP
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
 
-    final queue = state.isMusicSession ? state.queue : const <MusicTrack>[];
+    final queue = state.queue;
     if (queue.isEmpty) {
       return Center(
         child: Column(

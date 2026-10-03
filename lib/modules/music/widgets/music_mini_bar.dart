@@ -16,9 +16,9 @@ class MusicMiniBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(musicPlayerControllerProvider);
-    // A video session is resident on the same VOD controller; the music strip
-    // must not present it as the current song.
-    if (!state.hasQueue || !state.isMusicSession) return const SizedBox.shrink();
+    // Music runs on its own controller now, so any queue here is a music queue;
+    // the strip simply hides while nothing is loaded.
+    if (!state.hasQueue) return const SizedBox.shrink();
     final controller = ref.read(musicPlayerControllerProvider.notifier);
     final library = ref.watch(musicLibraryControllerProvider);
     final tvTheme = context.tvTheme;

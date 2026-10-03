@@ -30,7 +30,7 @@ Future<void> showMusicSongMenu(
   final libraryController = ref.read(musicLibraryControllerProvider.notifier);
   final isLiked = ref.read(musicLibraryControllerProvider).isSongLiked(track.id);
   final hasDefaultLyric = MusicLyricService.instance.manualLyric(track.title) != null;
-  final isCurrent = ref.read(musicPlayerControllerProvider).currentMusic?.id == track.id;
+  final isCurrent = ref.read(musicPlayerControllerProvider).current?.id == track.id;
 
   await TvDialogUtils.show<void>(
     context: context,

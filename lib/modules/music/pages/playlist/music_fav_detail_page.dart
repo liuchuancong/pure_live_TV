@@ -234,14 +234,14 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
     ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks);
     await const MusicPlayerRoute().push(context);
     if (!mounted) return;
-    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).currentMusic);
+    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).current);
   }
 
   Future<void> _playFrom(BuildContext context, WidgetRef ref, List<MusicTrack> tracks, int index) async {
     ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: index);
     await const MusicPlayerRoute().push(context);
     if (!mounted) return;
-    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).currentMusic);
+    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).current);
   }
 }
 

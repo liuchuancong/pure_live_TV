@@ -43,8 +43,8 @@ class MusicSongRow extends ConsumerWidget {
     final accent = tvTheme.focusColor;
     final state = ref.watch(musicPlayerControllerProvider);
     final isCurrent =
-        state.currentMusic?.archive.bvid == track.archive.bvid &&
-        state.currentMusic?.part.page == track.part.page;
+        state.current?.archive.bvid == track.archive.bvid &&
+        state.current?.part.page == track.part.page;
     final isMulti = track.archive.parts.length > 1;
 
     return TvFocusable(

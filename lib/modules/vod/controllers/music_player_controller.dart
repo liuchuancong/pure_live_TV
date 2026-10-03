@@ -7,19 +7,13 @@ import 'package:pure_live/player/models/player_engine.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
-import 'package:pure_live/player/core/playback_header_resolver.dart';
 import 'package:pure_live/modules/vod/domain/providers/vod_providers.dart';
 import 'package:pure_live/modules/vod/domain/repositories/music_vod_repository.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+import 'package:pure_live/modules/vod/controllers/vod_playback_core.dart';
+import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 
 part 'music_player_controller.g.dart';
-
-/// Which module opened the current VOD session. Music and video share this one
-/// VOD controller + handle (only one archive session is ever active), but the
-/// music UI must only surface a *music* session as "now playing" — otherwise a
-/// video left open reads back as the current song. See [MusicPlayerState.owner].
-enum VodSessionOwner { music, video }
 
 /// What the queue UI reads. Playback position and buffering live on the
 /// [PlayerHandle] streams instead — they change many times a second and must
@@ -29,8 +23,8 @@ class MusicPlayerState {
     this.queue = const [],
     this.index = -1,
     this.mode = MusicPlayMode.sequence,
-    // Music mode listens (cover art only); the video pages start their queues
-    // with [MusicPlayerController.playQueue] `audioOnly: false` for the picture.
+    // Music listens (cover art only) by default; the MV mode turns the picture
+    // on through [MusicPlayerController.toggleAudioOnly].
     this.audioOnly = true,
     this.resolving = false,
     this.quality = 0,
@@ -39,7 +33,6 @@ class MusicPlayerState {
     this.error = '',
     this.tempQueue = const [],
     this.sleepMinutes = 0,
-    this.owner = VodSessionOwner.music,
   });
 
   final List<MusicTrack> queue;
@@ -51,11 +44,12 @@ class MusicPlayerState {
   /// Quality id of the stream currently open (0 = none).
   final int quality;
 
-  /// Playback rate of the current handle.
+  /// Playback rate of the current handle. Music has no rate UI, so this stays
+  /// 1.0; it is carried only so the resume snapshot round-trips faithfully.
   final double speed;
 
-  /// Quality tiers the current stream answer can serve, for the player page's
-  /// quality menu.
+  /// Quality tiers the current stream answer can serve, for the control bar's
+  /// quality panel.
   final List<MusicStreamOption> qualityOptions;
   final String error;
 
@@ -68,18 +62,7 @@ class MusicPlayerState {
   /// subtitle only.
   final int sleepMinutes;
 
-  /// The module that opened the current session; music UI only surfaces a
-  /// [VodSessionOwner.music] session.
-  final VodSessionOwner owner;
-
-  /// Whether the music UI should treat this session as "now playing".
-  bool get isMusicSession => owner == VodSessionOwner.music;
-
   MusicTrack? get current => index >= 0 && index < queue.length ? queue[index] : null;
-
-  /// The current track ONLY when a music session owns the controller — the
-  /// music list/menu highlight must not light up on a video left open here.
-  MusicTrack? get currentMusic => isMusicSession ? current : null;
 
   bool get hasQueue => queue.isNotEmpty;
 
@@ -95,7 +78,6 @@ class MusicPlayerState {
     String? error,
     List<MusicTrack>? tempQueue,
     int? sleepMinutes,
-    VodSessionOwner? owner,
   }) {
     return MusicPlayerState(
       queue: queue ?? this.queue,
@@ -109,40 +91,25 @@ class MusicPlayerState {
       error: error ?? this.error,
       tempQueue: tempQueue ?? this.tempQueue,
       sleepMinutes: sleepMinutes ?? this.sleepMinutes,
-      owner: owner ?? this.owner,
     );
   }
 }
 
-/// The music-mode player: one VOD [PlayerHandle] on the shared kernel, a track
-/// queue and the advance rules.
+/// The music-mode player: a track queue, the advance rules and the listening
+/// extras (play-later strip, sleep timer, resume snapshot, recently played).
 ///
-/// Deliberately *not* the live facade: that path is tuned for non-seekable
-/// streams and lease renewal. VOD needs seek, position and duration, which the
-/// raw handle already carries. The handle is created per track and released on
-/// switch, so the mpv `audio-file` input (which attaches the DASH audio stream
-/// to the video-only primary) is set per track without touching the shared
-/// engine registrations.
+/// Playback runs on its OWN [PlayerHandle] through [VodPlaybackCore], separate
+/// from the video player's handle, so a video never replaces the music queue
+/// and never reads back as the current song. Deliberately not the live facade:
+/// that path is tuned for non-seekable streams and lease renewal, while VOD
+/// needs the seek, position and duration the raw handle already carries.
 @Riverpod(keepAlive: true)
 class MusicPlayerController extends _$MusicPlayerController {
-  PlayerHandle? _handle;
-  StreamSubscription<PlayerAdapterEvent>? _events;
-
-  /// Bumped on every switch so a slow resolve from a superseded track cannot
-  /// open its stream over the newer one.
-  int _generation = 0;
-
-  /// The stream answer behind the open handle, so a quality switch re-opens a
-  /// sibling rendition without another API round-trip.
-  MusicPlayUrls? _currentUrls;
-  String? _currentBvid;
+  late final VodPlaybackCore _core = VodPlaybackCore(configName: 'music');
 
   /// Stops the auto-advance when every track fails in a row.
   int _consecutiveFailures = 0;
 
-  /// The rendition (qn) the VIDEO mode wants on open, from the video settings.
-  /// Null = the play-url answer's own pick — music never sets this.
-  int? _preferredQuality;
   final Random _random = Random();
 
   /// Track ids played since random mode was (re)armed, in play order.
@@ -181,21 +148,29 @@ class MusicPlayerController extends _$MusicPlayerController {
 
     // The open below must build the new engine: the old handle belongs to the
     // old one. The position is read before it goes away.
-    final position = _handle?.position ?? Duration.zero;
-    await _releaseHandle();
+    final position = _core.handle?.position ?? Duration.zero;
+    final bvid = _core.currentBvid;
+    await _core.releaseHandle();
     final track = state.current;
-    final bvid = _currentBvid;
     if (track == null || bvid == null) return;
 
     // Re-resolve rather than replay the stored answer: its signed URL may be
     // near expiry, and the new backend wants a fresh stream anyway.
     try {
-      final urls = await modulePlayUrlResolver?.call(track) ?? await _api.getPlayUrls(bvid: bvid, cid: track.part.cid);
-      await _openUrls(track, urls, bvid);
+      final urls = await _api.getPlayUrls(bvid: bvid, cid: track.part.cid);
+      await _core.openUrls(
+        track: track,
+        urls: urls,
+        bvid: bvid,
+        audioOnly: state.audioOnly,
+        speed: state.speed,
+        preferredBackend: backendId,
+      );
+      state = state.copyWith(quality: urls.quality, qualityOptions: urls.videoOptions);
     } catch (_) {
       return;
     }
-    await _restorePosition(position);
+    await _core.restorePosition(position);
   }
 
   /// The resume option fires once per app run, on the music pane's first build.
@@ -207,7 +182,8 @@ class MusicPlayerController extends _$MusicPlayerController {
 
   void _ensureSessionHeartbeat() {
     _sessionHeartbeat ??= Timer.periodic(const Duration(seconds: 10), (_) {
-      if (_handle != null && _handle!.isPlaying && state.hasQueue) _persistSession();
+      final handle = _core.handle;
+      if (handle != null && handle.isPlaying && state.hasQueue) _persistSession();
     });
   }
 
@@ -241,7 +217,7 @@ class MusicPlayerController extends _$MusicPlayerController {
           'temp': tempOrder,
           'index': state.index < 0 ? 0 : state.index,
           'speed': state.speed,
-          'positionMs': _handle?.position.inMilliseconds ?? 0,
+          'positionMs': _core.handle?.position.inMilliseconds ?? 0,
         }),
       );
     } catch (_) {
@@ -294,7 +270,7 @@ class MusicPlayerController extends _$MusicPlayerController {
     if (_resumeAttempted) return;
     _resumeAttempted = true;
     if (HivePrefUtil.getString('musicResumeOnOpen') != 'true') return;
-    if (state.hasQueue || _handle != null) return;
+    if (state.hasQueue || _core.handle != null) return;
     final session = _loadSession();
     if (session == null) return;
     state = state.copyWith(
@@ -307,18 +283,11 @@ class MusicPlayerController extends _$MusicPlayerController {
     await _openCurrent(session.position);
   }
 
-  /// The rate steps the player page cycles through.
-  static const List<double> speedSteps = [0.5, 1.0, 1.25, 1.5, 2.0];
-
-  /// Module-injected playurl hook. The media layer owns playback but not the
-  /// module data around it, so the video module plugs its PGC resolver in
-  /// (episodes resolve through the pgc playurl endpoint, not the UGC one).
-  static Future<MusicPlayUrls?> Function(MusicTrack track)? modulePlayUrlResolver;
-
   @override
   MusicPlayerState build() {
+    _core.onAdapterEvent = _onAdapterEvent;
     ref.onDispose(() {
-      _releaseHandle();
+      _core.releaseHandle();
       _sleepTimer?.cancel();
       _sleepTimer = null;
     });
@@ -333,25 +302,17 @@ class MusicPlayerController extends _$MusicPlayerController {
 
   MusicVodRepository get _api => ref.read(musicRepositoryProvider);
 
-  PlayerKernel? get _kernel => GlobalPlayerService.instance.kernel;
-
   /// The handle the player page renders; null while idle or resolving.
-  PlayerHandle? get handle => _handle;
+  PlayerHandle? get handle => _core.handle;
 
   /// Live playback state for the progress bar; null while idle.
-  Stream<PlayerTransportState>? get playbackStream => _handle?.playbackStream;
+  Stream<PlayerTransportState>? get playbackStream => _core.playbackStream;
 
   // ------------------------------------------------------------- queue input
 
   /// Replaces the queue and starts at [startIndex]. [audioOnly] seeds the
-  /// listening style: music pages keep the default (cover-art listening),
-  /// video pages pass false so the picture shows.
-  Future<void> playQueue(
-    List<MusicTrack> tracks, {
-    int startIndex = 0,
-    bool? audioOnly,
-    VodSessionOwner owner = VodSessionOwner.music,
-  }) async {
+  /// listening style: music pages keep the default (cover-art listening).
+  Future<void> playQueue(List<MusicTrack> tracks, {int startIndex = 0, bool? audioOnly}) async {
     if (tracks.isEmpty) return;
     final index = startIndex.clamp(0, tracks.length - 1);
     _randomHistory.clear();
@@ -362,7 +323,6 @@ class MusicPlayerController extends _$MusicPlayerController {
       audioOnly: audioOnly,
       qualityOptions: const [],
       tempQueue: const [],
-      owner: owner,
     );
     await _openCurrent();
   }
@@ -585,10 +545,10 @@ class MusicPlayerController extends _$MusicPlayerController {
     if (queue.isEmpty) return;
     // A track more than a few seconds in restarts instead of skipping back —
     // the music-player convention.
-    final handle = _handle;
+    final handle = _core.handle;
     if (handle != null && handle.position > const Duration(seconds: 5)) {
-      await _ignoreCancelled(() => handle.seek(Duration.zero));
-      if (!handle.isPlaying) await _ignoreCancelled(handle.play);
+      await VodPlaybackCore.ignoreCancelled(() => handle.seek(Duration.zero));
+      if (!handle.isPlaying) await VodPlaybackCore.ignoreCancelled(handle.play);
       return;
     }
     // Random walks back through the shuffled order: the history entries leave
@@ -613,8 +573,6 @@ class MusicPlayerController extends _$MusicPlayerController {
     ToastUtil.show(i18n(state.mode.i18nKey));
   }
 
-  /// video is open (video parts do not shuffle or loop) and restores the
-  /// music mode when it leaves.
   void setPlayMode(MusicPlayMode mode) {
     if (state.mode == mode) return;
     // The random pass is per-mode state: re-arming random starts a fresh
@@ -623,24 +581,18 @@ class MusicPlayerController extends _$MusicPlayerController {
     state = state.copyWith(mode: mode);
   }
 
-  /// Whether reaching the queue's end wraps to the first entry.
-  ///
-  /// Music owns the wrap: a song queue that finishes starts over. Video
-  /// playback is strictly sequential — its last part ending is the end, and
-  /// the video player page clears this flag for the duration of a session.
-  bool wrapAtQueueEnd = true;
-
   /// Set when the player page exits with the picture on: the Flutter side
   /// tears its texture down while mpv keeps decoding into the output it lost
   /// track of, so the NEXT page mount shows black until the video output is
   /// rebuilt. [reattachVideoSurface] does that rebuild — the same vid=no →
+  /// vid=yes toggle the open path runs for a picture session.
   bool videoSurfaceNeedsReattach = false;
 
   /// Forces mpv to rebuild its video output against the freshly mounted
   /// surface: dropping and restoring the video track re-creates the decoder's
   /// output with the live texture. Harmless when nothing is wrong.
   Future<void> reattachVideoSurface() async {
-    final handle = _handle;
+    final handle = _core.handle;
     if (handle == null) return;
     try {
       await handle.setAudioOnly(true);
@@ -653,8 +605,8 @@ class MusicPlayerController extends _$MusicPlayerController {
   /// Re-opens the current stream at [quality] from the rendition list the last
   /// answer shipped — no new API request, just a fresh mpv load.
   Future<void> switchQuality(int quality) async {
-    final urls = _currentUrls;
-    final bvid = _currentBvid;
+    final urls = _core.currentUrls;
+    final bvid = _core.currentBvid;
     if (urls == null || bvid == null || quality == state.quality) return;
     final option = urls.videoOptions.where((o) => o.quality == quality).firstOrNull;
     if (option == null || option.url.isEmpty) return;
@@ -663,16 +615,19 @@ class MusicPlayerController extends _$MusicPlayerController {
 
     state = state.copyWith(quality: quality, resolving: true);
     try {
-      await _openUrls(
-        track,
-        MusicPlayUrls(
+      await _core.openUrls(
+        track: track,
+        urls: MusicPlayUrls(
           videoUrl: option.url,
           audioUrl: urls.audioUrl,
           videoBackupUrls: option.backupUrls,
           quality: quality,
           videoOptions: urls.videoOptions,
         ),
-        bvid,
+        bvid: bvid,
+        audioOnly: state.audioOnly,
+        speed: state.speed,
+        preferredBackend: _preferredBackend,
       );
       state = state.copyWith(resolving: false);
     } catch (error) {
@@ -681,33 +636,12 @@ class MusicPlayerController extends _$MusicPlayerController {
     }
   }
 
-  /// The video settings' default rendition; the next resolve opens it when the
-  /// answer ships that rendition.
-  void setPreferredQuality(int quality) => _preferredQuality = quality > 0 ? quality : null;
-
-  /// Sets the rate directly (the video settings' default speed applies it once
-  /// on page entry); unlike [cycleSpeed] it takes an absolute value.
-  Future<void> setSpeed(double speed) async {
-    state = state.copyWith(speed: speed);
-    await _ignoreCancelled(() async {
-      final target = handle;
-      if (target != null) await target.setRate(speed);
-    });
-  }
-
-  /// Cycles the playback rate through [speedSteps].
-  Future<void> cycleSpeed() async {
-    final next = speedSteps[(speedSteps.indexOf(state.speed) + 1) % speedSteps.length];
-    state = state.copyWith(speed: next);
-    await _handle?.setRate(next);
-  }
-
   // ------------------------------------------------------------- transport
 
   Future<void> togglePlayPause() async {
-    final handle = _handle;
+    final handle = _core.handle;
     if (handle == null) {
-      // The stream is gone (stopped, or live playback took the speakers) but
+      // The stream is gone (stopped, or another session took the speakers) but
       // the queue survived: reopening the current track resumes from it.
       if (state.hasQueue) await _openCurrent();
       return;
@@ -717,23 +651,12 @@ class MusicPlayerController extends _$MusicPlayerController {
       // Paused is where a session is usually left: snapshot the position now.
       _persistSession();
     } else {
-      await _ignoreCancelled(handle.play);
-    }
-  }
-
-  /// A transport operation that loses to a newer one — another seek, a track
-  /// switch, a stop — is cancelled by media_core by design: the player has
-  /// already moved on, so the superseded one must not surface as an error.
-  Future<void> _ignoreCancelled(Future<void> Function() operation) async {
-    try {
-      await operation();
-    } on OperationCancelledException {
-      // Superseded — the newer operation owns the transport now.
+      await VodPlaybackCore.ignoreCancelled(handle.play);
     }
   }
 
   Future<void> seekTo(Duration position) async {
-    final handle = _handle;
+    final handle = _core.handle;
     if (handle == null) return;
     final duration = handle.duration;
     var target = position;
@@ -741,18 +664,18 @@ class MusicPlayerController extends _$MusicPlayerController {
       if (target < Duration.zero) target = Duration.zero;
       if (target > duration) target = duration;
     }
-    await _ignoreCancelled(() => handle.seek(target));
+    await VodPlaybackCore.ignoreCancelled(() => handle.seek(target));
     _persistSession();
   }
 
   Future<void> seekBy(int seconds) async {
-    final handle = _handle;
+    final handle = _core.handle;
     if (handle == null) return;
     await seekTo(handle.position + Duration(seconds: seconds));
   }
 
   /// Seek with newBV's press acceleration: repeated presses inside 200ms grow
-  /// the step from 10s up to 60s, so a long skip needs no dozen presses. The
+  /// the step from 10s up to 60s, so a long skip needs no dozen presses.
   DateTime _accelLastAt = DateTime.fromMillisecondsSinceEpoch(0);
   int _accelStep = 10;
 
@@ -765,7 +688,7 @@ class MusicPlayerController extends _$MusicPlayerController {
 
   Future<void> toggleAudioOnly() async {
     final audioOnly = !state.audioOnly;
-    final handle = _handle;
+    final handle = _core.handle;
     state = state.copyWith(audioOnly: audioOnly);
 
     try {
@@ -775,30 +698,11 @@ class MusicPlayerController extends _$MusicPlayerController {
     }
   }
 
-  Future<void> _restorePosition(Duration position) async {
-    if (position <= Duration.zero) return;
-    await _ignoreCancelled(() async {
-      final target = _handle;
-      if (target == null) return;
-      // A freshly opened backend is not immediately seekable: better_player
-      // initializes asynchronously and a seek that lands before its first
-      // duration report is dropped (and could poison the session), while mpv
-      // accepts one only once the demuxer is up. Wait — bounded — for the
-      // stream to prove it is live (duration known or already playing), then
-      // seek.
-      for (var i = 0; i < 40; i++) {
-        if (target.duration > Duration.zero || target.isPlaying) break;
-        await Future<void>.delayed(const Duration(milliseconds: 100));
-      }
-      await target.seek(position);
-    });
-  }
-
   Future<void> stop() async {
-    _generation++;
-    await _releaseHandle();
-    _currentUrls = null;
-    _currentBvid = null;
+    _core.bumpGeneration();
+    await _core.releaseHandle();
+    _core.currentUrls = null;
+    _core.currentBvid = null;
     _randomHistory.clear();
     // The queue is gone but the listening preferences survive the session.
     state = MusicPlayerState(
@@ -836,10 +740,10 @@ class MusicPlayerController extends _$MusicPlayerController {
       return;
     }
     state = state.copyWith(sleepMinutes: 0);
-    final handle = _handle;
+    final handle = _core.handle;
     if (handle != null) {
       unawaited(
-        _ignoreCancelled(() async {
+        VodPlaybackCore.ignoreCancelled(() async {
           if (handle.isPlaying) await handle.pause();
         }),
       );
@@ -852,12 +756,12 @@ class MusicPlayerController extends _$MusicPlayerController {
   /// music tab can resume from the queue. Cheaper than [stop] and repeatable —
   /// every live channel switch and every video open calls it.
   Future<void> suspend() async {
-    if (_handle == null && !state.hasQueue) return;
+    if (_core.handle == null && !state.hasQueue) return;
     // Snapshot before the handle goes away: the other session then owns the
     // speakers with the last music position still on record.
     _persistSession();
-    _generation++;
-    await _releaseHandle();
+    _core.bumpGeneration();
+    await _core.releaseHandle();
     state = state.copyWith(resolving: false, quality: 0);
   }
 
@@ -866,16 +770,18 @@ class MusicPlayerController extends _$MusicPlayerController {
   /// Opens the current queue entry. [startAt] is the resume position the
   /// last-session restore asks for; a plain track start opens from zero.
   Future<void> _openCurrent([Duration? startAt]) async {
-    final generation = ++_generation;
+    final generation = _core.bumpGeneration();
     final track = state.current;
     if (track == null) return;
 
     state = state.copyWith(resolving: true, error: '');
 
     try {
-      // Live playback owns the speakers from here on; music owns them when a
-      // track opens. Pausing (not stopping) keeps the live session resumable.
+      // The music session owns the speakers from here on: pause live, and
+      // suspend any open video (its page keeps its list, drops the handle).
+      // Pausing (not stopping) keeps both resumable.
       unawaited(GlobalPlayerService.instance.livePlayer?.pause().catchError((Object _) {}));
+      unawaited(ref.read(videoPlayerControllerProvider.notifier).suspend().catchError((Object _) {}));
 
       // Ranking and search cards know the archive but not its parts; the first
       // play resolves the cid through the view API and repairs the queue entry.
@@ -895,36 +801,29 @@ class MusicPlayerController extends _$MusicPlayerController {
         if (cid <= 0) throw Exception('music: no cid for $bvid');
       }
 
-      // A module resolver (video PGC) may own the track; otherwise the plain
-      // UGC playurl endpoint answers. Both return the muxed mp4: one URL,
-      // sound and picture in one container, playable by every backend.
-      var urls = await modulePlayUrlResolver?.call(repairedTrack()) ?? await _api.getPlayUrls(bvid: bvid, cid: cid);
-      if (generation != _generation) return;
+      // Music always resolves through the plain UGC playurl endpoint — the PGC
+      // resolver belongs to the video controller and never routes a music track.
+      final urls = await _api.getPlayUrls(bvid: bvid, cid: cid);
+      if (generation != _core.generation) return;
 
-      // does not ship it, the server's own pick stands (no second open).
-      final preferred = _preferredQuality;
-      if (preferred != null && preferred != urls.quality) {
-        final match = urls.videoOptions.where((o) => o.quality == preferred && o.url.isNotEmpty).firstOrNull;
-        if (match != null) {
-          urls = MusicPlayUrls(
-            videoUrl: match.url,
-            audioUrl: urls.audioUrl,
-            videoBackupUrls: match.backupUrls,
-            quality: preferred,
-            videoOptions: urls.videoOptions,
-          );
-        }
-      }
-
-      await _openUrls(repairedTrack(), urls, bvid);
-      await _restorePosition(startAt ?? Duration.zero);
+      await _core.openUrls(
+        track: repairedTrack(),
+        urls: urls,
+        bvid: bvid,
+        audioOnly: state.audioOnly,
+        speed: state.speed,
+        preferredBackend: _preferredBackend,
+      );
+      if (generation != _core.generation) return;
+      state = state.copyWith(resolving: false, quality: urls.quality, qualityOptions: urls.videoOptions);
+      await _core.restorePosition(startAt ?? Duration.zero);
       _consecutiveFailures = 0;
       // Recently played: only a track that actually opened counts as played.
       ref.read(musicLibraryControllerProvider.notifier).recordPlay(repairedTrack().archive);
       _persistSession();
       _ensureSessionHeartbeat();
     } catch (error) {
-      if (generation != _generation) return;
+      if (generation != _core.generation) return;
       _consecutiveFailures++;
       state = state.copyWith(resolving: false, error: error.toString());
       ToastUtil.show(i18n('music_play_failed'));
@@ -933,121 +832,6 @@ class MusicPlayerController extends _$MusicPlayerController {
   }
 
   MusicTrack repairedTrack() => state.current ?? (throw StateError('music track vanished'));
-
-  Future<void> _openUrls(MusicTrack track, MusicPlayUrls urls, String bvid) async {
-    // Music keeps one player for the whole queue: the handle below is reused
-    // across tracks, and only [stop] / [pauseForLive] (live or video taking
-    // the speakers) / a backend switch tear it down.
-    // Music can be the first thing the user plays in a session; the live
-    // bootstrap otherwise owns this call. Idempotent.
-    await GlobalPlayerService.instance.initialize();
-    final kernel = _kernel;
-    if (kernel == null) throw Exception('player kernel not ready');
-    _currentUrls = urls;
-    _currentBvid = bvid;
-
-    // The VOD branch of the playback header resolver: the live bilibili
-    // policy with the video-page Referer.
-    final headers = await PlaybackHeaderResolver.resolveVod(bvid: bvid);
-    var openProtocol = SourceProtocol.https;
-
-    final PlayerHandle handle =
-        _handle ??
-        await kernel.create(
-          config: const PlayerConfig(name: 'music', autoPlay: true),
-          preferredBackend: _preferredBackend,
-        );
-    _handle = handle;
-
-    // The muxed mp4 carries both tracks in one URI; a DASH answer is a video
-    // m4s + an audio m4s that the media_kit adapter combines through MPV's
-    // `audio-files` side channel, so it opens as a composite source.
-    final trackHeaders = SourceHeaders(headers);
-    final sourceId = SourceId('music_${track.id}_${DateTime.now().millisecondsSinceEpoch}');
-    final audioUrl = urls.audioUrl;
-    final dashPair = urls.isDash && audioUrl != null && audioUrl.isNotEmpty;
-    // Primary CDN first, then the answer's backup hosts: a synchronous open()
-    // failure (bad node, dead edge cache) rolls to the next candidate before
-    // the handle is retired. newBV ranks these by a live speed test; we take
-    // them in the order bilibili advertised them.
-    final videoCandidates = <String>[
-      urls.videoUrl,
-      ...urls.videoBackupUrls.where((u) => u.isNotEmpty),
-    ];
-    Object? lastError;
-    var opened = false;
-    for (final videoUrl in videoCandidates) {
-      try {
-        if (dashPair) {
-          await handle.openMedia(
-            CompositeMediaSource(
-              videoTracks: [
-                MediaTrack(uri: Uri.parse(videoUrl), kind: MediaTrackType.video, headers: trackHeaders),
-              ],
-              audioTracks: [
-                MediaTrack(uri: Uri.parse(audioUrl), kind: MediaTrackType.audio, headers: trackHeaders),
-              ],
-            ),
-            autoPlay: true,
-          );
-        } else {
-          await handle.open(
-            PlayerSource(
-              id: sourceId,
-              uri: Uri.parse(videoUrl),
-              protocol: openProtocol,
-              headers: trackHeaders,
-              title: track.title,
-            ),
-            autoPlay: true,
-          );
-        }
-        opened = true;
-        break;
-      } catch (error) {
-        lastError = error;
-      }
-    }
-    if (!opened) {
-      // Every candidate failed: an open that died mid-flight can leave the
-      // adapter in a state the next open cannot trust — retire it.
-      await _releaseHandle();
-      throw lastError ?? Exception('playurl open failed');
-    }
-
-    try {
-      await handle.setAudioOnly(state.audioOnly);
-    } catch (_) {}
-
-    // Video mode: the Flutter surface may not have been live when mpv built its
-    // video output (first open, or a fresh handle), so the picture lands on a
-    // black texture. Toggling vid off → on rebuilds the output against the
-    // surface that is now mounted.
-    if (!state.audioOnly) {
-      try {
-        await handle.setAudioOnly(true);
-        await handle.setAudioOnly(false);
-      } catch (_) {}
-    }
-
-    _events?.cancel();
-    _events = handle.adapterEvents.listen(_onAdapterEvent);
-    // The rate persists across track switches: a user watching at 1.5x keeps
-    // 1.5x on the next episode.
-    if (state.speed != 1.0) {
-      await _ignoreCancelled(() => handle.setRate(state.speed));
-    }
-    state = state.copyWith(resolving: false, quality: urls.quality, qualityOptions: urls.videoOptions);
-
-    // Cloud history heartbeat per track start (the bmsc behaviour): the
-    // bilibili history page then shows what was listened to. Silent when
-    // logged out or the report fails.
-    if (track.archive.aid > 0) {
-      BilibiliUgcApi.instance
-          .reportHistory(aid: track.archive.aid, cid: track.part.cid, progress: 0, bvid: track.archive.bvid)
-          .catchError((Object _) {});
-    }
-  }
 
   void _onAdapterEvent(PlayerAdapterEvent event) {
     if (event is PlayerAdapterCompleted) {
@@ -1067,11 +851,11 @@ class MusicPlayerController extends _$MusicPlayerController {
     if (_sleepAfterTrack) {
       _sleepAfterTrack = false;
       state = state.copyWith(sleepMinutes: 0);
-      final handle = _handle;
+      final handle = _core.handle;
       if (handle != null) {
         // The track just ended on its own; pause so the queue holds position
         // and the next open (play/pause) resumes it.
-        await _ignoreCancelled(() async {
+        await VodPlaybackCore.ignoreCancelled(() async {
           if (handle.isPlaying) await handle.pause();
         });
       }
@@ -1080,23 +864,21 @@ class MusicPlayerController extends _$MusicPlayerController {
     }
     switch (state.mode) {
       case MusicPlayMode.loopOne:
-        final handle = _handle;
+        final handle = _core.handle;
         if (handle == null) return;
-        await _ignoreCancelled(() => handle.seek(Duration.zero));
-        await _ignoreCancelled(handle.play);
+        await VodPlaybackCore.ignoreCancelled(() => handle.seek(Duration.zero));
+        await VodPlaybackCore.ignoreCancelled(handle.play);
       case MusicPlayMode.sequence:
-        // The video page runs sequential too, but its last part is THE end —
-        // no wrap, the session just sits finished.
-        if (!wrapAtQueueEnd && state.index >= state.queue.length - 1) return;
+        // A song queue that finishes starts over.
         await next();
       case MusicPlayMode.orderStop:
         if (state.index >= state.queue.length - 1) {
           // Sequential play reached the end: the session parks here. The
           // play-later strip still owns the next slot, so give it the turn.
           if (state.tempQueue.isEmpty) {
-            final handle = _handle;
+            final handle = _core.handle;
             if (handle != null) {
-              await _ignoreCancelled(() async {
+              await VodPlaybackCore.ignoreCancelled(() async {
                 if (handle.isPlaying) await handle.pause();
               });
             }
@@ -1119,20 +901,5 @@ class MusicPlayerController extends _$MusicPlayerController {
       return;
     }
     await next();
-  }
-
-  Future<void> _releaseHandle() async {
-    _events?.cancel();
-    _events = null;
-    final handle = _handle;
-    _handle = null;
-    if (handle == null) return;
-    final kernel = _kernel;
-    if (kernel == null) return;
-    try {
-      await kernel.release(handle.id);
-    } catch (_) {
-      // A handle that already fell over must not take the next track down.
-    }
   }
 }
