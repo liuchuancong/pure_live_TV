@@ -25,6 +25,11 @@ class MusicUserPlaylistDetailPage extends ConsumerStatefulWidget {
 class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistDetailPage> {
   final ScrollController _scroll = ScrollController();
   final Map<int, FocusNode> _rowNodes = {};
+
+  /// The batch-select entry button; focus returns here when select mode is
+  /// cancelled, since the Cancel button that held focus unmounts with the
+  /// header swap.
+  final FocusNode _batchEntryNode = FocusNode(debugLabel: 'playlist/batch-entry');
   bool _steeredFocus = false;
 
   /// Batch mode: rows toggle membership instead of playing, and the header
@@ -33,10 +38,16 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
   final Set<String> _selectedIds = {};
 
   void _toggleSelectMode() {
+    final exiting = _selectMode;
     setState(() {
       _selectedIds.clear();
       _selectMode = !_selectMode;
     });
+    if (exiting) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_batchEntryNode.hasFocus) _batchEntryNode.requestFocus();
+      });
+    }
   }
 
   void _toggleSelected(String id) {
@@ -105,6 +116,7 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
   @override
   void dispose() {
     _scroll.dispose();
+    _batchEntryNode.dispose();
     for (final node in _rowNodes.values) {
       node.dispose();
     }
@@ -237,6 +249,7 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
                           icon: Icon(Icons.checklist_rounded, size: 24.ts(context)),
                           size: TvButtonSize.mini,
                           isSecondary: true,
+                          focusNode: _batchEntryNode,
                           onTap: tracks.isEmpty ? null : _toggleSelectMode,
                         ),
                         SizedBox(width: 12.ts(context)),

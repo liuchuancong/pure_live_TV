@@ -22,15 +22,25 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
   final TextEditingController _filter = TextEditingController();
   final MusicListReveal _reveal = MusicListReveal();
 
+  /// Batch-select entry button; focus returns here when select mode is
+  /// cancelled (the Cancel button unmounts with the header swap).
+  final FocusNode _batchEntryNode = FocusNode(debugLabel: 'fav_detail/batch-entry');
+
   /// land on every selected track (the bilibili-music checkbox table).
   bool _selectMode = false;
   final Set<String> _selectedIds = {};
 
   void _toggleSelectMode() {
+    final exiting = _selectMode;
     setState(() {
       _selectedIds.clear();
       _selectMode = !_selectMode;
     });
+    if (exiting) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_batchEntryNode.hasFocus) _batchEntryNode.requestFocus();
+      });
+    }
   }
 
   void _toggleSelected(String id) {
@@ -84,6 +94,7 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
   void dispose() {
     _reveal.dispose();
     _filter.dispose();
+    _batchEntryNode.dispose();
     super.dispose();
   }
 
@@ -171,6 +182,7 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
                     icon: Icon(Icons.checklist_rounded, size: 24.ts(context)),
                     size: TvButtonSize.mini,
                     isSecondary: true,
+                    focusNode: _batchEntryNode,
                     onTap: tracks.isEmpty ? null : _toggleSelectMode,
                   ),
                   SizedBox(width: 12.ts(context)),

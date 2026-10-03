@@ -108,20 +108,21 @@ class MusicFavFoldersPage extends ConsumerWidget {
                 onTap: () => showPlaylistNameDialog(context, ref),
               ),
               SizedBox(width: 12.ts(context)),
-              if (sync.syncingFolderId != 0)
-                SizedBox(
-                  width: 28.ts(context),
-                  height: 28.ts(context),
-                  child: CircularProgressIndicator(strokeWidth: 3.ts(context), color: accent),
-                )
-              else
-                TvButton(
-                  title: i18n('music_sync_all'),
-                  icon: Icon(Icons.sync_rounded, size: 24.ts(context)),
-                  size: TvButtonSize.mini,
-                  isSecondary: true,
-                  onTap: syncController.syncAll,
-                ),
+              // Stays mounted (disabled, spinner icon) while syncing so the
+              // focus doesn't die on the tap that started the sync.
+              TvButton(
+                title: i18n('music_sync_all'),
+                icon: sync.syncingFolderId != 0
+                    ? SizedBox(
+                        width: 22.ts(context),
+                        height: 22.ts(context),
+                        child: CircularProgressIndicator(strokeWidth: 3.ts(context), color: accent),
+                      )
+                    : Icon(Icons.sync_rounded, size: 24.ts(context)),
+                size: TvButtonSize.mini,
+                isSecondary: true,
+                onTap: sync.syncingFolderId != 0 ? null : syncController.syncAll,
+              ),
             ],
           ),
         ),
