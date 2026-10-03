@@ -116,6 +116,10 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
         _closeQueue();
         return KeyEventResult.handled;
       }
+      if (_settingsOpen) {
+        _closeSettings();
+        return KeyEventResult.handled;
+      }
       if (_controlsVisible) {
         _hideControls();
         return KeyEventResult.handled;
@@ -126,10 +130,17 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
     if (_queueOpen) return KeyEventResult.ignored;
 
     if (_controlsVisible) {
-      // The bar owns left/right/OK/down. Up is left unhandled so the bar's own
-      // rows can take it; the playlist itself opens from its bar button only.
+      // The bar owns left/right/OK/down. Up bubbles here (the bar returns it
+      // ignored only when no option list is open) and opens the queue — the
+      // layer above the bar, mirroring the live player where up on the plain
+      // bar switches rooms. Consuming it here stops it falling through to dpad
+      // geometric traversal, which would hop focus off the visible bar.
       if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
         _hideControls();
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        _openQueue();
         return KeyEventResult.handled;
       }
       return KeyEventResult.ignored;
@@ -343,12 +354,13 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
                     left: 48.sp,
                     right: 48.sp,
                     child: IgnorePointer(
-                      ignoring: !_controlsVisible || _queueOpen,
+                      ignoring: !_controlsVisible || _queueOpen || _settingsOpen,
                       // Hidden must also mean unfocusable: a parked-offscreen bar
                       // that keeps its buttons focusable lets the remote land on
-                      // controls the viewer cannot see.
+                      // controls the viewer cannot see. Same while a panel covers
+                      // it — the settings/queue panel must be the only key owner.
                       child: ExcludeFocus(
-                        excluding: !_controlsVisible || _queueOpen,
+                        excluding: !_controlsVisible || _queueOpen || _settingsOpen,
                         child: MusicControlBar(
                           active: _controlsVisible && !_queueOpen && !_settingsOpen,
                           onSettings: _openSettings,

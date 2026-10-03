@@ -138,7 +138,11 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
           setState(() => _zone = VideoBarZone.seek);
           return KeyEventResult.handled;
         }
-        return KeyEventResult.ignored;
+        // Already in the seek zone: there is nothing below it, so consume the
+        // key. Leaving it ignored let it fall to dpad geometric traversal and
+        // hop focus off the bar (visible bar, dead remote).
+        widget.onInteraction();
+        return KeyEventResult.handled;
       case LogicalKeyboardKey.arrowUp:
         if (_zone == VideoBarZone.seek) {
           widget.onInteraction();
@@ -195,6 +199,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
 
     return Focus(
       focusNode: widget.playNode,
+      autofocus: true,
       onKeyEvent: _onKey,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 18.ts(context)),

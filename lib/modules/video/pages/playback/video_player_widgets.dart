@@ -296,6 +296,17 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     _rootNode.requestFocus();
   }
 
+  /// Restores focus to the bar after a menu that was covering it closes. The
+  /// bar was `ExcludeFocus`ed while the menu's own autofocus rows held focus;
+  /// when they unmount nothing requests `_playNode`, so the visible bar is left
+  /// keyless (root handles only Up). Same post-frame restore the parts /
+  /// comments / info close paths already do.
+  void _restoreBarFocus() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _controlsVisible && !_playNode.hasFocus) _playNode.requestFocus();
+    });
+  }
+
   bool get _anyMenuOpen => _qualityOpen || _speedOpen || _subtitleMenuOpen;
 
   KeyEventResult _onRootKey(FocusNode node, KeyEvent event) {
@@ -328,16 +339,19 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       if (_qualityOpen) {
         setState(() => _qualityOpen = false);
         _armAutoHide();
+        _restoreBarFocus();
         return KeyEventResult.handled;
       }
       if (_speedOpen) {
         setState(() => _speedOpen = false);
         _armAutoHide();
+        _restoreBarFocus();
         return KeyEventResult.handled;
       }
       if (_subtitleMenuOpen) {
         setState(() => _subtitleMenuOpen = false);
         _armAutoHide();
+        _restoreBarFocus();
         return KeyEventResult.handled;
       }
       if (_commentsOpen) {
@@ -522,10 +536,13 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         if (didPop) return;
         if (_qualityOpen) {
           setState(() => _qualityOpen = false);
+          _restoreBarFocus();
         } else if (_speedOpen) {
           setState(() => _speedOpen = false);
+          _restoreBarFocus();
         } else if (_subtitleMenuOpen) {
           setState(() => _subtitleMenuOpen = false);
+          _restoreBarFocus();
         } else if (_commentsOpen) {
           _closeComments();
         } else if (_infoOpen) {
@@ -840,7 +857,12 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                       top: 100.sp,
                       right: 48.sp,
                       width: 320.ts(context),
-                      child: VideoQualityMenu(onClose: () => setState(() => _qualityOpen = false)),
+                      child: VideoQualityMenu(
+                        onClose: () {
+                          setState(() => _qualityOpen = false);
+                          _restoreBarFocus();
+                        },
+                      ),
                     ),
 
                   // -------------------------------------------------- speed menu
@@ -849,7 +871,12 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                       top: 100.sp,
                       right: 48.sp,
                       width: 320.ts(context),
-                      child: VideoSpeedMenu(onClose: () => setState(() => _speedOpen = false)),
+                      child: VideoSpeedMenu(
+                        onClose: () {
+                          setState(() => _speedOpen = false);
+                          _restoreBarFocus();
+                        },
+                      ),
                     ),
 
                   // --------------------------------------------- subtitle menu
@@ -861,9 +888,13 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                       child: VideoSubtitleMenu(
                         tracks: _subtitleTracks,
                         selected: _subtitleOn ? _subtitleTrack : null,
-                        onClose: () => setState(() => _subtitleMenuOpen = false),
+                        onClose: () {
+                          setState(() => _subtitleMenuOpen = false);
+                          _restoreBarFocus();
+                        },
                         onPick: (picked) {
                           setState(() => _subtitleMenuOpen = false);
+                          _restoreBarFocus();
                           unawaited(_applySubtitleTrack(track, picked));
                         },
                       ),
