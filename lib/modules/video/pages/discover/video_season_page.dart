@@ -31,6 +31,10 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
   PgcSeason? _season;
   String? _error;
   bool _followBusy = false;
+  // Set while a series switch reloads in the background; the previous season
+  // stays mounted so the chips row (and its DPAD focus) never collapses to the
+  // zero-focusable loading view mid-switch.
+  bool _switching = false;
 
   @override
   void initState() {
@@ -42,19 +46,25 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
     try {
       final season = await BilibiliPgcApi.instance.getSeasonDetail(seasonId: _seasonId);
       if (!mounted) return;
-      setState(() => _season = season);
+      setState(() {
+        _season = season;
+        _switching = false;
+      });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = e.toString());
+      setState(() {
+        _error = e.toString();
+        _switching = false;
+      });
     }
   }
 
   void _switchSeason(int seasonId) {
-    if (seasonId == _seasonId || seasonId <= 0) return;
+    if (seasonId == _seasonId || seasonId <= 0 || _switching) return;
     setState(() {
       _seasonId = seasonId;
-      _season = null;
       _error = null;
+      _switching = true;
     });
     _load();
   }
@@ -289,6 +299,9 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                                   TvButton(
                                     key: ValueKey('pgc_season_${other.seasonId}'),
                                     title: other.title.isEmpty ? 'SS${other.seasonId}' : other.title,
+                                    icon: _switching && other.seasonId == _seasonId
+                                        ? Icon(Icons.hourglass_top_rounded, size: 20.ts(context))
+                                        : null,
                                     size: TvButtonSize.mini,
                                     isSecondary: other.seasonId != season.seasonId,
                                     onTap: () => _switchSeason(other.seasonId),
