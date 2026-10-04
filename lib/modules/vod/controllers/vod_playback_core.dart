@@ -1,16 +1,18 @@
 import 'dart:async';
 import 'package:media_core/media_core.dart';
+import 'package:media_core_ingest/media_core_ingest.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/player/core/playback_header_resolver.dart';
+import 'package:pure_live/player/core/ingest_ffmpeg_kit.dart';
 
 /// The low-level VOD stream mechanics shared by the music and video players.
 ///
 /// Owns ONE [PlayerHandle] on the shared kernel and knows how to put a bilibili
-/// VOD answer onto it: a DASH pair (video m4s + audio m4s) opens as a
-/// [CompositeMediaSource] — the media_kit adapter joins them through mpv's
-/// `audio-files` side channel — while a muxed mp4 opens as a plain
+/// VOD answer onto it: a DASH pair (video m4s + audio m4s) is merged by FFmpeg
+/// through [FfmpegIngestRelay] into a rolling loopback HLS tree — the player
+/// only ever sees one local URL — while a muxed mp4 opens as a plain
 /// [PlayerSource]. A synchronous open failure (bad node, dead edge cache) rolls
 /// to the answer's next backup CDN host before the handle is retired. The VOD
 /// referer headers, the audio-only flag and the mpv vid-toggle that rebuilds the
@@ -33,6 +35,10 @@ class VodPlaybackCore {
 
   PlayerHandle? _handle;
   StreamSubscription<PlayerAdapterEvent>? _events;
+
+  /// The FFmpeg merge relay for the current DASH pair, if any. Closed on
+  /// [releaseHandle] and replaced on every new open — one relay per session.
+  FfmpegIngestRelay? _dashRelay;
 
   /// Bumped by the controller on every switch so a slow resolve from a
   /// superseded track cannot open its stream over the newer one.
@@ -102,14 +108,21 @@ class VodPlaybackCore {
     for (final videoUrl in videoCandidates) {
       try {
         if (dashPair) {
-          await handle.openMedia(
-            CompositeMediaSource(
-              videoTracks: [
-                MediaTrack(uri: Uri.parse(videoUrl), kind: MediaTrackType.video, headers: trackHeaders),
-              ],
-              audioTracks: [
-                MediaTrack(uri: Uri.parse(audioUrl), kind: MediaTrackType.audio, headers: trackHeaders),
-              ],
+          // FFmpeg merge: two m4s inputs → one rolling loopback HLS tree.
+          // The player sees a single local URL; the merge is transparent.
+          await _dashRelay?.close();
+          _dashRelay = await FfmpegIngestRelay.startDashMerge(
+            videoSource: Uri.parse(videoUrl),
+            audioSource: Uri.parse(audioUrl),
+            startFfmpeg: startIngestFfmpeg,
+            headers: headers,
+          );
+          await handle.open(
+            PlayerSource(
+              id: sourceId,
+              uri: _dashRelay!.inputUri,
+              protocol: SourceProtocol.http,
+              title: track.title,
             ),
             autoPlay: true,
           );
@@ -129,6 +142,10 @@ class VodPlaybackCore {
         break;
       } catch (error) {
         lastError = error;
+        // A relay that started but whose open failed must not leak into the
+        // next candidate's attempt.
+        await _dashRelay?.close();
+        _dashRelay = null;
       }
     }
     if (!opened) {
@@ -171,6 +188,8 @@ class VodPlaybackCore {
   Future<void> releaseHandle() async {
     _events?.cancel();
     _events = null;
+    await _dashRelay?.close();
+    _dashRelay = null;
     final handle = _handle;
     _handle = null;
     if (handle == null) return;

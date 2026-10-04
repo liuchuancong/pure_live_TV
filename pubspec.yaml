@@ -120,6 +120,14 @@ dependencies:
     path: F:/media_core/packages/media_core_better_player
   media_core_ijk_player:
     path: F:/media_core/packages/media_core_ijk_player
+  media_core_ingest:
+    path: F:/media_core/packages/media_core_ingest
+  # FFmpeg runtime for the DASH merge relay (media_core_ingest injects it
+  # through IngestFfmpegStarter; the package itself ships no binary).
+  # ffmpeg_kit_flutter_new is the community fork of the retired ffmpeg_kit_flutter;
+  # it does not depend on code_assets, so it coexists with media_kit's pin.
+  # Requires minSdk 24.
+  ffmpeg_kit_flutter_new: ^4.6.4
   # Imported directly by the wallpaper / background code (and available through
   # the media_core_media_kit adapter's re-export, which pins the same revision);
   # declared here because a direct import should come from a direct dependency.

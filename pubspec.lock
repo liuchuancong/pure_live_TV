@@ -496,6 +496,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.2"
+  ffmpeg_kit_flutter_new:
+    dependency: "direct main"
+    description:
+      name: ffmpeg_kit_flutter_new
+      sha256: "1f2a4bb5789701db25d0b5087c033db05e34aacd23ee91c734d3ede71b5dd48e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.6.4"
+  ffmpeg_kit_flutter_platform_interface:
+    dependency: transitive
+    description:
+      name: ffmpeg_kit_flutter_platform_interface
+      sha256: addf046ae44e190ad0101b2fde2ad909a3cd08a2a109f6106d2f7048b7abedee
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   file:
     dependency: transitive
     description:
@@ -1147,6 +1163,13 @@ packages:
     dependency: "direct main"
     description:
       path: "F:/media_core/packages/media_core_ijk_player"
+      relative: false
+    source: path
+    version: "0.1.0"
+  media_core_ingest:
+    dependency: "direct main"
+    description:
+      path: "F:/media_core/packages/media_core_ingest"
       relative: false
     source: path
     version: "0.1.0"

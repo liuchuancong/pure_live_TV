@@ -39,11 +39,11 @@ android {
 
     defaultConfig {
         applicationId = "com.mystyle.purelive.tv"
-        // Flutter's floor stays at its default here on purpose. The phone build
-        // raises it to 26 only because its recording engine ships API 26 native
-        // binaries, and this build does not include that engine. Keeping the
-        // lower floor keeps Android TV 7 boxes installable.
-        minSdk = flutter.minSdkVersion
+        // FFmpeg (ffmpeg_kit_extended_flutter) requires API 26; the DASH merge
+        // relay in media_core_ingest shells out to it for bilibili's split
+        // audio+video streams. The compat branch keeps Flutter's lower floor
+        // and uses mpv's audio-files side channel instead.
+        minSdk = 26
         targetSdk = 37
         multiDexEnabled = true
         versionCode = flutter.versionCode
