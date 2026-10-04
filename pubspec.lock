@@ -273,7 +273,7 @@ packages:
     source: hosted
     version: "1.1.3"
   code_assets:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       name: code_assets
       sha256: "828110d598123b5ea96c00c9f3c72105bf79f8ee36c20a39b26209ade421ec57"
@@ -496,22 +496,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.2"
-  ffmpeg_kit_flutter_new:
-    dependency: "direct main"
-    description:
-      name: ffmpeg_kit_flutter_new
-      sha256: "1f2a4bb5789701db25d0b5087c033db05e34aacd23ee91c734d3ede71b5dd48e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.6.4"
-  ffmpeg_kit_flutter_platform_interface:
+  ffmpeg_kit_extended_flutter:
     dependency: transitive
     description:
-      name: ffmpeg_kit_flutter_platform_interface
-      sha256: addf046ae44e190ad0101b2fde2ad909a3cd08a2a109f6106d2f7048b7abedee
+      name: ffmpeg_kit_extended_flutter
+      sha256: cde6cba6e3d31238ee19172ada1057bf16540510485358f5fd73e5cd1abff089
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.1"
+    version: "0.6.2"
   file:
     dependency: transitive
     description:
@@ -891,7 +883,7 @@ packages:
     source: hosted
     version: "1.11.3"
   hooks:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       name: hooks
       sha256: eaac480a35ec0814146c2c48d96aaa829e0e44a7662c88ae84c9edf4bc35651f
@@ -1208,6 +1200,13 @@ packages:
       relative: false
     source: path
     version: "0.2.0"
+  media_core_recording_ffmpeg:
+    dependency: "direct main"
+    description:
+      path: "F:/media_core/packages/media_core_recording_ffmpeg"
+      relative: false
+    source: path
+    version: "0.1.0"
   media_kit:
     dependency: "direct main"
     description:

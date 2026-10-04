@@ -1,43 +1,42 @@
 import 'dart:async';
 
-import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new/ffmpeg_session.dart';
 import 'package:media_core_ingest/media_core_ingest.dart';
+import 'package:media_core_recording_ffmpeg/media_core_recording_ffmpeg.dart';
 
-/// [IngestFfmpegStarter] backed by `ffmpeg_kit_flutter_new`.
+/// [IngestFfmpegStarter] backed by media_core's own [FfmpegKitExecutor].
 ///
 /// media_core_ingest deliberately ships no FFmpeg binary — the host injects
-/// one. This is the TV app's injection: it wraps an [FFmpegSession] in the
+/// one. media_core_recording_ffmpeg already wraps `ffmpeg_kit_extended_flutter`
+/// behind [FfmpegExecutor]; this file adapts that interface to the
 /// [IngestFfmpegProcess] contract the relay expects.
 ///
-/// The session runs asynchronously (`executeWithArguments` returns once the
-/// native side has accepted the command); the relay waits for the first
-/// playlist file, which is the real readiness signal. A session that dies
-/// before publishing a playlist surfaces through
-/// [IngestFfmpegProcess.exitCode], and the relay's startup wait throws.
+/// The executor is lazily initialized on first use and lives for the app
+/// session (FFmpegKit's native load is expensive; one instance serves every
+/// relay start).
+final FfmpegKitExecutor _executor = FfmpegKitExecutor();
+bool _initialized = false;
+
 Future<IngestFfmpegProcess> startIngestFfmpeg(List<String> arguments) async {
-  final session = await FFmpegKit.executeWithArguments(arguments);
-  return _FfmpegKitProcess(session);
+  if (!_initialized) {
+    await _executor.initialize();
+    _initialized = true;
+  }
+  final execution = await _executor.start(arguments: arguments);
+  return _ExecutionAdapter(execution);
 }
 
-final class _FfmpegKitProcess implements IngestFfmpegProcess {
-  _FfmpegKitProcess(this._session);
+/// Thin adapter: [FfmpegExecution] → [IngestFfmpegProcess].
+///
+/// The two interfaces carry the same two members the relay needs (exitCode,
+/// stop); this just bridges the type gap without duplicating lifecycle logic.
+final class _ExecutionAdapter implements IngestFfmpegProcess {
+  _ExecutionAdapter(this._inner);
 
-  final FFmpegSession _session;
-  bool _stopped = false;
-
-  @override
-  Future<int> get exitCode async {
-    final returnCode = await _session.getReturnCode();
-    // FFmpegKit maps a cancelled session to 255; the relay treats any non-zero
-    // exit before the first playlist as a startup failure.
-    return returnCode?.getValue() ?? 255;
-  }
+  final FfmpegExecution _inner;
 
   @override
-  Future<void> stop() async {
-    if (_stopped) return;
-    _stopped = true;
-    await FFmpegKit.cancel(_session.getSessionId());
-  }
+  Future<int> get exitCode => _inner.exitCode;
+
+  @override
+  Future<void> stop() => _inner.stop();
 }
