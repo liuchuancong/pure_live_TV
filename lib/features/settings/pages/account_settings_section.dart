@@ -146,7 +146,9 @@ class AccountSettingsSectionPage extends ConsumerWidget {
               icon: Remix.delete_bin_6_line,
               options: [i18n('clear')],
               index: 0,
-              onChanged: (_) => _clearAll(context, ref),
+              onChanged: ref.read(cookieControllerProvider.notifier).hasAnyCredential
+                  ? (_) => _clearAll(context, ref)
+                  : null,
             ),
           ],
         ),

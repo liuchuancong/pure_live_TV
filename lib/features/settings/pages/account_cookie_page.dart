@@ -80,10 +80,14 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
     }
   }
 
-  /// Drops the stored session. The Douyu renewal pair stays: it belongs to the
-  /// login rather than to the cookie, and is what a later renewal needs.
+  /// Drops the stored session. For Douyu this clears the whole session group
+  /// (cookie + renewal pair + timestamp), not just the cookie field.
   void _clear() {
-    widget.platform.apply('');
+    if (_isDouyu) {
+      ref.read(cookieControllerProvider.notifier).clearDouyuSession();
+    } else {
+      widget.platform.apply('');
+    }
 
     if (!mounted) return;
 

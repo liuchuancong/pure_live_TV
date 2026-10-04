@@ -94,6 +94,25 @@ class CookieController extends _$CookieController {
 
   void setDouyuCookie(String cookie) => _setPlatformCookie((m, v) => m.copyWith(douyuCookie: v), cookie);
 
+  /// 斗鱼这一组是一个会话，不是一个字段。
+  ///
+  /// `douyuLtp0` 是 passport 的长期续期密钥，`douyuDid` 是它绑定的设备号：
+  /// 留着它们，"已登出"就只是把 cookie 抹了——凭据仍在本地，也仍会跟着
+  /// 勾选了敏感数据的备份一起导出。续期本身要读到非空 cookie 才会发请求
+  /// （见 `DouyuUtils.refreshSession`），所以清掉不影响任何在用的能力；
+  /// 重新登录时那一页本来就三个字段一起填。
+  void clearDouyuSession() {
+    final next = state.copyWith(
+      douyuCookie: '',
+      douyuCookieSavedAt: 0,
+      douyuLtp0: '',
+      douyuDid: '',
+    );
+    if (next == state) return;
+    state = next;
+    _persist(state);
+  }
+
   /// The renewal pair from the passport request (`LTP0` / `dy_did`). They are
   /// not part of the page cookie, so they are stored beside it.
   void setDouyuCredentials({required String ltp0, required String did}) {
@@ -138,6 +157,25 @@ class CookieController extends _$CookieController {
     if (next == state) return;
     state = next;
     _persist(state);
+  }
+
+  /// 还存不存在任何登录凭据。
+  ///
+  /// 「清除所有账号」按它决定可不可点：没东西可清的时候给一个能点的破坏性按钮，
+  /// 只会让人怀疑自己是不是没登出干净。斗鱼的续期凭据也算——它单独留着就是
+  /// 登出没登出的那种状态。
+  bool get hasAnyCredential {
+    final m = state;
+    return m.bilibiliCookie.isNotEmpty ||
+        m.huyaCookie.isNotEmpty ||
+        m.douyuCookie.isNotEmpty ||
+        m.douyuLtp0.isNotEmpty ||
+        m.douyuDid.isNotEmpty ||
+        m.douyinCookie.isNotEmpty ||
+        m.kuaishouCookie.isNotEmpty ||
+        m.twitchCookie.isNotEmpty ||
+        m.soopCookie.isNotEmpty ||
+        m.yyCookie.isNotEmpty;
   }
 
   void clearAllCookies() {
