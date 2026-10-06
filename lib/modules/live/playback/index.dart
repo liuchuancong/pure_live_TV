@@ -1,4 +1,4 @@
-export 'controllers/danmaku_filters.dart';
+export 'controllers/live_message_normalization.dart';
 export 'controllers/danmaku_option_steps.dart';
 export 'controllers/live_play_controller.dart';
 export 'models/live_play_args.dart';

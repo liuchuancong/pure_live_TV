@@ -3,7 +3,8 @@ import 'package:flutter/painting.dart';
 import 'package:flame_barrage/flame_barrage.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/modules/live/playback/controllers/danmaku_filters.dart';
+import 'package:media_core_danmaku/media_core_danmaku.dart';
+import 'package:pure_live/modules/live/playback/controllers/live_message_normalization.dart';
 import 'package:pure_live/modules/live/playback/models/live_play_args.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/modules/live/playback/services/live_play_repository.dart';
@@ -20,7 +21,7 @@ part 'danmaku_session_controller.g.dart';
 @riverpod
 class DanmakuSessionController extends _$DanmakuSessionController {
   final DanmakuMessageGate _messageGate = DanmakuMessageGate();
-  final RepeatedDanmakuFilter _repeatedFilter = RepeatedDanmakuFilter();
+  final DanmakuRepeatedFilter _repeatedFilter = DanmakuRepeatedFilter();
   final DanmakuSimilarityFilter _similarityFilter = DanmakuSimilarityFilter();
 
   LiveDanmaku? _engine;
@@ -112,7 +113,7 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     // list view alone.
     if (message.type != LiveMessageType.chat) return;
 
-    if (!_messageGate.accepts(message)) return;
+    if (!_messageGate.accepts(normalizeLiveMessage(message))) return;
 
     // Blocked words and users configured in the filter panel are dropped on
     // match.
@@ -121,7 +122,7 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     final danmakuSettings = SettingsService.to.danmakuState;
 
     if (!_repeatedFilter.accepts(
-      message,
+      normalizeLiveMessage(message),
       enabled: danmakuSettings.collapseRepeatedDanmaku,
       window: Duration(seconds: danmakuSettings.repeatedDanmakuWindowSeconds.clamp(1, 30)),
     )) {
