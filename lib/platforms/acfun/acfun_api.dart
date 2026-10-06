@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:convert';
 import 'dart:math';
 
@@ -15,7 +16,10 @@ typedef AcfunRequest = Future<Object?> Function(
 enum AcfunFailureKind { transport, service, schema, qualityUnavailable, paginationExpired }
 
 /// Safe to log: never retains the response body, visitor credential or URL.
-class AcfunApiException implements Exception {
+class AcfunApiException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == AcfunFailureKind.transport;
+
   const AcfunApiException(this.kind, {this.result});
 
   final AcfunFailureKind kind;

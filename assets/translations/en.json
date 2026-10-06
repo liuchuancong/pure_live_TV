@@ -893,6 +893,8 @@
   "general_desc": "Change startup behavior, and alerts",
   "general_settings": "General Settings",
   "get_room_info_failed_retry": "Failed to get room info, please retry",
+  "site_unreachable": "Cannot reach this platform. Check the network or enable the app-layer proxy",
+  "site_unreachable_via_proxy": "Still cannot reach this platform through the proxy. Check that the proxy can route it",
   "github": "Github",
   "github_login": "GitHub Login",
   "github_origin_source": "GitHub origin",

@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -13,7 +14,10 @@ import 'kick_link.dart';
 
 enum KickFailure { transport, access, rateLimited, service, missing, schema, cancelled, identity, mediaUnavailable }
 
-class KickException implements Exception {
+class KickException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == KickFailure.transport;
+
   const KickException(this.kind);
   final KickFailure kind;
 

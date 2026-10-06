@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -21,7 +22,10 @@ enum SeventeenLiveFailure {
   mediaUnavailable,
 }
 
-class SeventeenLiveException implements Exception {
+class SeventeenLiveException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == SeventeenLiveFailure.transport;
+
   const SeventeenLiveException(this.kind);
   final SeventeenLiveFailure kind;
 

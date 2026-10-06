@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -22,7 +23,10 @@ enum KilakilaFailure {
   mediaUnavailable,
 }
 
-class KilakilaException implements Exception {
+class KilakilaException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == KilakilaFailure.transport;
+
   const KilakilaException(this.kind);
   final KilakilaFailure kind;
   @override

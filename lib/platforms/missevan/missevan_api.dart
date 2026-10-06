@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -9,7 +10,10 @@ import 'package:pure_live/core/i18n/locale_helper.dart';
 
 enum MissevanFailure { transport, access, rateLimited, service, notFound, schema, cancelled, qualityUnavailable }
 
-class MissevanException implements Exception {
+class MissevanException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == MissevanFailure.transport;
+
   const MissevanException(this.kind);
   final MissevanFailure kind;
   @override

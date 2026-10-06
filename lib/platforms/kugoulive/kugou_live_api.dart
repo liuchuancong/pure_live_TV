@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -20,7 +21,10 @@ enum KugouLiveFailure {
   mediaUnavailable,
 }
 
-final class KugouLiveException implements Exception {
+final class KugouLiveException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == KugouLiveFailure.transport;
+
   const KugouLiveException(this.kind);
 
   final KugouLiveFailure kind;

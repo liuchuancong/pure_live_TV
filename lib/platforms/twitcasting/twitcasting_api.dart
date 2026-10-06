@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -9,7 +10,10 @@ import 'package:pure_live/core/models/index.dart';
 
 enum TwitcastingFailure { transport, access, rateLimited, service, notFound, schema, cancelled, qualityUnavailable }
 
-class TwitcastingException implements Exception {
+class TwitcastingException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == TwitcastingFailure.transport;
+
   const TwitcastingException(this.kind);
   final TwitcastingFailure kind;
   @override

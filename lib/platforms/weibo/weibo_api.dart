@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -24,7 +25,10 @@ enum WeiboAccess { public, restricted, disabled }
 
 enum WeiboBroadcastState { live, replay, unknown }
 
-class WeiboException implements Exception {
+class WeiboException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == WeiboFailure.transport;
+
   const WeiboException(this.kind);
   final WeiboFailure kind;
   @override

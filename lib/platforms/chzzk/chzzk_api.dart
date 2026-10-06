@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -8,7 +9,10 @@ import 'package:pure_live/core/common/request_scope.dart';
 
 enum ChzzkFailure { transport, access, rateLimited, service, missing, schema, cancelled, identity, mediaUnavailable }
 
-class ChzzkException implements Exception {
+class ChzzkException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == ChzzkFailure.transport;
+
   const ChzzkException(this.kind);
 
   final ChzzkFailure kind;

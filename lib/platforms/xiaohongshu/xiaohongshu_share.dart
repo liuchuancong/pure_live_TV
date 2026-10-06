@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:convert';
 
 import 'package:html/parser.dart' as html;
@@ -16,7 +17,10 @@ enum XiaohongshuFailure {
   mediaUnavailable,
 }
 
-class XiaohongshuException implements Exception {
+class XiaohongshuException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == XiaohongshuFailure.transport;
+
   const XiaohongshuException(this.kind);
   final XiaohongshuFailure kind;
   @override

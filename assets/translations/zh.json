@@ -888,6 +888,8 @@
   "general_desc": "修改自动开机自启、弹窗提示设置",
   "general_settings": "通用设置",
   "get_room_info_failed_retry": "获取直播间信息失败,请重新获取",
+  "site_unreachable": "无法连接到该平台，请检查网络或开启应用层代理",
+  "site_unreachable_via_proxy": "通过代理仍无法连接到该平台，请检查代理是否可达该站点",
   "github": "Github",
   "github_login": "GitHub 登录",
   "github_origin_source": "GitHub 官方源",

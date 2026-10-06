@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -10,7 +11,10 @@ import 'fc2_link.dart';
 
 enum Fc2Failure { transport, access, missing, rateLimited, service, schema, identity, cancelled, offline }
 
-final class Fc2Exception implements Exception {
+final class Fc2Exception implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == Fc2Failure.transport;
+
   const Fc2Exception(this.kind);
 
   final Fc2Failure kind;
