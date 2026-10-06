@@ -124,6 +124,8 @@ dependencies:
     path: F:/media_core/packages/media_core_ingest
   media_core_recording_ffmpeg:
     path: F:/media_core/packages/media_core_recording_ffmpeg
+  media_core_danmaku:
+    path: F:/media_core/packages/media_core_danmaku
   # Imported directly by the wallpaper / background code (and available through
   # the media_core_media_kit adapter's re-export, which pins the same revision);
   # declared here because a direct import should come from a direct dependency.
