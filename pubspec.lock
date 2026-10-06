@@ -497,7 +497,7 @@ packages:
     source: hosted
     version: "0.1.2"
   ffmpeg_kit_extended_flutter:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: ffmpeg_kit_extended_flutter
       sha256: cde6cba6e3d31238ee19172ada1057bf16540510485358f5fd73e5cd1abff089
@@ -1207,13 +1207,6 @@ packages:
       relative: false
     source: path
     version: "0.2.0"
-  media_core_recording_ffmpeg:
-    dependency: "direct main"
-    description:
-      path: "F:/media_core/packages/media_core_recording_ffmpeg"
-      relative: false
-    source: path
-    version: "0.1.0"
   media_kit:
     dependency: "direct main"
     description:

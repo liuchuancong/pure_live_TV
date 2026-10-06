@@ -12,6 +12,8 @@ import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:pure_live/core/common/api_proxy_policy.dart';
 import 'package:pure_live/core/platform/local_network_access.dart';
+import 'package:pure_live/player/core/ingest_ffmpeg_registry.dart';
+import 'package:pure_live/player/core/ffmpeg_ingest_starter.dart';
 
 class AppInitializer {
   static final AppInitializer _instance = AppInitializer._internal();
@@ -71,6 +73,11 @@ class AppInitializer {
 
     // Danmaku sockets reuse the proxy policy configured for API and image traffic.
     configureWebSocketProxyRouting(ApiProxyPolicy.directiveFor);
+
+    // The DASH merge in the VOD/music transport remuxes a bilibili split
+    // audio+video pair with a local FFmpeg; it runs on the app's FFmpegKit build
+    // injected here rather than linking a second runtime into media_core_ingest.
+    configureIngestFfmpegStarter(ffmpegKitIngestStarter);
 
     // Version info plus the startup update check.
     //

@@ -5,7 +5,7 @@ import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/player/core/playback_header_resolver.dart';
-import 'package:pure_live/player/core/ingest_ffmpeg_kit.dart';
+import 'package:pure_live/player/core/ingest_ffmpeg_registry.dart';
 
 /// The low-level VOD stream mechanics shared by the music and video players.
 ///

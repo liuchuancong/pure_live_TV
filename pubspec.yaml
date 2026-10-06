@@ -122,8 +122,11 @@ dependencies:
     path: F:/media_core/packages/media_core_ijk_player
   media_core_ingest:
     path: F:/media_core/packages/media_core_ingest
-  media_core_recording_ffmpeg:
-    path: F:/media_core/packages/media_core_recording_ffmpeg
+  # FFmpeg runtime for the DASH merge relay. media_core_ingest ships no binary
+  # and the app injects one through the ingest registry; this is the same
+  # FFmpegKit build the mobile sibling uses (no media_core_recording_ffmpeg
+  # wrapper). Requires minSdk 26.
+  ffmpeg_kit_extended_flutter: 0.6.2
   media_core_danmaku:
     path: F:/media_core/packages/media_core_danmaku
   # Imported directly by the wallpaper / background code (and available through
