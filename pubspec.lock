@@ -564,10 +564,10 @@ packages:
     dependency: "direct main"
     description:
       name: flame_barrage
-      sha256: "7e590e42f225f134bf05e222de3199b6e1692f3898aa4c0396bb7bd6d79bcc58"
+      sha256: "15541ff9c2b9afc003b3a607754a8dbcce8679b6868e9c1da83927f6389b9bc5"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.8"
+    version: "0.0.9"
   flutter:
     dependency: "direct main"
     description: flutter

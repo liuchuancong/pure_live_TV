@@ -8,39 +8,36 @@ part of 'music_player_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The music-mode player: one VOD [PlayerHandle] on the shared kernel, a track
-/// queue and the advance rules.
+/// The music-mode player: a track queue, the advance rules and the listening
+/// extras (play-later strip, sleep timer, resume snapshot, recently played).
 ///
-/// Deliberately *not* the live facade: that path is tuned for non-seekable
-/// streams and lease renewal. VOD needs seek, position and duration, which the
-/// raw handle already carries. The handle is created per track and released on
-/// switch, so the mpv `audio-file` input (which attaches the DASH audio stream
-/// to the video-only primary) is set per track without touching the shared
-/// engine registrations.
+/// Playback runs on its OWN [PlayerHandle] through [VodPlaybackCore], separate
+/// from the video player's handle, so a video never replaces the music queue
+/// and never reads back as the current song. Deliberately not the live facade:
+/// that path is tuned for non-seekable streams and lease renewal, while VOD
+/// needs the seek, position and duration the raw handle already carries.
 
 @ProviderFor(MusicPlayerController)
 final musicPlayerControllerProvider = MusicPlayerControllerProvider._();
 
-/// The music-mode player: one VOD [PlayerHandle] on the shared kernel, a track
-/// queue and the advance rules.
+/// The music-mode player: a track queue, the advance rules and the listening
+/// extras (play-later strip, sleep timer, resume snapshot, recently played).
 ///
-/// Deliberately *not* the live facade: that path is tuned for non-seekable
-/// streams and lease renewal. VOD needs seek, position and duration, which the
-/// raw handle already carries. The handle is created per track and released on
-/// switch, so the mpv `audio-file` input (which attaches the DASH audio stream
-/// to the video-only primary) is set per track without touching the shared
-/// engine registrations.
+/// Playback runs on its OWN [PlayerHandle] through [VodPlaybackCore], separate
+/// from the video player's handle, so a video never replaces the music queue
+/// and never reads back as the current song. Deliberately not the live facade:
+/// that path is tuned for non-seekable streams and lease renewal, while VOD
+/// needs the seek, position and duration the raw handle already carries.
 final class MusicPlayerControllerProvider
     extends $NotifierProvider<MusicPlayerController, MusicPlayerState> {
-  /// The music-mode player: one VOD [PlayerHandle] on the shared kernel, a track
-  /// queue and the advance rules.
+  /// The music-mode player: a track queue, the advance rules and the listening
+  /// extras (play-later strip, sleep timer, resume snapshot, recently played).
   ///
-  /// Deliberately *not* the live facade: that path is tuned for non-seekable
-  /// streams and lease renewal. VOD needs seek, position and duration, which the
-  /// raw handle already carries. The handle is created per track and released on
-  /// switch, so the mpv `audio-file` input (which attaches the DASH audio stream
-  /// to the video-only primary) is set per track without touching the shared
-  /// engine registrations.
+  /// Playback runs on its OWN [PlayerHandle] through [VodPlaybackCore], separate
+  /// from the video player's handle, so a video never replaces the music queue
+  /// and never reads back as the current song. Deliberately not the live facade:
+  /// that path is tuned for non-seekable streams and lease renewal, while VOD
+  /// needs the seek, position and duration the raw handle already carries.
   MusicPlayerControllerProvider._()
     : super(
         from: null,
@@ -69,17 +66,16 @@ final class MusicPlayerControllerProvider
 }
 
 String _$musicPlayerControllerHash() =>
-    r'8acc95db39e9877a10be7417d3ae222d24a1b811';
+    r'782e283fceb95d627b7166545ebb8552522de41b';
 
-/// The music-mode player: one VOD [PlayerHandle] on the shared kernel, a track
-/// queue and the advance rules.
+/// The music-mode player: a track queue, the advance rules and the listening
+/// extras (play-later strip, sleep timer, resume snapshot, recently played).
 ///
-/// Deliberately *not* the live facade: that path is tuned for non-seekable
-/// streams and lease renewal. VOD needs seek, position and duration, which the
-/// raw handle already carries. The handle is created per track and released on
-/// switch, so the mpv `audio-file` input (which attaches the DASH audio stream
-/// to the video-only primary) is set per track without touching the shared
-/// engine registrations.
+/// Playback runs on its OWN [PlayerHandle] through [VodPlaybackCore], separate
+/// from the video player's handle, so a video never replaces the music queue
+/// and never reads back as the current song. Deliberately not the live facade:
+/// that path is tuned for non-seekable streams and lease renewal, while VOD
+/// needs the seek, position and duration the raw handle already carries.
 
 abstract class _$MusicPlayerController extends $Notifier<MusicPlayerState> {
   MusicPlayerState build();

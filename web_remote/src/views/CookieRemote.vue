@@ -36,6 +36,7 @@ import kuaishouIcon from '@/assets/kuaishou.png'
 import yyIcon from '@/assets/yy.png'
 import soopIcon from '@/assets/soop.png'
 import twitchIcon from '@/assets/twitch.png'
+import bigoIcon from '@/assets/bigo.png'
 const route = useRoute()
 
 // Must mirror the TV app's cookie fields exactly (see lib/services/cookie_manager/
@@ -50,6 +51,7 @@ const supportSites = [
   { id: 'kuaishou', name: '快手', icon: kuaishouIcon },
   { id: 'yy', name: 'YY', icon: yyIcon },
   { id: 'soop', name: 'SOOP', icon: soopIcon },
-  { id: 'twitch', name: 'Twitch', icon: twitchIcon }
+  { id: 'twitch', name: 'Twitch', icon: twitchIcon },
+  { id: 'bigo', name: 'Bigo Live', icon: bigoIcon }
 ]
 </script>

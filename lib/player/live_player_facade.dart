@@ -12,6 +12,7 @@ import 'core/flv_legacy_hevc_relay.dart';
 import 'core/flv_splice_relay.dart';
 import 'core/owned_input_opener.dart';
 import 'core/playback_proxy_policy.dart';
+import 'core/dummy_video_policy.dart';
 import '../app/consts/app_theme_consts.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 
@@ -160,7 +161,7 @@ final class LivePlayerFacade {
           final relay = await FlvLegacyHevcRelay.start(
             url,
             headers,
-            findProxy: (_) => PlaybackProxyPolicy.currentDirective(),
+            findProxy: (uri) => PlaybackProxyPolicy.currentDirectiveFor(uri),
             hostSuffixes: _legacyHevcFlvHosts,
           );
           _sourceRelays.add(relay);
@@ -178,7 +179,7 @@ final class LivePlayerFacade {
       final relay = await FlvLegacyHevcRelay.start(
         url,
         headers,
-        findProxy: (_) => PlaybackProxyPolicy.currentDirective(),
+        findProxy: (uri) => PlaybackProxyPolicy.currentDirectiveFor(uri),
         hostSuffixes: _legacyHevcFlvHosts,
       );
 
@@ -233,7 +234,7 @@ final class LivePlayerFacade {
             return FlvLeasedSource(Uri.parse(next), refreshAt: refreshAtFor(next));
           },
           headers: headers,
-          findProxy: (_) => PlaybackProxyPolicy.currentDirective(),
+          findProxy: (uri) => PlaybackProxyPolicy.currentDirectiveFor(uri),
         );
 
         _spliceRelays.add(relay);
@@ -387,6 +388,21 @@ final class LivePlayerFacade {
 
   /// Audio-only playback mode stream.
   Stream<bool> get onAudioOnlyChanged => _audioOnlySubject.stream;
+
+  /// 当前会话的平台，供语音直播平台兜底判"其实没有画面"。play 时记下，stop 清空。
+  String? _currentPlatform;
+
+  /// 源里的"视频轨"其实没有画面（占位轨或语音直播平台）：显示房间封面而不是黑屏。
+  final _dummyVideoSubject = BehaviorSubject<bool>.seeded(false);
+
+  Stream<bool> get onDummyVideoChanged => _dummyVideoSubject.stream;
+
+  bool get isDummyVideo => _dummyVideoSubject.value;
+
+  void _updateDummyVideo(int width, int height) {
+    final dummy = isDummyVideoSize(width: width, height: height) || isAudioOnlyPlatform(_currentPlatform);
+    if (dummy != _dummyVideoSubject.value) _dummyVideoSubject.add(dummy);
+  }
 
   StreamSubscription<PlayerFailure>? _errorSub;
   StreamSubscription<PlayerCoreState>? _stateSub;
@@ -558,6 +574,7 @@ final class LivePlayerFacade {
       _widthSubject.add(width);
       _heightSubject.add(height);
       isVerticalVideo.add(height >= width);
+      _updateDummyVideo(width, height);
 
       // A video-size report means a frame was decoded and laid out: the
       // surface has a picture even if the playing event is still pending.
@@ -621,6 +638,11 @@ final class LivePlayerFacade {
     if (sourceUrl.isEmpty) {
       throw ArgumentError('Remote playback source is empty');
     }
+
+    // 记下平台供 dummy-video 兜底判定；新会话先回到"有画面"的默认态，
+    // 上一个房间的判定不能带到这个房间。
+    _currentPlatform = room?.platform;
+    if (_dummyVideoSubject.value) _dummyVideoSubject.add(false);
 
     // With no explicit headers, resolve them per platform (UA /
     // referer the live site requires).
@@ -974,6 +996,7 @@ final class LivePlayerFacade {
     await _widthSubject.close();
     await _heightSubject.close();
     await isVerticalVideo.close();
+    await _dummyVideoSubject.close();
     await _pictureSubject.close();
     await videoFitIndex.close();
     await videoKey.close();

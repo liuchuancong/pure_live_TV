@@ -20,6 +20,7 @@ _CookieModel _$CookieModelFromJson(Map<String, dynamic> json) => _CookieModel(
   yyCookie: json['yyCookie'] as String? ?? '',
   soopCookie: json['soopCookie'] as String? ?? '',
   twitchCookie: json['twitchCookie'] as String? ?? '',
+  bigoCookie: json['bigoCookie'] as String? ?? '',
 );
 
 Map<String, dynamic> _$CookieModelToJson(_CookieModel instance) =>
@@ -37,4 +38,5 @@ Map<String, dynamic> _$CookieModelToJson(_CookieModel instance) =>
       'yyCookie': instance.yyCookie,
       'soopCookie': instance.soopCookie,
       'twitchCookie': instance.twitchCookie,
+      'bigoCookie': instance.bigoCookie,
     };

@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/core/common/request_scope.dart';
+import 'package:pure_live/services/cookie_manager/cookie_controller.dart';
 
 import 'bigo_token.dart';
 
@@ -122,7 +123,18 @@ class BigoApi {
   static const origin = 'https://ta.bigo.tv/official_website';
   static const securityOrigin = 'https://sec.bigo.sg/v1/webjs';
   static const webOrigin = 'https://www.bigo.tv';
-  static const headers = {'Origin': webOrigin, 'Referer': '$webOrigin/', 'User-Agent': 'Mozilla/5.0'};
+  // 请求指纹必须是完整浏览器形态。Bigo 的 WAF 按客户端指纹发降级响应：裸
+  // `Mozilla/5.0` 在 API 上拿到的常是 `needLogin:true` 的空壳答案——同一台
+  // 机器、同一出口 IP，网页能播而应用"无法获取房间详情"的差异就在这里。
+  static const headers = {
+    'Origin': webOrigin,
+    'Referer': '$webOrigin/',
+    'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    'X-Requested-With': 'XMLHttpRequest',
+  };
   static const responseLimit = 1024 * 1024;
   final BigoRequest _request;
   final BigoTokenDataBuilder _tokenDataBuilder;
@@ -132,12 +144,24 @@ class BigoApi {
   static String _defaultCallback() =>
       'jsonpcallback_${DateTime.now().millisecondsSinceEpoch}_${DateTime.now().microsecondsSinceEpoch % 1000000}';
 
+  /// 账号页配置的 bigo.tv Cookie。Bigo 对匿名会话收紧媒体下发
+  /// （`needLogin:true`、`hls_src` 空），登录态 Cookie 是唯一的解法。
+  /// 设置页可能尚未注册（极早启动），读不到就当没有。
+  static String configuredCookie() {
+    try {
+      return CookieController.to.bigoCookie.v.trim();
+    } catch (_) {
+      return '';
+    }
+  }
+
   static Future<({int status, String body})> _defaultRequest(
     String method,
     Uri uri,
     Map<String, String>? form,
     CancelToken cancel,
   ) async {
+    final cookie = configuredCookie();
     final response = await HttpClient.instance.dio.request<ResponseBody>(
       uri.toString(),
       data: form,
@@ -146,7 +170,7 @@ class BigoApi {
         method: method,
         responseType: ResponseType.stream,
         followRedirects: false,
-        headers: headers,
+        headers: {if (cookie.isNotEmpty) 'Cookie': cookie, ...headers},
         contentType: form == null ? null : Headers.formUrlEncodedContentType,
         validateStatus: (_) => true,
       ),
@@ -398,7 +422,8 @@ class BigoApi {
     final owner = _ownerId(data['uid']);
     if (owner != expectedOwnerId) throw const BigoException(BigoFailure.identity);
     final login = _boolean(data['needLogin']);
-    final password = _boolean(data['passRoom']);
+    // 公开房间的 `passRoom` 现在会返回 `null`（观察到 2026-10），平台没说限制就按无密码读。
+    final password = data['passRoom'] is bool ? _boolean(data['passRoom']) : false;
     final paid = _text(data['isPaidShow']);
     if (!{'', '0', '1'}.contains(paid)) throw const BigoException(BigoFailure.schema);
     final alive = _binary(data['alive']);
@@ -434,7 +459,10 @@ class BigoApi {
     final title = data['roomTopic'] == null ? '' : _text(data['roomTopic']);
     final category = data['gameTitle'] == null ? '' : _text(data['gameTitle']);
     final rawAvatar = data['avatar'];
-    final avatar = rawAvatar == null || rawAvatar == '' ? null : _httpsUri(_text(rawAvatar)).toString();
+    // 头像放宽到 http(s)：CDN 会下发 http 地址（观察到 2026-10），不能因为一张图
+    // 让整次详情解析失败。
+    final avatarPicture = _picture(rawAvatar == null ? '' : _text(rawAvatar));
+    final avatar = avatarPicture.isEmpty ? null : avatarPicture;
     final rawHls = data['hls_src'];
     final hls = rawHls == null || rawHls == '' ? null : _httpsUri(_text(rawHls), hls: true);
     if (status.access != BigoAccess.public && hls != null) throw const BigoException(BigoFailure.schema);
@@ -448,6 +476,19 @@ class BigoApi {
       avatar: avatar,
       hls: hls,
     );
+  }
+
+  static String _picture(String source) {
+    if (source.isEmpty) return '';
+    final uri = Uri.tryParse(source);
+    if (uri == null ||
+        (uri.scheme != 'http' && uri.scheme != 'https') ||
+        uri.host.isEmpty ||
+        uri.userInfo.isNotEmpty ||
+        uri.hasFragment) {
+      return '';
+    }
+    return uri.toString();
   }
 
   static Uri _httpsUri(String source, {bool hls = false}) {
