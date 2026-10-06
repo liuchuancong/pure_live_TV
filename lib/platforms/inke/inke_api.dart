@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -9,7 +10,10 @@ import 'package:pure_live/core/contracts/live_directory.dart';
 
 enum InkeFailure { transport, access, rateLimited, service, notFound, schema, cancelled, mediaUnavailable }
 
-class InkeException implements Exception {
+class InkeException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == InkeFailure.transport;
+
   const InkeException(this.kind, {this.message});
   final InkeFailure kind;
   final String? message;

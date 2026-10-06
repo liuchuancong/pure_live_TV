@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -19,7 +20,10 @@ enum ShowroomFailure {
   mediaUnavailable,
 }
 
-class ShowroomException implements Exception {
+class ShowroomException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == ShowroomFailure.transport;
+
   const ShowroomException(this.kind);
 
   final ShowroomFailure kind;

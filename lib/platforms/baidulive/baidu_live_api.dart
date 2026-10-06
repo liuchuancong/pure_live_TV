@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -21,7 +22,10 @@ enum BaiduLiveFailure {
   mediaUnavailable,
 }
 
-final class BaiduLiveException implements Exception {
+final class BaiduLiveException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == BaiduLiveFailure.transport;
+
   const BaiduLiveException(this.kind);
 
   final BaiduLiveFailure kind;

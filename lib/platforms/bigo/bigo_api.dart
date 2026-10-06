@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -27,7 +28,10 @@ enum BigoFailure {
 
 enum BigoAccess { public, loginRequired, restricted }
 
-class BigoException implements Exception {
+class BigoException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == BigoFailure.transport;
+
   const BigoException(this.kind);
   final BigoFailure kind;
   @override

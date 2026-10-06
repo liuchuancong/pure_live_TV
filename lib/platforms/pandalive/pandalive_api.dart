@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -23,7 +24,10 @@ enum PandaLiveFailure {
   mediaUnavailable,
 }
 
-class PandaLiveException implements Exception {
+class PandaLiveException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == PandaLiveFailure.transport;
+
   const PandaLiveException(this.kind);
   final PandaLiveFailure kind;
 

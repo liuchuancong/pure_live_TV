@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -22,7 +23,10 @@ enum SteamBroadcastFailure {
   mediaUnavailable,
 }
 
-final class SteamBroadcastException implements Exception {
+final class SteamBroadcastException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == SteamBroadcastFailure.transport;
+
   const SteamBroadcastException(this.kind);
 
   final SteamBroadcastFailure kind;

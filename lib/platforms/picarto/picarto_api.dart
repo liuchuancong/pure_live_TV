@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -11,7 +12,10 @@ import 'package:pure_live/core/models/live_room/live_room.dart';
 
 enum PicartoFailure { transport, access, rateLimited, service, notFound, schema, cancelled, qualityUnavailable }
 
-class PicartoException implements Exception {
+class PicartoException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == PicartoFailure.transport;
+
   const PicartoException(this.kind);
   final PicartoFailure kind;
   @override

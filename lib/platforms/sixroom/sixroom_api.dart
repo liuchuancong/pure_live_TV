@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -11,7 +12,10 @@ import 'sixroom_link.dart';
 
 enum SixRoomFailure { transport, access, missing, rateLimited, service, schema, identity, cancelled, mediaUnavailable }
 
-final class SixRoomException implements Exception {
+final class SixRoomException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == SixRoomFailure.transport;
+
   const SixRoomException(this.kind);
 
   final SixRoomFailure kind;

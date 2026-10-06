@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -10,7 +11,10 @@ import 'jd_live_link.dart';
 
 enum JdLiveFailure { transport, access, missing, rateLimited, service, schema, identity, cancelled, mediaUnavailable }
 
-final class JdLiveException implements Exception {
+final class JdLiveException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == JdLiveFailure.transport;
+
   const JdLiveException(this.kind);
 
   final JdLiveFailure kind;

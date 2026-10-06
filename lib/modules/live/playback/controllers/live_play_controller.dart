@@ -10,6 +10,7 @@ import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 import 'package:media_core/error/player_failure.dart';
 import 'package:media_core/error/error_formatter.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/modules/live/playback/models/live_play_args.dart';
 import 'package:pure_live/modules/live/playback/states/live_play_state.dart';
@@ -27,6 +28,20 @@ List<BoxFit> get kLivePlayFitList => AppThemeConsts.videoFitList;
 
 /// Localized labels of [kLivePlayFitList] in the same order as the stored index.
 List<String> get kLivePlayFitLabels => AppThemeConsts.videoFitType.map((e) => i18n(e['desc'] as String)).toList();
+
+/// Which message a failed room-metadata request deserves.
+///
+/// A site adapter's `transport` failure says the platform never gave a usable
+/// answer — that is a statement about reaching the platform, not about the
+/// room. The two proxy switches are easy to confuse: the player proxy covers
+/// the engine fetching the media, while the app-layer proxy is what the page
+/// and API calls that produced that address go through. Reporting the latter as
+/// "读取房间信息失败" sends the viewer hunting for a broken adapter instead of the
+/// one setting that governs the leg that broke.
+String streamMetadataFailureKey({required Object error, required bool appProxyEnabled}) =>
+    isUnreachableSiteFailure(error)
+        ? (appProxyEnabled ? 'site_unreachable_via_proxy' : 'site_unreachable')
+        : 'get_room_info_failed_retry';
 
 /// Drives one live room: detail/quality/URL fetching, playback state
 /// projection, quality and line switching. Danmaku sessions live in
@@ -174,9 +189,13 @@ class LivePlayController extends _$LivePlayController {
     } catch (e) {
       if (!_isCurrent(generation)) return;
 
+      final String failureKey = streamMetadataFailureKey(
+        error: e,
+        appProxyEnabled: SettingsService.to.proxy.enableAppProxy.v,
+      );
       state = state.copyWith(
-        detailError: i18n('get_room_info_failed_retry'),
-        errorMessage: i18n('get_room_info_failed_retry'),
+        detailError: i18n(failureKey),
+        errorMessage: i18n(failureKey),
         fetchingDetail: false,
       );
 

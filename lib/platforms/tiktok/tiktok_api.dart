@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -21,7 +22,10 @@ enum TikTokFailure {
   mediaUnavailable,
 }
 
-class TikTokException implements Exception {
+class TikTokException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == TikTokFailure.transport;
+
   const TikTokException(this.kind);
 
   final TikTokFailure kind;

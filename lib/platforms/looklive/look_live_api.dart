@@ -1,3 +1,4 @@
+import 'package:pure_live/core/common/site_transport_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -15,7 +16,10 @@ import 'look_live_link.dart';
 
 enum LookLiveFailure { transport, access, missing, rateLimited, service, schema, identity, cancelled, mediaUnavailable }
 
-final class LookLiveException implements Exception {
+final class LookLiveException implements Exception, SiteTransportFailure {
+  @override
+  bool get isSiteUnreachable => kind == LookLiveFailure.transport;
+
   const LookLiveException(this.kind);
 
   final LookLiveFailure kind;
