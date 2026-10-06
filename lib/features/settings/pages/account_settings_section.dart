@@ -79,6 +79,14 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       read: (cookies) => cookies.soopCookie,
       apply: (controller, value) => controller.setSoopCookie(value),
     ),
+    CookieSite(
+      siteId: Sites.bigoSite,
+      titleKey: 'site_bigo',
+      route: AppRoutes.kSettingsAccountBigo,
+      hintKey: 'cookie_hint',
+      read: (cookies) => cookies.bigoCookie,
+      apply: (controller, value) => controller.setBigoCookie(value),
+    ),
   ];
 
   /// What a platform row says about its stored cookie.

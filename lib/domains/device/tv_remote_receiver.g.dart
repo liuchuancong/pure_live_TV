@@ -45,7 +45,7 @@ final class TvRemoteReceiverProvider
   TvRemoteReceiver create() => TvRemoteReceiver();
 }
 
-String _$tvRemoteReceiverHash() => r'31bd9bbac3d14162e9dd60ba2ef8f889df65d22e';
+String _$tvRemoteReceiverHash() => r'427a7bf1fd22a6ceb9b65be1188031c26afe8fb5';
 
 /// LAN services (web remote on 8888, plus the callbacks every page binds for
 /// phone pushes) live for the whole session: auto-dispose tore the server down

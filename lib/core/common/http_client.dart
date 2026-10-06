@@ -26,6 +26,16 @@ class HttpClient {
         createHttpClient: () {
           final client = io.HttpClient();
           client.idleTimeout = const Duration(seconds: 30);
+          // 应用代理开启时，Clash 之类的工具会接管 HTTPS 并用自己的 CA 重签
+          // TLS。该证书不在系统信任链里，走代理的每个请求都会 HandshakeException。
+          // 代理是用户显式开启的，所以信任代理重签的证书。
+          client.badCertificateCallback = (cert, host, port) {
+            try {
+              return SettingsService.to.proxyState.enableAppProxy;
+            } catch (_) {
+              return false;
+            }
+          };
           // The interface-proxy switch, shared with every client that builds
           // its own Dio: see [ApiProxyPolicy].
           client.findProxy = ApiProxyPolicy.directiveFor;

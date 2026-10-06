@@ -51,6 +51,7 @@ part of '../app/app_router.dart';
     TypedGoRoute<AccountKuaishouRoute>(path: AppRoutes.kSettingsAccountKuaishou),
     TypedGoRoute<AccountTwitchRoute>(path: AppRoutes.kSettingsAccountTwitch),
     TypedGoRoute<AccountSoopRoute>(path: AppRoutes.kSettingsAccountSoop),
+    TypedGoRoute<AccountBigoRoute>(path: AppRoutes.kSettingsAccountBigo),
     TypedGoRoute<TagsRoute>(path: AppRoutes.kSettingsTags),
     TypedGoRoute<BackupRoute>(path: AppRoutes.kBackup),
     TypedGoRoute<DanmuShieldRoute>(path: AppRoutes.kSettingsDanmuShield),
@@ -520,6 +521,14 @@ class AccountSoopRoute extends GoRouteData with $AccountSoopRoute {
   Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
 }
 
+/// `kSettingsAccountBigo`.
+class AccountBigoRoute extends GoRouteData with $AccountBigoRoute {
+  const AccountBigoRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
 /// `kSettingsTags`.
 class TagsRoute extends GoRouteData with $TagsRoute {
   const TagsRoute();
@@ -618,6 +627,8 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
       AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountTwitch)),
   AppRoutes.kSettingsAccountSoop: (context) =>
       AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountSoop)),
+  AppRoutes.kSettingsAccountBigo: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountBigo)),
   AppRoutes.kSettingsTags: (context) => const TagManagementSectionPage(),
   AppRoutes.kBackup: (context) => const BackupSettingsSectionPage(),
   AppRoutes.kSettingsDanmuShield: (context) => const DanmakuShieldSectionPage(),
@@ -672,6 +683,7 @@ final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
   AppRoutes.kSettingsAccountKuaishou: const AccountKuaishouRoute(),
   AppRoutes.kSettingsAccountTwitch: const AccountTwitchRoute(),
   AppRoutes.kSettingsAccountSoop: const AccountSoopRoute(),
+  AppRoutes.kSettingsAccountBigo: const AccountBigoRoute(),
   AppRoutes.kSettingsTags: const TagsRoute(),
   AppRoutes.kBackup: const BackupRoute(),
   AppRoutes.kSettingsDanmuShield: const DanmuShieldRoute(),

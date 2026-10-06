@@ -69,6 +69,8 @@ class WeiboSite extends LiveSite
           // `watching` sentinel in place would paint a bogus "0" audience.
           audienceMetricType: AudienceMetricType.unknown,
           watching: '',
+          // 目录卡片同样声明播放头：进房时详情会重声明一次，但卡片直开也要能建连。
+          httpHeaders: WeiboApi.playHeaders,
           notice: i18n('weibo_room_scope'),
         ),
       ),
@@ -125,6 +127,9 @@ class WeiboSite extends LiveSite
     },
     audienceMetricType: AudienceMetricType.unknown,
     watching: '',
+    // 播放请求头走 PlaybackHeaderResolver 的 default 分支（房间声明即权威）。
+    // 不带 Referer/UA 时 weibo CDN 建连后不吐数据，表现为"opened but never played"。
+    httpHeaders: WeiboApi.playHeaders,
     notice: [if (detail.access != WeiboAccess.public) i18n('weibo_restricted'), i18n('weibo_room_scope')].join('\n'),
     data: detail,
   );

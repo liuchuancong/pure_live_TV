@@ -1,4 +1,5 @@
 import 'package:pure_live/player/index.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/modules/live/playback/models/live_play_args.dart';
 import 'package:pure_live/modules/live/playback/widgets/danmaku/danmaku_overlay.dart';
@@ -153,11 +154,18 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     // engine's video output and the restore would then have to rebuild the
     // whole texture. The listener mirrors what the settings page pushes into the
     // player, so the panel appears the moment the switch flips.
+    //
+    // 源里的"视频轨"其实没有画面（占位轨 / 语音直播平台）时同样上封面：
+    // 黑屏不是合法的呈现，封面才是。
     final Widget videoLayer = manager == null
         ? video
         : StreamBuilder<bool>(
-            stream: manager.onAudioOnlyChanged,
-            initialData: manager.isAudioOnly,
+            stream: Rx.combineLatest2<bool, bool, bool>(
+              manager.onAudioOnlyChanged,
+              manager.onDummyVideoChanged,
+              (audioOnly, dummy) => audioOnly || dummy,
+            ),
+            initialData: manager.isAudioOnly || manager.isDummyVideo,
             builder: (context, snapshot) {
               final bool audioOnly = snapshot.data ?? false;
               return Stack(

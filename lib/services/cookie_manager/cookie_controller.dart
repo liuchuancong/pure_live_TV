@@ -27,6 +27,7 @@ class CookieController extends _$CookieController {
   SettingsValue<String> get yyCookie => SettingsValue(() => state.yyCookie);
   SettingsValue<String> get soopCookie => SettingsValue(() => state.soopCookie);
   SettingsValue<String> get twitchCookie => SettingsValue(() => state.twitchCookie);
+  SettingsValue<String> get bigoCookie => SettingsValue(() => state.bigoCookie);
 
   @override
   CookieModel build() {
@@ -44,6 +45,7 @@ class CookieController extends _$CookieController {
       yyCookie: normalizeAccountCookie(HivePrefUtil.getString('yyCookie') ?? ''),
       soopCookie: normalizeAccountCookie(HivePrefUtil.getString('soopCookie') ?? ''),
       twitchCookie: normalizeAccountCookie(HivePrefUtil.getString('twitchCookie') ?? ''),
+      bigoCookie: normalizeAccountCookie(HivePrefUtil.getString('bigoCookie') ?? ''),
     );
     _persist(model);
     return model;
@@ -69,6 +71,7 @@ class CookieController extends _$CookieController {
       yyCookie: normalizeAccountCookie(model.yyCookie),
       soopCookie: normalizeAccountCookie(model.soopCookie),
       twitchCookie: normalizeAccountCookie(model.twitchCookie),
+      bigoCookie: normalizeAccountCookie(model.bigoCookie),
     );
   }
 
@@ -150,6 +153,8 @@ class CookieController extends _$CookieController {
 
   void setTwitchCookie(String cookie) => _setPlatformCookie((m, v) => m.copyWith(twitchCookie: v), cookie);
 
+  void setBigoCookie(String cookie) => _setPlatformCookie((m, v) => m.copyWith(bigoCookie: v), cookie);
+
 
   void _setPlatformCookie(CookieModel Function(CookieModel, String) apply, String cookie) {
     final normalized = normalizeAccountCookie(cookie);
@@ -175,7 +180,8 @@ class CookieController extends _$CookieController {
         m.kuaishouCookie.isNotEmpty ||
         m.twitchCookie.isNotEmpty ||
         m.soopCookie.isNotEmpty ||
-        m.yyCookie.isNotEmpty;
+        m.yyCookie.isNotEmpty ||
+        m.bigoCookie.isNotEmpty;
   }
 
   void clearAllCookies() {
@@ -197,6 +203,7 @@ class CookieController extends _$CookieController {
     HivePrefUtil.setString('yyCookie', model.yyCookie);
     HivePrefUtil.setString('soopCookie', model.soopCookie);
     HivePrefUtil.setString('twitchCookie', model.twitchCookie);
+    HivePrefUtil.setString('bigoCookie', model.bigoCookie);
   }
 
   Map<String, dynamic> toJson() => state.toJson();
@@ -223,6 +230,7 @@ class CookieController extends _$CookieController {
       'twitchCookie': normalizeAccountCookie((json['twitchCookie'] ?? '') as String),
       'soopCookie': normalizeAccountCookie((json['soopCookie'] ?? '') as String),
       'yyCookie': normalizeAccountCookie((json['yyCookie'] ?? '') as String),
+      'bigoCookie': normalizeAccountCookie((json['bigoCookie'] ?? '') as String),
     };
   }
 

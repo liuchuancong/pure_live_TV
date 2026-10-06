@@ -27,6 +27,8 @@ abstract class CookieModel with _$CookieModel {
     @Default('') String yyCookie,
     @Default('') String soopCookie,
     @Default('') String twitchCookie,
+    // Bigo 收紧匿名媒体下发后，登录态 Cookie 是唯一解法（见 BigoApi.configuredCookie）。
+    @Default('') String bigoCookie,
   }) = _CookieModel;
 
   factory CookieModel.fromJson(Map<String, dynamic> json) => _$CookieModelFromJson(json);

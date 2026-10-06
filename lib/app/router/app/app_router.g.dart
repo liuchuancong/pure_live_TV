@@ -868,6 +868,11 @@ RouteBase get $settingsShellRoute => ShellRouteData.$route(
       factory: $AccountSoopRoute._fromState,
     ),
     GoRouteData.$route(
+      path: '/settings_account/bigo',
+      hasOverriddenOnExit: false,
+      factory: $AccountBigoRoute._fromState,
+    ),
+    GoRouteData.$route(
       path: '/settingTags',
       hasOverriddenOnExit: false,
       factory: $TagsRoute._fromState,
@@ -1821,6 +1826,27 @@ mixin $AccountSoopRoute on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/settings_account/soop');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $AccountBigoRoute on GoRouteData {
+  static AccountBigoRoute _fromState(GoRouterState state) =>
+      const AccountBigoRoute();
+
+  @override
+  String get location => GoRouteData.$location('/settings_account/bigo');
 
   @override
   void go(BuildContext context) => context.go(location);
