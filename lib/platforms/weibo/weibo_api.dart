@@ -89,8 +89,8 @@ class WeiboApi {
   static const origin = 'https://weibo.com';
   static const headers = {'Referer': 'https://weibo.com/l/wblive/', 'User-Agent': 'Mozilla/5.0'};
 
-  /// 媒体流请求头：weibo CDN 对缺 Referer/UA 的连接不吐数据。UA 用完整桌面串，
-  /// 裸 "Mozilla/5.0" 会被部分边缘节点当异常客户端。
+  /// The CDN sends no bytes to connections without Referer/UA, and some edge
+  /// nodes treat a bare `Mozilla/5.0` as a broken client. Full desktop string.
   static const playHeaders = {
     'Referer': 'https://weibo.com/l/wblive/',
     'User-Agent':

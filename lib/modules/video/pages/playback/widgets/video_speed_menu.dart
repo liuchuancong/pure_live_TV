@@ -1,7 +1,7 @@
 import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 
-/// newBV's 倍速 tab: one entry per preset rate, the live one checked.
+/// newBV's speed tab: one entry per preset rate, the live one checked.
 class VideoSpeedMenu extends ConsumerWidget {
   const VideoSpeedMenu({super.key, required this.onClose});
 

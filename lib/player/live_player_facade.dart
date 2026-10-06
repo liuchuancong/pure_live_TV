@@ -389,10 +389,12 @@ final class LivePlayerFacade {
   /// Audio-only playback mode stream.
   Stream<bool> get onAudioOnlyChanged => _audioOnlySubject.stream;
 
-  /// 当前会话的平台，供语音直播平台兜底判"其实没有画面"。play 时记下，stop 清空。
+  /// The session's platform, for the audio-live fallback in the dummy-video
+  /// check. Set on play, cleared with the next one.
   String? _currentPlatform;
 
-  /// 源里的"视频轨"其实没有画面（占位轨或语音直播平台）：显示房间封面而不是黑屏。
+  /// A video track that carries no picture (placeholder track or audio-live
+  /// platform): the room cover shows instead of a black frame.
   final _dummyVideoSubject = BehaviorSubject<bool>.seeded(false);
 
   Stream<bool> get onDummyVideoChanged => _dummyVideoSubject.stream;
@@ -639,8 +641,8 @@ final class LivePlayerFacade {
       throw ArgumentError('Remote playback source is empty');
     }
 
-    // 记下平台供 dummy-video 兜底判定；新会话先回到"有画面"的默认态，
-    // 上一个房间的判定不能带到这个房间。
+    // Reset per session: the previous room's dummy verdict must not carry
+    // over while the first frame of this one is still pending.
     _currentPlatform = room?.platform;
     if (_dummyVideoSubject.value) _dummyVideoSubject.add(false);
 

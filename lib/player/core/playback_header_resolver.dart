@@ -204,12 +204,11 @@ class PlaybackHeaderResolver {
         headers = PandaLiveApi.mediaHeaders(roomId);
         break;
       default:
-        // 站点自己在房间上声明的媒体请求头就是权威：只有它知道该拿哪个 id 拼
-        // Referer（jdlive 用 liveId、liveme 用 shortId、tiktok 用 username、
-        // steam 用 steamId），而这里手上只有 roomId，重建只会拼错。
-        // 曾经这个分支给的是空表，于是声明了 httpHeaders 却不在上面 switch 里
-        // 的站（looklive、jdlive、baidulive、sixroom、kugoulive、fc2live、
-        // steambroadcast）一个头都发不出去。新增站点不需要再来这里登记。
+        // The room's own declaration is authoritative: only the site knows
+        // which id builds the Referer (jdlive its liveId, liveme its shortId,
+        // tiktok its username, steam its steamId) and all this layer holds is
+        // a roomId, so rebuilding would guess wrong. An empty table here used
+        // to silence every site that declared headers without a switch entry.
         headers = roomHeaders;
     }
 

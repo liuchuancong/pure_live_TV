@@ -56,8 +56,8 @@ class BilibiliMusicApi {
     return [for (final item in list) MusicArchive.fromRankingJson(item)];
   }
 
-  /// A region's recommended video feed (`region/feed/rcmd`) — newBV's 分区 list,
-  /// the plain (non-WBI) endpoint. Paged by `display_id` (starts at 1); an
+  /// A region's recommended video feed (`region/feed/rcmd`) — newBV's region
+  /// list, the plain (non-WBI) endpoint. Paged by `display_id` (starts at 1); an
   /// empty `archives` answers the end of the feed.
   Future<List<MusicArchive>> getRegionFeed({required int tid, required int page}) async {
     final result = await HttpClient.instance.getJson(

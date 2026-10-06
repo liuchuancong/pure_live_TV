@@ -10,7 +10,8 @@ import 'package:pure_live/core/widgets/tv_button.dart';
 
 /// A dialog that asks for a value must take the focus with it.
 ///
-/// The regression: 观看历史 → 保留数量 → 自定义 opened the input dialog but left the
+/// The regression: history -> retention limit -> custom opened the input dialog
+/// but left the
 /// focus on the room card behind it, so the remote typed into nothing and the
 /// dialog's field could not be reached without pressing Back first.
 void main() {
@@ -49,7 +50,7 @@ void main() {
     addTearDown(pageFocus.dispose);
     await pumpPageWithFocusable(tester, pageFocus);
 
-    // Same path as 自定义 in the history page: TvDialogUtils.showInput.
+    // Same path as "custom" in the history page: TvDialogUtils.showInput.
     final BuildContext context = tester.element(find.byType(Scaffold));
     TvDialogUtils.showInput(context: context, title: 'custom', hintText: 'value');
     await tester.pumpAndSettle();
@@ -113,7 +114,8 @@ void main() {
   });
 
   testWidgets('a dialog opened from the remote takes the keyboard over', (WidgetTester tester) async {
-    // The real path: 保留数量 (a select dialog) then 自定义 (the input dialog), both
+    // The real path: a select dialog (retention limit) then the input dialog
+    // (custom), both
     // driven by key presses, with no settling in between — which is how the remote
     // actually walks it.
     final FocusNode pageFocus = FocusNode(debugLabel: 'page');
@@ -146,7 +148,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(pageFocus.hasPrimaryFocus, isTrue);
 
-    // OK on the toolbar button, then walk the select list onto 自定义 and confirm.
+    // OK on the toolbar button, then walk the select list onto "custom" and confirm.
     await tester.sendKeyEvent(LogicalKeyboardKey.select);
     await tester.pumpAndSettle();
     expect(find.text('自定义'), findsOneWidget, reason: 'the select dialog is up');
@@ -168,7 +170,7 @@ void main() {
   });
 }
 
-/// The history page's flow: pick a preset or 自定义, then ask for the value.
+/// The history page's flow: pick a preset or "custom", then ask for the value.
 Future<void> _openLimitFlow(BuildContext context) async {
   final int? action = await TvDialogUtils.showSelect<int>(
     context: context,

@@ -155,8 +155,8 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     // whole texture. The listener mirrors what the settings page pushes into the
     // player, so the panel appears the moment the switch flips.
     //
-    // 源里的"视频轨"其实没有画面（占位轨 / 语音直播平台）时同样上封面：
-    // 黑屏不是合法的呈现，封面才是。
+    // A video track with no real picture (a placeholder track, or an
+    // audio-live platform) gets the cover too; black is not a rendering.
     final Widget videoLayer = manager == null
         ? video
         : StreamBuilder<bool>(

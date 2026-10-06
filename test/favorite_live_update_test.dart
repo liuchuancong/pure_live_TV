@@ -109,7 +109,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    // Two tags, one room each, so the strip offers 全部 plus both of them.
+    // Two tags, one room each, so the strip offers "all" plus both of them.
     final tags = SettingsService.to.tag;
     tags.addTag('游戏', '');
     tags.addTag('音乐', '');
@@ -167,8 +167,8 @@ void main() {
 
   /// The favorite empty state layers by what is actually empty (the mobile
   /// reference's `_FavoriteEmptyState`): nothing followed → a follow nudge;
-  /// rooms exist but not in this status tab → the per-tab title plus a
-  /// 查看未开播 shortcut when the 未开播 tab has rooms.
+  /// rooms exist but not in this status tab -> the per-tab title plus a
+  /// see-offline shortcut when the offline tab has rooms.
   testWidgets('the favorite empty state follows the reference layering', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1.0;
@@ -197,8 +197,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
     }
 
-    // Nothing followed at all: the reference's follow nudge, not a filter title,
-    // plus the always-present 去搜索 jump towards rooms that are not followed yet.
+    // Nothing followed at all: the reference's follow nudge, not a filter
+    // title, plus the always-present search jump for not-yet-followed rooms.
     await pumpWith(<LiveRoom>[]);
     expect(find.text('empty_favorite_online_title'), findsOneWidget);
     expect(find.text('favorite_empty_online_title'), findsNothing);
@@ -213,8 +213,8 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 50));
 
-    // One offline room: the 直播 tab is empty with a per-tab title, and the
-    // 查看未开播 shortcut is offered because the 未开播 tab has a room.
+    // One offline room: the live tab is empty with a per-tab title, and the
+    // see-offline shortcut is offered because the offline tab has a room.
     await pumpWith(<LiveRoom>[
       LiveRoom(
         roomId: 'off',
@@ -233,7 +233,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('离线房间'), findsOneWidget, reason: 'the shortcut jumps to the 未开播 tab');
 
-    // The 录播 tab without recordings shows its own title.
+    // The replay tab without recordings shows its own title.
     await tester.tap(find.text('ui_replaying'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));

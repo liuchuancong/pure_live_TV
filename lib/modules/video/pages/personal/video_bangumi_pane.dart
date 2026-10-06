@@ -24,7 +24,8 @@ class VideoBangumiPaneState extends ConsumerState<VideoBangumiPane> {
   int _page = 0;
   String? _error;
 
-  /// newBV's FollowingSeasonScreen filter: 番剧/影视 × 全部/想看/在看/看过.
+  /// newBV's FollowingSeasonScreen filter: kind (anime/movie) x status
+  /// (all/to-watch/watching/watched).
   int _type = 1;
   int _followStatus = 0;
 
@@ -183,8 +184,9 @@ class VideoBangumiPaneState extends ConsumerState<VideoBangumiPane> {
   }
 }
 
-/// The 追番 filter sheet: type (番剧/影视) × status (全部/想看/在看/看过),
-/// newBV's FollowingSeasonScreen dialog; confirm hands the pair back.
+/// The follow filter sheet: kind (anime/movie) x status (all/to-watch/
+/// watching/watched), newBV's FollowingSeasonScreen dialog; confirm hands
+/// the pair back.
 class _BangumiFilterDialog extends StatefulWidget {
   const _BangumiFilterDialog({required this.type, required this.status});
 

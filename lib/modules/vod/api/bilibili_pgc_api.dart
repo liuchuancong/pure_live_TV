@@ -18,7 +18,7 @@ class BilibiliPgcApi {
 
   final BilibiliApiClient _client = BilibiliApiClient.instance;
 
-  /// The 追番 toggle's login gate.
+  /// The follow toggle's login gate.
   bool get isLoggedIn => _client.loggedIn;
 
   Future<Map<dynamic, dynamic>?> _tryGet(String url, {Map<String, String>? query}) async {
@@ -102,7 +102,8 @@ class BilibiliPgcApi {
   }
 
   /// `x/space/bangumi/follow/list`). [type]: 1 bangumi, 2 drama;
-  /// [followStatus]: 0 all, 1 想看, 2 在看, 3 看过 (the reference's filter dialog).
+  /// [followStatus]: 0 all, 1 to-watch, 2 watching, 3 watched (the
+  /// reference's filter dialog).
   Future<List<PgcItem>> getFollowedSeasons({int type = 1, int followStatus = 0, int page = 1, int pageSize = 20}) async {
     _client.ensureLogin();
     final data = await _tryGet('https://api.bilibili.com/x/space/bangumi/follow/list', query: {
@@ -127,7 +128,7 @@ class BilibiliPgcApi {
     return PgcSeason.fromJson(Map<String, dynamic>.from(data));
   }
 
-  /// 追番 — the pair of newBV's follow toggle (`pgc/web/follow/add`).
+  /// The pair of newBV's follow toggle (`pgc/web/follow/add`).
   Future<void> followSeason({required int seasonId}) async {
     await _client.postForm(
       'https://api.bilibili.com/pgc/web/follow/add',
@@ -144,9 +145,9 @@ class BilibiliPgcApi {
     );
   }
 
-  /// The category page's 轮播 (newBV's `getPgcWebInitialStateData`): the
+  /// The category page's banners (newBV's `getPgcWebInitialStateData`): the
   /// banner items only live in the SSR page's `__INITIAL_STATE__`, and the
-  /// 影视 categories carry their ids in the link (`…/play/ss12345`) instead
+  /// drama categories carry their ids in the link (`.../play/ss12345`) instead
   /// of a `season_id` field.
   Future<List<PgcItem>> getBanners(int pgcType) async {
     final name = _feedNames[pgcType];

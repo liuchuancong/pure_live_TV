@@ -74,14 +74,15 @@ void main() {
     // A page that is not in the table falls back to its menu row.
     expect(settingsSectionTitleKey(AppRoutes.kBackup), 'backup_recover');
 
-    // The most specific path wins, so a platform page is not named after 三方认证.
+    // The most specific path wins, so a platform page is not named after the
+    // generic auth entry.
     expect(settingsSectionTitleKey(AppRoutes.kSettingsAccount), 'third_party_auth');
     expect(settingsSectionTitleKey(AppRoutes.kSettingsAccountHuya), 'site_huya');
   });
 
   test('every settings route has a real title, never the fallback', () {
-    // A sub-page whose title falls back to the generic one shows "系统设置" in
-    // its title bar, which tells the user nothing about where they are.
+    // A sub-page whose title falls back to the generic one shows the app-wide
+    // settings name in its title bar, which says nothing about where they are.
     const List<String> routes = <String>[
       AppRoutes.kSettingsMode,
       AppRoutes.kSettingsTheme,

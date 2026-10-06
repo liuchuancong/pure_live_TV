@@ -9,9 +9,9 @@ import 'package:pure_live/modules/live/playback/widgets/panels/player_index_pane
 /// out, and the highlight must stay readable on every palette.
 ///
 /// Two regressions are pinned here:
-///  * the panel used to open with a 返回 row *first* while 清晰度/线路/比例/内核 all
-///    end with a 关闭 row, and the leading row shifted every index by one;
-///  * 弹幕设置 painted its focused row black, which is unreadable on the accent
+///  * the panel used to open with a back row *first* while quality/line/aspect/
+///    kernel all end with a close row, and the leading row shifted every index;
+///  * the danmaku entry painted its focused row black, which is unreadable on the accent
 ///    fill, and the panel surface was hard-coded black, so a light palette got a
 ///    black slab inside a light page.
 void main() {
@@ -48,9 +48,9 @@ void main() {
     await pumpPanel(tester, palette: darkTvTheme, selectedCalls: selected, closeCalls: closed);
 
     // Without loaded localizations `i18nOr` returns its fallback, so the close
-    // row reads 关闭 here.
-    expect(find.text('关闭'), findsOneWidget, reason: 'the panel ends with a 关闭 row');
-    expect(find.text('ui_back'), findsNothing, reason: 'the old leading 返回 row must be gone');
+    // row reads its localized label here.
+    expect(find.text('关闭'), findsOneWidget, reason: 'the panel ends with a close row');
+    expect(find.text('ui_back'), findsNothing, reason: 'the old leading back row must be gone');
 
     // OK on row 2 must report index 2, not 1 — the shift existed only because of
     // the leading row. A frame between the keys, as on a real remote.

@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
 
-/// 备份与恢复 writes the mobile app's backup file: `purelive_<date>.txt` holding the
+/// Backup & restore writes the mobile app's backup file: `purelive_<date>.txt` holding the
 /// indented settings document. The extension is the format — asking for `.json` made the
 /// two apps' backups incompatible even though the payload is the same.
 void main() {

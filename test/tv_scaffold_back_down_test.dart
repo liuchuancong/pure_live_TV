@@ -6,7 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
 
-/// The up/down round trip between 返回 and the first content row must keep working
+/// The up/down round trip between the back button and the first content row
+/// must keep working
 /// on every level of the stack.
 ///
 /// This used to mirror `_TvScaffoldState`'s wiring by hand, which is exactly why
@@ -78,9 +79,9 @@ void main() {
     await pushPage(tester, scaffoldPage('level 2', rows: makeRows()));
     await pushPage(tester, scaffoldPage('level 3', rows: makeRows()));
 
-    // A pushed page opens with the highlight on 返回, never on a row of the page
-    // below.
-    expect(focusIsInside<TvButton>(), isTrue, reason: 'the third-level page opens on 返回');
+    // A pushed page opens with the highlight on the back button, never on a row
+    // of the page below.
+    expect(focusIsInside<TvButton>(), isTrue, reason: 'the third-level page opens on back');
 
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
     await tester.pumpAndSettle();

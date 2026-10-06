@@ -235,8 +235,8 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
   }
 
   /// Long-press answers with the card overlay's options (newBV's
-  /// SmallVideoCard): 稍后再看 / UP主主页 — plus 删除观看记录, which our
-  /// endpoint has and the reference lacks.
+  /// SmallVideoCard): watch-later / uploader space — plus delete-from-history,
+  /// which our endpoint has and the reference lacks.
   Future<void> _showActions(HistoryItem item) async {
     final action = await TvDialogUtils.show<String>(
       context: context,

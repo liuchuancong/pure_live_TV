@@ -1,14 +1,15 @@
 import 'package:pure_live/core/common/proxy_routing.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
-/// 代理出口后面会拒绝吐流、而直连可达的媒体主机后缀。
+/// Media hosts that refuse to serve through a proxy exit but are directly
+/// reachable.
 ///
-/// Steam 广播 CDN（`*.steamcontent.com`）按请求 IP 做缓存会话亲和：代理出口拉
-/// master/变体清单都是 200，分片却答 410 Gone；直连同一分片 200。Steam 的 CDN
-/// 本身直连可达，所以这条线路不该进代理。
+/// The Steam broadcast CDN pins cache sessions to the requesting IP: through a
+/// proxy the manifests are 200 and the segments 410; direct, the same segment
+/// is 200. So its lines bypass the proxy entirely.
 const List<String> proxyDirectHostSuffixes = ['steamcontent.com'];
 
-/// [uri] 的主机是否命中 [proxyDirectHostSuffixes]。
+/// Whether [uri]'s host matches [proxyDirectHostSuffixes].
 bool playsDirectBehindProxy(Uri uri) {
   final host = uri.host.toLowerCase();
   return proxyDirectHostSuffixes.any((suffix) => host == suffix || host.endsWith('.$suffix'));
@@ -33,7 +34,8 @@ class PlaybackProxyPolicy {
     }
   }
 
-  /// 全局播放代理指令，但代理出口会被 CDN 拒吐流的主机（Steam 广播）逐条直连。
+  /// The global media directive, with hosts the proxy exit cannot serve
+  /// forced DIRECT per host.
   static String currentDirectiveFor(Uri uri) =>
       playsDirectBehindProxy(uri) ? 'DIRECT' : currentDirective();
 

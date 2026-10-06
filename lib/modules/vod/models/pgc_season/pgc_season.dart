@@ -22,17 +22,17 @@ abstract class PgcSeason with _$PgcSeason {
     @Default([]) List<String> styles,
     @Default('') String pubTime,
 
-    /// `user_status.follow` — the 追番 toggle's initial state.
+    /// `user_status.follow` — the follow toggle's initial state.
     @JsonKey(fromJson: lenientIntOf) @Default(0) int follow,
 
-    /// `new_ep.desc` — the "更新至第 X 话" line under the title.
+    /// `new_ep.desc` — the "updated to episode X" line under the title.
     @Default('') String newEpDesc,
 
     /// `user_status.progress` — where the user last stopped watching.
     @JsonKey(name: 'lastEpId', fromJson: lenientIntOf) @Default(0) int lastEpId,
     @JsonKey(name: 'lastEpIndex') @Default('') String lastEpIndex,
 
-    /// The `section[]` blocks (番外/PV/SP), empty ones already dropped.
+    /// The `section[]` bonus blocks (extras/PV/SP), empty ones dropped.
     @Default([]) List<PgcSection> sections,
 
     /// `seasons[]` — the sibling seasons of the same series; the switcher
@@ -83,7 +83,7 @@ Map<String, dynamic> _normalizePgcSeasonJson(Map<String, dynamic> json) => <Stri
 };
 
 /// One `section[]` block of a season — a titled group of bonus episodes
-/// (番外/PV/预告) that the detail page renders under its own header.
+/// (extras/PV/trailers) that the detail page renders under its own header.
 @freezed
 abstract class PgcSection with _$PgcSection {
   const factory PgcSection({

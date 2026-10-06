@@ -7,11 +7,13 @@ import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
-/// 设置 → 主题设置 → 背景设置 → 纯色/视频: coming **back** to 背景设置 left the screen with
+/// settings -> theme -> wallpaper -> solid/video: coming **back** to the
+/// wallpaper page left the screen with
 /// no highlight and a dead remote.
 ///
 /// The shape matters. `/settings/theme` lives inside the shell's *nested* navigator,
-/// while 背景设置 and 纯色 are top-level routes pushed on the **root** navigator. The
+/// while the wallpaper and solid pages are top-level routes pushed on the **root**
+/// navigator. The
 /// root push therefore covers the shell's route — it does not cover `/settings/theme`
 /// inside that shell, so the nested page never receives `didPushNext` and keeps its
 /// focus tree alive while a page the user cannot see is on top of it.
@@ -109,9 +111,9 @@ void main() {
     // …and the remote still drives it.
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     await tester.pumpAndSettle();
-    expect(focusedPage(), 'wallpaper', reason: 'the remote still moves inside 背景设置');
+    expect(focusedPage(), 'wallpaper', reason: 'the remote still moves inside the wallpaper page');
 
-    // Up at the top edge stays in 背景设置: the covered theme page must not be able to
+    // Up at the top edge stays on the wallpaper page: the covered theme page must not be able to
     // take the keyboard at all, however the d-pad's geometric fallback feels about it.
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
     await tester.pumpAndSettle();
@@ -156,7 +158,7 @@ class _Page extends StatelessWidget {
   }
 }
 
-/// The 纯色 grid: its own region that lets the d-pad leave upward, like
+/// The solid-colour grid: its own region that lets the d-pad leave upward, like
 /// `WallpaperItemsPage`.
 class _GridPage extends StatelessWidget {
   const _GridPage();

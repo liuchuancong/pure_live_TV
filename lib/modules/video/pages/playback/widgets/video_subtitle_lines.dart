@@ -16,10 +16,10 @@ class SubtitleLines extends StatefulWidget {
   final List<SubtitleCue> cues;
   final PlayerHandle handle;
 
-  /// Design font size (newBV's ClosedCaptionMenu 大小).
+  /// Design font size (newBV's ClosedCaptionMenu size knob).
   final double fontSize;
 
-  /// Background alpha behind each line (newBV's 透明度).
+  /// Background alpha behind each line (newBV's opacity knob).
   final double bgOpacity;
 
   @override

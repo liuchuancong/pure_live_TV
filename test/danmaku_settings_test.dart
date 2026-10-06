@@ -9,10 +9,10 @@ import 'package:pure_live/player/danmaku_config_builder.dart';
 import 'package:pure_live/modules/live/playback/controllers/danmaku_option_steps.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
 
-/// 弹幕设置 → flame_barrage: every setting the UI offers has to reach the engine, in the
+/// Danmaku settings -> flame_barrage: every setting the UI offers has to reach the engine, in the
 /// unit the engine expects.
 ///
-/// The reported symptom was "设置改了但弹幕没变化". Two causes lived here: the speed was
+/// The reported symptom was "settings changed but the danmaku did not". Two causes lived here: the speed was
 /// stored on the legacy 4-32 "level" scale while `BarrageConfig.baseSpeed` is px/s (so a
 /// level of 8 froze the danmaku), and the bottom inset was handed a 0.0-0.8 *ratio* while
 /// `bottomAreaDistance` is measured in pixels (so the slider did nothing at all).

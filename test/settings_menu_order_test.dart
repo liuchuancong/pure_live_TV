@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/core/consts/app_consts.dart';
 
-/// The 排序 page's promise: **who you pick is who moves, and you say where it
-/// goes.**
+/// The reorder page's promise: **who you pick is who moves, and you say where
+/// it goes.**
 ///
 /// The rule is pure (`AppSettingsController.reorderMenuIds`), so it is pinned here
 /// without the preference store: the chosen entry lands exactly on the position

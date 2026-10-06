@@ -10,8 +10,8 @@ import 'package:pure_live/core/widgets/tv_page_scaffold.dart';
 
 /// Walking up out of a page's content and back down again must keep working.
 ///
-/// The regression: on a third-level page, moving the highlight down from 返回 into
-/// the rows and then back up to 返回 left the remote stuck on 返回 — up and down
+/// The regression: on a third-level page, moving the highlight down from the
+/// back button into the rows and then back up left the remote stuck — up and down
 /// did nothing until the page was left and re-entered. Second-level pages were
 /// fine, third-level pages always failed.
 void main() {
@@ -81,8 +81,9 @@ void main() {
     final FocusNode back = nodes(tester, 3).back!;
     final FocusNode row = nodes(tester, 3).row!;
 
-    // The state the user reports: the highlight is on 返回. Then up/down must keep
-    // working — this used to leave the remote stuck on 返回 on a third-level page.
+    // The state the user reports: the highlight is on the back button. Then
+    // up/down must keep working — this used to leave the remote stuck on a
+    // third-level page.
     back.requestFocus();
     await tester.pump();
     expect(back.hasPrimaryFocus, isTrue);
@@ -120,9 +121,9 @@ void main() {
     await pushLevel(tester, 2);
     await pushLevel(tester, 3);
 
-    // The highlight opens on this page's own 返回, not on a row of the page below
-    // (which is what made the remote drive an invisible screen).
-    expect(nodes(tester, 3).back?.hasPrimaryFocus, isTrue, reason: 'a pushed page opens on its own 返回');
+    // The highlight opens on this page's own back button, not on a row of the
+    // page below (which is what made the remote drive an invisible screen).
+    expect(nodes(tester, 3).back?.hasPrimaryFocus, isTrue, reason: 'a pushed page opens on its own back button');
     for (final FocusNode covered in rowsFor(2)) {
       expect(covered.hasPrimaryFocus, isFalse, reason: 'the covered page must have given the keyboard up');
     }
@@ -137,8 +138,8 @@ void main() {
   });
 }
 
-/// A page shaped like every settings page: a [TvScaffold] with a 返回 in its app
-/// bar and a few focusable rows.
+/// A page shaped like every settings page: a [TvScaffold] with a back button in
+/// its app bar and a few focusable rows.
 class _Page extends StatelessWidget {
   const _Page({required this.level, required this.rowNodes});
 

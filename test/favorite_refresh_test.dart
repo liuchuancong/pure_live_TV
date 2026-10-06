@@ -157,10 +157,10 @@ void main() {
     expect(state.offlineRooms.map((room) => room.roomId), ['ended']);
   });
 
-  group('关注 site 的显示逻辑', () {
+  group('followed-site display logic', () {
     /// The notifier keeps its tab/tag selection across tests the way it does
-    /// across page visits, so each test states where it starts: 全部平台 / 直播 /
-    /// 全部标签.
+    /// across page visits, so each test states where it starts: all platforms,
+    /// live tab, all tags.
     FavoriteNotifier resetSelection() {
       final notifier = favoriteNotifier();
       notifier.changeOnlineTab(0);
@@ -237,10 +237,10 @@ void main() {
     });
   });
 
-  group('tag 在关注列表的显示逻辑', () {
+  group('tag display in the followed list', () {
     /// The notifier keeps its tab/tag selection across tests the way it does
-    /// across page visits, so each test states where it starts: 全部平台 / 直播 /
-    /// 全部标签.
+    /// across page visits, so each test states where it starts: all platforms,
+    /// live tab, all tags.
     FavoriteNotifier resetSelection() {
       final notifier = favoriteNotifier();
       notifier.changeOnlineTab(0);

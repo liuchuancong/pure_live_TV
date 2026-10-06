@@ -59,8 +59,8 @@ void main() {
   });
 
   testWidgets('a single-option tile runs its action instead of opening a one-item list', (tester) async {
-    // The regression: a single-option "action" row (导出配置, 清除缓存, 保存代理,
-    // 检查更新, ...) opened a dialog showing its own value, the dialog reported
+    // The regression: a single-option action row (export, clear cache, save
+    // proxy, check updates, ...) opened a dialog showing its own value, the dialog reported
     // "nothing changed" and `onChanged` never ran, so every action row in the
     // settings was dead.
     int? fired;

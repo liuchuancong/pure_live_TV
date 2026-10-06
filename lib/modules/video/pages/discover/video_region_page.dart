@@ -7,7 +7,7 @@ import 'package:pure_live/modules/video/video_section.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 
-/// The 分区 browser — newBV's UGC region feed. One tab per top-level region,
+/// The region browser — newBV's UGC region feed. One tab per top-level region,
 /// each riding `region/feed/rcmd` (the plain, non-WBI endpoint) paged by
 /// `display_id`, in a grid of plain [VideoCard]s with infinite scroll and no
 /// ranking badge.

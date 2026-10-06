@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/core/theme/index.dart';
 
-/// Every preset must be readable in **both** 主题模式 settings.
+/// Every preset must be readable in **both** theme modes.
 ///
 /// The presets were designed as fixed palettes, so the mode used to change only the
-/// Material layer: the custom widgets kept the preset's own brightness and 浅色
-/// looked like it did nothing. `TvThemeData.resolveFor` now derives a sibling palette
+/// Material layer: the custom widgets kept the preset's own brightness and light
+/// mode looked like it did nothing. `TvThemeData.resolveFor` now derives a sibling palette
 /// per mode, and these invariants are what "derived" has to mean — each pairing that
 /// the widgets actually paint must keep its contrast.
 void main() {

@@ -43,8 +43,8 @@ class _VideoPgcPageState extends ConsumerState<VideoPgcPage> {
     await _loadMore();
   }
 
-  /// The category's 轮播 strip, loaded once per category (the source scrapes
-  /// the SSR page for it; a failure just means no strip).
+  /// The category's banner strip, loaded once per category (the source
+  /// scrapes the SSR page for it; a failure just means no strip).
   Future<void> _loadBanners() async {
     final type = _type;
     if (_banners.containsKey(type)) return;

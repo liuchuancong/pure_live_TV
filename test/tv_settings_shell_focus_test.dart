@@ -32,8 +32,8 @@ void main() {
         ),
       ),
     );
-    // The shell is pushed above the settings menu, so its scaffold owns the 返回
-    // button — that is where the up/down round trip happens.
+    // The shell is pushed above the settings menu, so its scaffold owns the
+    // back button — that is where the up/down round trip happens.
     final BuildContext context = tester.element(find.byType(Scaffold).first);
     Navigator.of(context).push<void>(MaterialPageRoute<void>(builder: (_) => _Shell(depth: depth)));
     await tester.pumpAndSettle();
@@ -49,11 +49,11 @@ void main() {
     return context?.findAncestorWidgetOfExactType<TvButton>() != null;
   }
 
-  testWidgets('level 3: up to 返回 and back down again, repeatedly', (tester) async {
+  testWidgets('level 3: up to back and down again, repeatedly', (tester) async {
     await pumpShell(tester, depth: 3);
 
-    // Every page opens with the highlight on 返回.
-    expect(onBackButton(), isTrue, reason: 'a page opens on 返回');
+    // Every page opens with the highlight on the back button.
+    expect(onBackButton(), isTrue, reason: 'a page opens on back');
 
     for (int cycle = 0; cycle < 5; cycle++) {
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
@@ -99,7 +99,7 @@ class _ShellState extends State<_Shell> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Open every level up to the requested depth, like the user walking the
-      // settings menu: 设置 → section → 排序.
+      // settings menu: menu -> section -> reorder.
       for (int level = 2; level <= widget.depth; level++) {
         _open(level);
       }
@@ -119,7 +119,7 @@ class _ShellState extends State<_Shell> {
 
   @override
   Widget build(BuildContext context) {
-    // The shell contributes no scaffold: one shared app bar (and its 返回 button)
+    // The shell contributes no scaffold: one shared app bar (and its back button)
     // for every page is what used to steal the highlight.
     return Navigator(
       key: _inner,
@@ -140,7 +140,7 @@ class _Page extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Each page owns its scaffold — its app bar, its 返回 button and the focus
+    // Each page owns its scaffold — its app bar, its back button and the focus
     // handoff between them — like `SettingsSectionScaffold` does for the real pages.
     return TvPageScaffold(
       title: 'level $level',

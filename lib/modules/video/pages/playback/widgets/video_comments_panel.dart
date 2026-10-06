@@ -111,7 +111,7 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
         });
       }
     } catch (_) {
-      // The already-loaded replies stay; the next focus on 加载更多 retries.
+      // The already-loaded replies stay; the next focus on "load more" retries.
     } finally {
       _replyLoading.remove(rpid);
       if (mounted) setState(() {});
@@ -143,7 +143,7 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
                     style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                   ),
                 ),
-                // newBV's sort switch: 热门 / 最新. The first chip is always
+                // newBV's sort switch: hot / newest. The first chip is always
                 // mounted (unlike the async comment rows), so it is the
                 // deterministic focus claim when the panel opens.
                 _SortChip(
@@ -225,7 +225,7 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
   }
 }
 
-/// The author line, newBV's name + "  Lv.N" (level>0) + "  UP主" suffixes.
+/// The author line, newBV's name + "  Lv.N" (level>0) + "  UP" suffixes.
 String _authorLabel(String uname, int level, bool isUp) {
   final buffer = StringBuffer(uname);
   if (level > 0) buffer.write('  Lv.$level');
