@@ -27,7 +27,7 @@ abstract class CookieModel with _$CookieModel {
     @Default('') String yyCookie,
     @Default('') String soopCookie,
     @Default('') String twitchCookie,
-    // Bigo 收紧匿名媒体下发后，登录态 Cookie 是唯一解法（见 BigoApi.configuredCookie）。
+    /// see BigoApi.configuredCookie — anonymous sessions get no media.
     @Default('') String bigoCookie,
   }) = _CookieModel;
 

@@ -12,7 +12,7 @@ abstract class ToViewItem with _$ToViewItem {
     @Default(0) int addAt,
 
     /// Server-side watched seconds; `-1` answers for a finished video — the
-    /// reference app partitions its 稍后再看 grid on exactly that.
+    /// reference app partitions its watch-later grid on exactly that.
     @Default(0) int progress,
   }) = _ToViewItem;
 

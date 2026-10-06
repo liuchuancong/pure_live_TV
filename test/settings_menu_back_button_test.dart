@@ -11,9 +11,10 @@ import 'package:pure_live/core/widgets/index.dart';
 /// `TvPageScaffold` build one from a title.
 ///
 /// The regression: passing a ready-made `TvAppBar` skipped the focus node the shell
-/// needs. The 返回 button was drawn, but nothing handed focus Up to it and the opening
-/// highlight never landed on it, so on that one page the remote could not select 返回
-/// and it never showed the focused look every other page's 返回 shows.
+/// needs. The back button was drawn, but nothing handed focus Up to it and the
+/// opening highlight never landed on it, so on that one page the remote could
+/// not select back and it never showed the focused look every other page's
+/// back button shows.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -34,7 +35,7 @@ void main() {
       ),
     );
 
-    // The menu is pushed, so it can pop and therefore shows 返回.
+    // The menu is pushed, so it can pop and therefore shows a back button.
     final BuildContext context = tester.element(find.byType(Scaffold).first);
     Navigator.of(context).push<void>(MaterialPageRoute<void>(builder: (_) => const _SettingsMenuPage()));
     await tester.pumpAndSettle();

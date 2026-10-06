@@ -59,7 +59,8 @@ void main() {
     // logical pixels on a small TV. `SpinKitWaveSpinner` could not paint that small: its
     // painter builds `RRect.fromRectAndRadius` with a radius of
     // `(w - 10 * max(2.5, w * 0.015)) / 2`, negative below 25, which trips
-    // `assert(tlRadiusX >= 0)` in `dart:ui/geometry.dart` — 主题设置 → 加载动画 threw out
+    // `assert(tlRadiusX >= 0)` in `dart:ui/geometry.dart` — the theme page's
+    // loading-style row threw out
     // of the render tree. Every style is painted at these sizes so the next style with a
     // minimum size of its own fails here instead of on the device.
     for (final double size in <double>[12, 18, 24]) {

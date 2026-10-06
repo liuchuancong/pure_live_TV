@@ -12,10 +12,10 @@ import 'package:pure_live/services/theme_settings/theme_settings_controller.dart
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
-/// The 关注 section lists the followed albums only. Followed uploaders are not
-/// shown here (nor stored locally): the account's follow list is already
-/// fetched live through the 我的 → UP主 tab (`x/relation/followings`), so a
-/// second, locally-persisted copy here only drifted from the server.
+/// The "following" section lists the followed albums only. Followed uploaders
+/// are not shown here (nor stored locally): the account's follow list is
+/// already fetched live through the uploader tab (`x/relation/followings`), so
+/// a second, locally-persisted copy here only drifted from the server.
 class MusicFollowSection extends ConsumerStatefulWidget {
   const MusicFollowSection({super.key});
 

@@ -5,7 +5,7 @@ import 'package:pure_live/core/theme/index.dart';
 
 /// Content that does not colour itself must follow the **palette**, not Material.
 ///
-/// The bug this pins: in 浅色 mode a `Text` or `Icon` with no colour of its own
+/// The bug this pins: in light mode a `Text` or `Icon` with no colour of its own
 /// inherited the Material scheme's black foreground, while the surface around it came
 /// from the TV palette — the shared widgets showed black text and black icons in light
 /// mode. `buildTvThemeData` gives the Material theme the palette's text and icon

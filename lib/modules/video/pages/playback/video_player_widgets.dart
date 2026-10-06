@@ -208,7 +208,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     }
   }
 
-  /// newBV's 继续播放: a part with a saved local position opens there — once
+  /// newBV's resume: a part with a saved local position opens there — once
   /// per part id, so stepping back into a finished part does not re-seek it.
   /// The freshly opened backend is not immediately seekable, so this waits
   /// (bounded) for the stream to prove it is live, like the controller's own
@@ -493,8 +493,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     _armAutoHide();
   }
 
-  /// newBV's PictureMenu 宽高比: 默认 keeps the native fit; 4:3 / 16:9 stretch
-  /// the picture into a fixed-ratio box centered on screen.
+  /// newBV's PictureMenu aspect modes: default keeps the native fit; 4:3 /
+  /// 16:9 stretch the picture into a fixed-ratio box centered on screen.
   Widget _videoSurface(PlayerHandle handle, int mode) {
     if (mode == 0) return HandleVideoSurface(handle: handle, fit: BoxFit.contain);
     final ratio = mode == 1 ? 4 / 3 : 16 / 9;
@@ -506,7 +506,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     );
   }
 
-  /// Cycle 默认 → 4:3 → 16:9 → 默认, shared with the quality menu's radio.
+  /// Cycle default -> 4:3 -> 16:9 -> default, shared with the quality menu's
+  /// radio.
   void _cycleAspect() {
     final settings = ref.read(videoSettingsControllerProvider);
     ref.read(videoSettingsControllerProvider.notifier).updateSettings(

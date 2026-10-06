@@ -33,7 +33,7 @@ abstract class VideoSettingsModel with _$VideoSettingsModel {
     @Default(0.55) double subtitleBgOpacity,
     @Default(0) int subtitleBottomPadding,
 
-    /// newBV's PictureMenu 宽高比: 0 = 默认 (native), 1 = 4:3, 2 = 16:9. The
+    /// newBV's PictureMenu aspect mode: 0 = native, 1 = 4:3, 2 = 16:9. The
     /// last two stretch the picture into a fixed-ratio box.
     @Default(0) int aspectRatioMode,
   }) = _VideoSettingsModel;

@@ -101,7 +101,7 @@ void main() {
     Directory('test/goldens').createSync(recursive: true);
     await snap('tag_page_chips.png');
 
-    // Tap the first chip: the tag detail dialog (查看 + 删除). The dialog
+    // Tap the first chip: the tag detail dialog (view + delete). The dialog
     // paints in the navigator's overlay, outside the page boundary, so it is
     // verified programmatically rather than in the PNG.
     await tester.tap(find.text('王者荣耀'), warnIfMissed: true);
@@ -109,9 +109,10 @@ void main() {
     expect(find.byType(TvDialog), findsOneWidget, reason: 'chip tap opens the detail dialog');
     // Unlocalized test shell: i18n falls back to the key, which is what the
     // matchers target (same convention as app_update_test).
-    expect(find.text('tag_detail'), findsOneWidget, reason: 'dialog title 标签详情');
+    expect(find.text('tag_detail'), findsOneWidget, reason: 'dialog title key');
     expect(find.text('delete'), findsOneWidget, reason: 'the delete action');
-    // 'cancel' sits in the offline label table, which translates it to 取消.
+    // 'cancel' sits in the offline label table, which gives the CJK glyph the
+    // matcher targets.
     await tester.tap(find.text('取消'));
     await tester.pump(const Duration(milliseconds: 800));
     expect(find.byType(TvDialog), findsNothing, reason: 'cancel closes the dialog');

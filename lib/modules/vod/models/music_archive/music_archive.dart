@@ -117,7 +117,7 @@ abstract class MusicArchive with _$MusicArchive {
     );
   }
 
-  /// A `region/feed/rcmd` archive (newBV's 分区 list): cover/author lead the
+  /// A `region/feed/rcmd` archive (newBV's region list): cover/author lead the
   /// record (`cover` not `pic`, `author` not `owner`), the play/danmaku counts
   /// nest under `stat`.
   factory MusicArchive.fromRegionFeedJson(Map<dynamic, dynamic> json) {
@@ -162,8 +162,8 @@ abstract class MusicArchive with _$MusicArchive {
   }
 }
 
-/// An archive's 合集 (`view`'s `ugc_season`): the UP grouped the videos into
-/// sections of episodes, each episode being another archive.
+/// An archive's collection (`view`'s `ugc_season`): the uploader grouped the
+/// videos into sections of episodes, each episode being another archive.
 @freezed
 abstract class MusicSeason with _$MusicSeason {
   const factory MusicSeason({

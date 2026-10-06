@@ -25,7 +25,7 @@ class _ExpandedMenu extends IsMenuExpanded {
 /// each icon.
 ///
 /// The regression this pins: collapsed, the rail was a column of bare glyphs, so
-/// the remote had to be aimed at an unlabelled icon to find 关注 / 热门 / 分区.
+/// the remote had to be aimed at an unlabelled icon to find the sections.
 /// The caption lives inside [TvIconButton]'s own surface, which stays the square
 /// it was — icon and label share the tile, so the rail keeps its even grid.
 void main() {

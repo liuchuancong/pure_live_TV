@@ -165,7 +165,7 @@ class UgcCommentTile extends StatelessWidget {
   }
 }
 
-/// The author line, newBV's name + "  Lv.N" (level>0) + "  UP主" suffixes.
+/// The author line, newBV's name + "  Lv.N" (level>0) + "  UP" suffixes.
 String _authorLabel(String uname, int level, bool isUp) {
   final buffer = StringBuffer(uname);
   if (level > 0) buffer.write('  Lv.$level');

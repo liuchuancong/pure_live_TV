@@ -6,9 +6,9 @@ import 'package:pure_live/modules/video/widgets/video_action_chip.dart';
 import 'package:pure_live/modules/video/pages/archive/video_detail_dialogs.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-/// The player's 视频信息 panel — newBV's ControllerVideoInfo action row: the
-/// archive header (cover, title, UP and stats), the triple-action controls
-/// (点赞/投币/收藏/一键三连) and the jumps to the detail page and the UP's
+/// The player's video-info panel — newBV's ControllerVideoInfo action row: the
+/// archive header (cover, title, uploader and stats), the like/coin/favourite/
+/// triple-action controls and the jumps to the detail page and the uploader's
 /// space, all without leaving the playing surface.
 class VideoInfoPanel extends StatefulWidget {
   const VideoInfoPanel({super.key, required this.archive, required this.onClose});
@@ -26,7 +26,7 @@ class _VideoInfoPanelState extends State<VideoInfoPanel> {
   bool _busy = false;
   List<MusicArchive> _related = const [];
 
-  /// Pulls focus back to the 收藏 chip after the fav-folder picker pops.
+  /// Pulls focus back to the favourite chip after the fav-folder picker pops.
   final FocusNode _favNode = FocusNode();
 
   int get _aid => widget.archive.aid;

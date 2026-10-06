@@ -14,7 +14,7 @@ import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/utils/hive_pref_util.dart';
 import 'package:pure_live/core/widgets/index.dart';
 
-/// 在线更新 → 版本历史, and the device record on top of it.
+/// The online-update version history, plus the device record above it.
 class _FakeUpdateController extends AppUpdateController {
   _FakeUpdateController(this.initial);
 

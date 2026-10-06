@@ -64,7 +64,7 @@ class VideoPlayerControlBar extends ConsumerStatefulWidget {
   final VoidCallback? onOpenSubtitleMenu;
   final VoidCallback onToggleAspect;
 
-  /// Opens the in-player 视频信息 panel (triple-action + detail/UP jumps).
+  /// Opens the in-player video-info panel (triple-action + detail/UP jumps).
   final VoidCallback onOpenInfo;
 
   @override

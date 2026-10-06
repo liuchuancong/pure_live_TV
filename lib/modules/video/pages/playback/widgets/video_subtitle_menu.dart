@@ -1,9 +1,10 @@
 import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 
-/// newBV's 字幕 tab: pick one of the archive's CC tracks or switch them off,
-/// then tune the overlay's appearance (大小 / 透明度 / 底部间距) — the same three
-/// [VideoSettingsModel] knobs the CC layer renders with, so edits apply live.
+/// newBV's subtitle tab: pick one of the archive's CC tracks or switch them
+/// off, then tune the overlay's appearance (size / opacity / bottom spacing) —
+/// the same three [VideoSettingsModel] knobs the CC layer renders with, so
+/// edits apply live.
 class VideoSubtitleMenu extends ConsumerWidget {
   const VideoSubtitleMenu({
     super.key,

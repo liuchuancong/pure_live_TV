@@ -16,8 +16,8 @@ import 'package:pure_live/core/models/release_model/release_model.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/utils/hive_pref_util.dart';
 
-/// Renders [AppDownloadPage] (the 当前版本 download page) to PNGs — top with
-/// the per-ABI 下载源 grid, bottom with the markdown release notes.
+/// Renders [AppDownloadPage] (the current-version download page) to PNGs —
+/// top with the per-ABI download-source grid, bottom with the release notes.
 ///
 /// Run: flutter test test/app_download_page_preview_test.dart
 void main() {

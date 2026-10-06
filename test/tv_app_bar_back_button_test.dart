@@ -12,8 +12,9 @@ import 'package:pure_live/core/widgets/tv_page_scaffold.dart';
 ///
 /// The regression: the app bar decided "there is something to pop" once, during
 /// a build. A page that is rebuilt while another route sits on top of it — which
-/// is exactly what happens around a pop — kept a 返回 it should not have, and
-/// nothing recomputed it afterwards. That is the stale 返回 the user saw on the
+/// is exactly what happens around a pop — kept a back button it should not
+/// have, and nothing recomputed it afterwards. That is the stale back button
+/// the user saw on the
 /// home page and the favorites page until an unrelated rebuild cleared it.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -62,7 +63,7 @@ void main() {
     router.push('/settings');
     // Mid-transition: both pages are mounted, so both app bars are on screen and
     // the covered one can still pop (`canPop()` is true for it). Only the "am I
-    // the current route" half of the rule keeps its 返回 off the screen.
+    // the current route" half of the rule keeps its back button off the screen.
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 60));
 

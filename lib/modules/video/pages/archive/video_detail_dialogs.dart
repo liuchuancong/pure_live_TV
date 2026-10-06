@@ -75,9 +75,9 @@ class _FavFolderDialogState extends State<_FavFolderDialog> {
   }
 }
 
-/// The 分P grid dialog the reference app opens once an archive has more parts
-/// than the inline row should show: 20 per page, "P{start}-{end}" tabs, tap a
-/// cell and the page starts the queue at that part.
+/// The parts grid dialog the reference app opens once an archive has more
+/// parts than the inline row should show: 20 per page, "P{start}-{end}" tabs,
+/// tap a cell and the page starts the queue at that part.
 Future<int?> showPartsGridDialog(BuildContext context, {required List<MusicTrack> tracks, required int initialIndex}) {
   return TvDialogUtils.show<int>(
     context: context,

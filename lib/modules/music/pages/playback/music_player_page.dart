@@ -224,9 +224,9 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
   /// and loads it.
   int _lyricRevision = 0;
 
-  /// Two-step lyric picker: first pick a source (B站BGM / LRC / 网易云), then
-  /// pick one candidate from that source. The pick is remembered and used for
-  /// every later play of this track.
+  /// Two-step lyric picker: first pick a source (site BGM / LRC file /
+  /// NetEase), then pick one candidate from that source. The pick is
+  /// remembered and used for every later play of this track.
   Future<void> _showLyricPicker() async {
     final track = ref.read(musicPlayerControllerProvider).current;
     if (track == null || !mounted) return;

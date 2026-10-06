@@ -105,9 +105,9 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
     await _loadStates(aid);
   }
 
-  /// Follow / unfollow this archive's UP against the account's relation. No
-  /// local list: the state is read back through [BilibiliUgcApi.isFollowing],
-  /// so it matches what the UP主 tab and the UP space show.
+  /// Follow / unfollow this archive's uploader against the account's
+  /// relation. No local list: the state is read back through
+  /// [BilibiliUgcApi.isFollowing], so it matches the uploader tab and space.
   Future<void> _toggleFollowUp(int mid) async {
     if (mid <= 0) return;
     final unfollowing = _followingUp;

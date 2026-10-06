@@ -9,9 +9,9 @@ import 'package:pure_live/modules/vod/api/bilibili_pgc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/controllers/video_player_controller.dart';
 
-/// One season's page, newBV's PGC detail: cover, rating, 更新至 line,
-/// synopsis, the 追番 toggle, series switcher chips, the 正片 episode grid and
-/// one grid per bonus section (番外/PV), plus the "上次看到" resume entry from
+/// One season's page, newBV's PGC detail: cover, rating, latest-episode line,
+/// synopsis, the follow toggle, series switcher chips, the main episode grid
+/// and one grid per bonus section (extras/PV), plus the resume entry from
 /// the season's user_status.progress. Playing an episode builds a queue of
 /// [MusicTrack]s whose parts carry `epId`, so the shared VOD engine resolves
 /// them through the injected PGC resolver — video stays on the common
@@ -113,7 +113,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
     return season.episodes.indexWhere((episode) => episode.epId == season.lastEpId);
   }
 
-  /// newBV's 追番 toggle: web follow/add|del, flipped locally on success so
+  /// newBV's follow toggle: web follow/add|del, flipped locally on success so
   /// the button answers without a full detail reload.
   Future<void> _toggleFollow() async {
     final season = _season;
@@ -339,8 +339,8 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
   }
 }
 
-/// One titled episode grid inside the season page's scrolling pane — the 正片
-/// block and each bonus section renders through it.
+/// One titled episode grid inside the season page's scrolling pane — the main
+/// block and each bonus section render through it.
 class _EpisodeBlock extends StatelessWidget {
   const _EpisodeBlock({
     required this.episodes,

@@ -175,7 +175,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
   }
 
   /// The part the local watch progress names, when it still belongs to this
-  /// archive's list — the "上次看到" jump target.
+  /// archive's list — the resume jump target.
   ({int index, int position})? get _resumeTarget {
     final archive = _detail ?? widget.archive;
     final entry = ref.read(videoProgressControllerProvider.notifier).entryFor(archive.bvid);
@@ -565,8 +565,8 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                         ),
                     ],
                   ),
-                  // ================================================ 合集
-                  // ugc_season: the UP's own collection — every section is a
+                  // ------------------------------------ ugc_season
+                  // The uploader's own collection: every section is a
                   // horizontal strip of the other archives it groups.
                   if (season != null)
                     for (final section in season.sections)

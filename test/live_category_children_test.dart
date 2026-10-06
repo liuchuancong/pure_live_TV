@@ -3,14 +3,15 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/core/models/live_category/live_category.dart';
 
-/// 获取接口数据 → 数据加载失败：`Unsupported operation: Cannot add to an unmodifiable list`.
+/// Pins a fetch failure the categories page used to surface as
+/// `Unsupported operation: Cannot add to an unmodifiable list`.
 ///
 /// `LiveCategory` is a freezed model, so `children` is an unmodifiable view of the list
 /// the category was built with: `children.addAll(...)` after construction throws. Five
-/// platforms (虎牙 / 快手 / YY / Twitch / SOOP) built their category list first and filled
-/// `children` afterwards, so the 分区 page showed that exception as 数据加载失败 the moment
-/// one of them was selected. The sub-categories have to be passed to the constructor — or
-/// the category rebuilt with `copyWith(children: …)`.
+/// platforms (huya / kuaishou / YY / Twitch / SOOP) built their category list first and
+/// filled `children` afterwards, so the region page showed that exception as a load
+/// failure the moment one of them was selected. Sub-categories go to the constructor —
+/// or the category is rebuilt with `copyWith(children: ...)`.
 void main() {
   test('LiveCategory.children cannot be filled after construction', () {
     const LiveCategory category = LiveCategory(id: '1', name: 'hot');
