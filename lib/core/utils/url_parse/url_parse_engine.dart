@@ -102,12 +102,7 @@ class UrlParseEngine {
   }
 
   Future<String> getRealDouyinUrl(String url) async {
-    final urlRegExp = RegExp(
-      r"((https?:www\.)|(https?:\/\/)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9]{1,6}(\/[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)?",
-    );
-    List<String?> urlMatches = urlRegExp.allMatches(url).map((m) => m.group(0)).toList();
-    String realUrl = urlMatches.first!;
-    var headers = {
+    final headers = <String, dynamic>{
       "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
       "Accept": "*/*",
@@ -120,14 +115,34 @@ class UrlParseEngine {
       "Accept-Language": "zh-CN,zh;q=0.9",
     };
 
-    final dio.Response response = await _client.get(realUrl, header: headers);
+    // 抖音分享短链（v.douyin.com/xxx）会 302 跳转到 webcast.amemv.com 的
+    // reflow 页面，真正的数字 room_id 就藏在 302 的 Location 头里。
+    // 这里【不要】自动跟随重定向：落地页在缺少浏览器会话（ttwid/cookie）时会
+    // 返回 404，而 Dio 默认 validateStatus 会对非 2xx 抛 DioException，导致
+    // 整个解析崩溃。直接读取 Location 头最稳妥。
+    String target = url;
+    final location = await getLocation(url, header: headers);
+    if (location.isNotEmpty) {
+      target = location;
+    } else {
+      // 兜底：极少数情况下短链直接 200 返回，退而跟随重定向取最终地址。
+      try {
+        final resp = await _client.get(url, header: headers);
+        target = resp.realUri.toString();
+      } catch (_) {
+        target = url;
+      }
+    }
+
     final liveResponseRegExp = RegExp(r"/reflow/(\d+)");
-    String reflow = liveResponseRegExp.firstMatch(response.realUri.toString())?.group(0) ?? "";
+    final reflowMatch = liveResponseRegExp.firstMatch(target);
+    if (reflowMatch == null) return "";
+    final roomId = reflowMatch.group(1)!;
 
     final liveResponse = await _client.getJson(
       "https://webcast.amemv.com/webcast/room/reflow/info/",
       queryParameters: {
-        "room_id": reflow.split("/").last.toString(),
+        "room_id": roomId,
         'verifyFp': '',
         'type_id': 0,
         'live_id': 1,
@@ -137,16 +152,20 @@ class UrlParseEngine {
         'X-Bogus': '',
       },
     );
-    var room = liveResponse.data['data']['room']['owner']['web_rid'];
+    final room = liveResponse.data['data']['room']['owner']['web_rid'];
     return room.toString();
   }
 
-  Future<String> getLocation(String url) async {
+  Future<String> getLocation(String url, {Map<String, dynamic>? header}) async {
     try {
       if (url.isEmpty) return "";
-      await _client.dio.get(url, options: dio.Options(followRedirects: false));
+      await _client.dio.get(
+        url,
+        options: dio.Options(followRedirects: false, headers: header),
+      );
     } on dio.DioException catch (e) {
-      if (e.response!.statusCode == 302) {
+      if (e.response != null &&
+          (e.response!.statusCode == 301 || e.response!.statusCode == 302)) {
         var redirectUrl = e.response!.headers.value("Location");
         if (redirectUrl != null) {
           return redirectUrl;
